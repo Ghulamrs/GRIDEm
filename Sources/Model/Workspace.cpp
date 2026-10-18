@@ -7,6 +7,8 @@
 #include "../Platform/Paths.h"
 #include <algorithm>
 #include <map>
+#include <sys/stat.h>
+#include <unistd.h>
 
 namespace GRIDEm { namespace Model {
 
@@ -141,6 +143,21 @@ namespace GRIDEm { namespace Model {
     {
         (void)abs;
         return false;
+    }
+
+    GrideProjectPtr Workspace::FindProjectOwning(const std::string& abs) const
+    {
+        GrideProjectPtr p = FindProjectForFile(abs);
+        if (p) return p;
+        for (const GrideProjectPtr& x : Projects)
+            if (PathUtil::SamePath(x->FilePath, abs)) return x;
+        return nullptr;
+    }
+
+    bool Workspace::PrepareWrite(const std::string& abs, const std::function<bool()>& ask)
+    {
+        GrideProjectPtr p = FindProjectOwning(abs);
+        return Locks.Prepare(abs, p ? p->FilePath : abs, ask);
     }
 
     bool Workspace::AddProject(const GrideProjectPtr& p)
@@ -377,5 +394,45 @@ namespace GRIDEm { namespace Model {
         if (e->Has("programArgs")) p->ProgramArgs = e->GetStringList("programArgs");
         p->EmulateOnly = e->GetBool("emulateOnly", false);
         p->IsDirty = false;
+    }
+    // ---- DiskLocks ----------------------------------------------------------------
+    bool DiskLocks::IsWritable(const std::string& path)
+    {
+        struct stat st;
+        if (stat(path.c_str(), &st) != 0) return true;           // not there yet: nothing to unlock
+        return access(path.c_str(), W_OK) == 0;
+    }
+
+    bool DiskLocks::Prepare(const std::string& path, const std::string& key, const std::function<bool()>& ask)
+    {
+        if (IsWritable(path)) return true;
+        bool known = false;
+        for (const std::string& k : agreed)
+            if (PathUtil::SamePath(k, key)) { known = true; break; }
+        if (!known)
+        {
+            if (!ask || !ask()) return false;
+            agreed.push_back(key);
+        }
+        return Unlock(path);
+    }
+
+    bool DiskLocks::Unlock(const std::string& path)
+    {
+        struct stat st;
+        if (stat(path.c_str(), &st) != 0) return false;
+        bool listed = false;
+        for (const std::pair<std::string, unsigned>& e : entries)
+            if (PathUtil::SamePath(e.first, path)) { listed = true; break; }
+        if (!listed) entries.push_back(std::make_pair(path, (unsigned)(st.st_mode & 07777)));
+        return chmod(path.c_str(), (st.st_mode & 07777) | S_IWUSR) == 0 && access(path.c_str(), W_OK) == 0;
+    }
+
+    void DiskLocks::RelockAll()
+    {
+        // a save may have replaced the file (written beside it, then renamed): its mode is set again
+        for (const std::pair<std::string, unsigned>& e : entries) chmod(e.first.c_str(), (mode_t)e.second);
+        entries.clear();
+        agreed.clear();
     }
 }}

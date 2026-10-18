@@ -691,7 +691,7 @@ static const char* const kMainPattern = "^\\s*((int|void)?\\s*|fun\\s*<[^>]*>\\s
         [self addRecentFile:d.path];
         [self setStatus:[@"Saved " stringByAppendingString:d.path]];
     }
-    else if (error != nil) GRShowMessage(self.window, @"Save", error.localizedDescription);
+    else if (error != nil && error.code != NSUserCancelledError) GRShowMessage(self.window, @"Save", error.localizedDescription);
 }
 
 - (void)fileSaveAs

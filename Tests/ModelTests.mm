@@ -8,6 +8,8 @@
 #include "Model/VsProjectReader.h"
 #include "Model/VsSolution.h"
 #include "Model/Workspace.h"
+#include <sys/stat.h>
+#include <unistd.h>
 
 using namespace GRIDEm;
 using namespace GRIDEm::Model;
@@ -134,6 +136,71 @@ using namespace GRIDEm::Model;
     GrideProjectPtr ride = r->Projects[0];
     XCTAssertTrue(ride->IsRide());
     for (const std::string& f : ride->AllFiles()) XCTAssertFalse(r->IsDocumentReadOnly(f), @"%s", f.c_str());
+}
+
+// a file read-only on disk: the first save asks once for its project, every file of the project is
+// then made writable as it is saved, and closing (RelockAll) gives each the mode it had
+- (void)testReadOnlyOnDiskAskedOncePerProjectAndRelockedOnClose
+{
+    std::string dir = GRCopyFixture("samples/ride/compilerpp");
+    std::string pro = dir + "/compilerpp.pro";
+    WorkspacePtr w = Workspace::ForSingleProject(GrideProject::Load(pro));
+    std::vector<std::string> files = w->Projects[0]->AllFiles();
+    XCTAssertTrue(files.size() >= 3);
+    if (files.size() < 3) return;
+    std::string a = files[0], b = files[1], plain = files[2];
+    for (const std::string& f : { a, b, plain }) GRWrite(f, "int x;\n");      // the fixture holds only the .pro
+    chmod(a.c_str(), 0444);
+    chmod(b.c_str(), 0444);
+    chmod(pro.c_str(), 0444);
+    XCTAssertFalse(DiskLocks::IsWritable(a));
+    XCTAssertTrue(DiskLocks::IsWritable(plain));
+
+    int asked = 0;
+    bool answer = false;
+    std::function<bool()> ask = [&asked, &answer]() { asked++; return answer; };
+    // no: nothing changes, and the next save asks again
+    XCTAssertFalse(w->PrepareWrite(a, ask));
+    GRAssertEq(asked, 1);
+    XCTAssertFalse(DiskLocks::IsWritable(a));
+    // yes: asked once for the project - its other files and its .pro follow without asking
+    answer = true;
+    XCTAssertTrue(w->PrepareWrite(a, ask));
+    XCTAssertTrue(w->PrepareWrite(b, ask));
+    XCTAssertTrue(w->PrepareWrite(pro, ask));
+    XCTAssertTrue(w->PrepareWrite(plain, ask));
+    GRAssertEq(asked, 2);
+    XCTAssertTrue(DiskLocks::IsWritable(a) && DiskLocks::IsWritable(b) && DiskLocks::IsWritable(pro));
+    GRAssertEq(w->Locks.Items().size(), (size_t)3);             // the writable one is not listed
+
+    // closed: read-only again for every other program, and the next open asks again
+    w->Locks.RelockAll();
+    XCTAssertFalse(DiskLocks::IsWritable(a));
+    XCTAssertFalse(DiskLocks::IsWritable(b));
+    XCTAssertFalse(DiskLocks::IsWritable(pro));
+    XCTAssertTrue(DiskLocks::IsWritable(plain));
+    XCTAssertTrue(w->PrepareWrite(a, ask));
+    GRAssertEq(asked, 3);
+    w->Locks.RelockAll();
+}
+
+// GrideProject::BeforeWrite is asked before a project's file is written; a no leaves it unwritten
+- (void)testProjectSaveAsksBeforeWriting
+{
+    std::string dir = GRTempDir();
+    std::vector<Core::Target> targets{ Core::Target::MacOS };
+    GrideProjectPtr p = GrideProject::CreateNew(dir, "Guarded", Core::Language::C90, "Console application", targets);
+    p->Save();
+    std::string before = GRRead(p->FilePath);
+    std::string asked;
+    GrideProject::BeforeWrite = [&asked](const std::string& path) { asked = path; return false; };
+    p->Name = "Renamed";
+    p->IsDirty = true;
+    p->Save();
+    GrideProject::BeforeWrite = nullptr;
+    GRAssertEq(asked, p->FilePath);
+    GRAssertEq(GRRead(p->FilePath), before);
+    XCTAssertTrue(p->IsDirty);
 }
 
 - (void)testSolutionOpensAsAWorkspace

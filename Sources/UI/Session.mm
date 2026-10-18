@@ -38,6 +38,7 @@ typedef std::map<std::string, std::shared_ptr<std::set<int> >, Core::CaseInsensi
     std::atomic<unsigned long> _generation;    // which engine the debug events belong to
     std::atomic<bool> _closing;
     std::atomic<bool> _verifying;
+    Model::DiskLocks _looseLocks;              // files of no project made writable
 }
 
 - (instancetype)init
@@ -137,12 +138,27 @@ typedef std::map<std::string, std::shared_ptr<std::set<int> >, Core::CaseInsensi
 
 - (void)setWorkspace:(const Model::WorkspacePtr&)workspace
 {
+    if (_workspace && _workspace != workspace) _workspace->Locks.RelockAll();   // closed: read-only again
     _workspace = workspace;
     _sets.clear();
     if (_workspace)
         for (const std::pair<std::string, std::set<int> >& kv : _workspace->Breakpoints.Items())
             _sets[kv.first] = std::make_shared<std::set<int> >(kv.second);
     [self refillMap];
+}
+
+- (BOOL)mayWriteFile:(NSString*)path
+{
+    std::string abs = SessionStd(path);
+    if (Model::DiskLocks::IsWritable(abs)) return YES;
+    __weak GRSession* weakSelf = self;
+    std::function<bool()> ask = [weakSelf, path]() -> bool {
+        GRSession* me = weakSelf;
+        NSString* q = [@"File on the disk is read only, are you sure you need to update?\n\n" stringByAppendingString:path];
+        return me != nil && [me.delegate sessionAskYesNo:q];
+    };
+    if (_workspace) return _workspace->PrepareWrite(abs, ask) ? YES : NO;
+    return _looseLocks.Prepare(abs, abs, ask) ? YES : NO;
 }
 
 - (NSString*)saveWorkspace
@@ -349,5 +365,7 @@ typedef std::map<std::string, std::shared_ptr<std::set<int> >, Core::CaseInsensi
     _engine->Wait();
     if (_runner->IsRunning()) _runner->Stop();
     if (_debugger && _debugger->IsActive()) _debugger->Stop();
+    if (_workspace) _workspace->Locks.RelockAll();
+    _looseLocks.RelockAll();
 }
 @end

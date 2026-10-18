@@ -114,6 +114,12 @@ static NSArray<NSString*>* StepItems()
     if (self == nil) return nil;
     _session = session;
     _session.delegate = (id<GRSessionDelegate>)self;
+    __weak GRSession* weakSession = session;
+    [GRSourceDocument setWriteGuard:^BOOL(NSString* path) { return [weakSession mayWriteFile:path]; }];
+    Model::GrideProject::BeforeWrite = [weakSession](const std::string& path) -> bool {
+        GRSession* s = weakSession;
+        return s == nil || [s mayWriteFile:[NSString stringWithUTF8String:path.c_str()]];
+    };
     _config = @"Debug";
     _target = Core::Target::MacOS;
     _statusBarShown = YES;

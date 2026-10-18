@@ -464,9 +464,12 @@ namespace GRIDEm { namespace Model {
         return j;
     }
 
+    std::function<bool(const std::string& path)> GrideProject::BeforeWrite;
+
     void GrideProject::Save()
     {
         if (IsReadOnly) return;
+        if (BeforeWrite && !BeforeWrite(FilePath)) return;
         JsonPtr j = ToJson();
         JsonWriter::WriteFile(FilePath, j);
         raw = j;

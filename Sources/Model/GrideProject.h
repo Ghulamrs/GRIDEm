@@ -18,6 +18,7 @@
 #include "BuildConfiguration.h"
 #include "CcsReading.h"
 #include "VsSolution.h"
+#include <functional>
 #include <map>
 #include <memory>
 #include <string>
@@ -176,6 +177,9 @@ namespace GRIDEm { namespace Model {
         Core::JsonPtr ToJson();
         // throws std::runtime_error when the file cannot be written
         void Save();
+        // asked before Save writes the project's file; false leaves it unwritten (and the project
+        // dirty). The app answers it from the workspace's DiskLocks; unset, every write goes ahead.
+        static std::function<bool(const std::string& path)> BeforeWrite;
         // creates the folder skeleton + .pro object for File > New > Project (not yet saved)
         static GrideProjectPtr CreateNew(const std::string& parentDir, const std::string& name, Core::Language lang,
                                          const std::string& templ, const std::vector<Core::Target>& targets);

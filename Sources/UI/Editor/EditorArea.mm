@@ -401,7 +401,7 @@
     if (d.path != nil)
     {
         NSError* err = nil;
-        if (![d saveNow:&err] && err != nil) [self presentError:err];
+        if (![d saveNow:&err] && err != nil && err.code != NSUserCancelledError) [self presentError:err];
         return;
     }
     [self activateDocument:d];

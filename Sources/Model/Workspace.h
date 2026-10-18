@@ -17,6 +17,7 @@
 #include "CcsProjectReader.h"
 #include "GrideProject.h"
 #include "VsProjectReader.h"
+#include <functional>
 #include <memory>
 #include <set>
 #include <string>
@@ -41,6 +42,28 @@ namespace GRIDEm { namespace Model {
         const Entries& Items() const { return entries; }
     private:
         Entries entries;
+    };
+
+    // Files read-only on disk that GRIDEm was allowed to write. The first save of such a file asks
+    // ("File on the disk is read only, are you sure you need to update?") once per key - a project's
+    // file path, so once per project; the file's own path for a file of no project. On yes the file is
+    // made writable for its owner and its mode remembered; RelockAll gives every such file the mode it
+    // had, so once the project is closed other programs find its files read-only again.
+    class DiskLocks
+    {
+    public:
+        typedef std::vector<std::pair<std::string, unsigned> > Entries;   // path, mode before
+        // true for a file that may be written as it is - or that does not exist yet
+        static bool IsWritable(const std::string& path);
+        // true when path may be written now: writable already, or agreed (ask() is called only when
+        // the key has not been agreed to yet) and made writable. A no leaves the file as it is.
+        bool Prepare(const std::string& path, const std::string& key, const std::function<bool()>& ask);
+        void RelockAll();              // and forgets what was agreed
+        const Entries& Items() const { return entries; }
+    private:
+        Entries entries;
+        std::vector<std::string> agreed;
+        bool Unlock(const std::string& path);
     };
 
     class Workspace;
@@ -80,6 +103,12 @@ namespace GRIDEm { namespace Model {
         // project's lock (IsReadOnly) is on its structure - files, folders, settings - not on the text
         // of the files it lists, so a CCS or Visual Studio project's sources edit and save like any other.
         bool IsDocumentReadOnly(const std::string& abs) const;
+        // the project a file belongs to: one it lists, or the one whose own file (.pro) it is
+        GrideProjectPtr FindProjectOwning(const std::string& abs) const;
+        // read-only files made writable while the workspace is open (DiskLocks); closing it relocks them
+        DiskLocks Locks;
+        // true when abs may be written now - asked once per project when the file is read-only on disk
+        bool PrepareWrite(const std::string& abs, const std::function<bool()>& ask);
         bool AddProject(const GrideProjectPtr& p);
         void RemoveProject(const GrideProjectPtr& p);
         // projects ordered so that dependencies are built first

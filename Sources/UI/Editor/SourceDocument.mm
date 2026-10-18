@@ -13,6 +13,7 @@ NSString* const GRSourceDocumentStateNotification = @"GRSourceDocumentStateNotif
 
 static GRIDEm::Settings::GrideSettingsPtr gSettings;
 static int gUntitledCounter = 0;
+static BOOL (^gWriteGuard)(NSString* path);
 
 static NSString* NS(const std::string& s) { return GROr([NSString stringWithUTF8String:s.c_str()], @""); }
 
@@ -25,6 +26,7 @@ static std::string Std(NSString* s) { return s.UTF8String ? std::string(s.UTF8St
 }
 
 + (void)setSettings:(GRIDEm::Settings::GrideSettingsPtr)settings { gSettings = settings; }
++ (void)setWriteGuard:(BOOL (^)(NSString* path))guard { gWriteGuard = [guard copy]; }
 + (GRIDEm::Settings::GrideSettingsPtr)settings { return gSettings; }
 
 + (BOOL)autosavesInPlace { return YES; }
@@ -178,6 +180,11 @@ static std::string Std(NSString* s) { return s.UTF8String ? std::string(s.UTF8St
 - (BOOL)saveNow:(NSError**)error
 {
     if (self.fileURL == nil) return NO;
+    if (gWriteGuard != nil && !gWriteGuard(self.fileURL.path))
+    {
+        if (error != nullptr) *error = [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil];
+        return NO;
+    }
     NSData* data = [self dataOfType:GROr(self.fileType, @"public.plain-text") error:error];
     if (data == nil) return NO;
     if (![data writeToURL:self.fileURL options:NSDataWritingAtomic error:error]) return NO;

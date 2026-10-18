@@ -64,6 +64,10 @@
 // writes the projects, and the .grws when something in it changed (not a temporary one);
 // nil, or what went wrong
 - (NSString*)saveWorkspace;
+// a file read-only on disk is written only after "File on the disk is read only, are you sure you
+// need to update?" - asked once per project (once per file for a file of no project) - and is made
+// read-only again when its workspace closes or GRIDEm quits (Model::DiskLocks)
+- (BOOL)mayWriteFile:(NSString*)path;
 
 // ---- breakpoints -----------------------------------------------------------------
 // the set of a file (made when it has none); every holder of it sees the same lines

@@ -29,6 +29,8 @@ extern NSString* const GRSourceDocumentStateNotification;
 // the settings the app runs with (language detection, tab size); set once at start
 + (void)setSettings:(GRIDEm::Settings::GrideSettingsPtr)settings;
 + (GRIDEm::Settings::GrideSettingsPtr)settings;
+// asked before a document is written to its file; NO cancels the save (GRSession mayWriteFile:)
++ (void)setWriteGuard:(BOOL (^)(NSString* path))guard;
 
 // a new, unsaved document, "Untitled1.c" ... in the language given
 + (GRSourceDocument*)untitledWithLanguage:(GRIDEm::Core::Language)language;
