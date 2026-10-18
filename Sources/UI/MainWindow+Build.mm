@@ -27,6 +27,17 @@
 #include "../Platform/Environment.h"
 #include "../Platform/Paths.h"
 #include "../Services/MacroExpander.h"
+#import "Editor/Highlighter.h"
+#import "Panes/BreakpointsNavigator.h"
+#import "Panes/ClassNavigator.h"
+#import "Panes/DisassemblyView.h"
+#import "Panes/FilesNavigator.h"
+#import "Panes/FindResultsView.h"
+#import "Panes/Inspector.h"
+#import "Panes/MemoryView.h"
+#import "Panes/RegistersView.h"
+#import "Panes/StackView.h"
+#import "Panes/VariablesView.h"
 
 using namespace GRIDEm;
 

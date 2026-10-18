@@ -4,6 +4,7 @@
 // =============================================================================
 #import <AppKit/AppKit.h>
 #import "AppDelegate.h"
+#import "MainWindow.h"
 
 int main(int argc, const char* argv[])
 {

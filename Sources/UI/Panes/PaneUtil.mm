@@ -177,7 +177,9 @@ static void AddColumns(NSTableView* table, NSArray<NSString*>* titles, NSArray<N
         [container addSubview:v];
         [v.leadingAnchor constraintEqualToAnchor:container.leadingAnchor].active = YES;
         [v.trailingAnchor constraintEqualToAnchor:container.trailingAnchor].active = YES;
-        if (previous == nil) [v.topAnchor constraintEqualToAnchor:container.topAnchor].active = YES;
+        // the safe area's top, not the view's: a pane in the sidebar sits under the window's full-size
+        // title bar, and its header would otherwise lie beneath the close / minimise / zoom buttons
+        if (previous == nil) [v.topAnchor constraintEqualToAnchor:container.safeAreaLayoutGuide.topAnchor].active = YES;
         else [v.topAnchor constraintEqualToAnchor:previous.bottomAnchor].active = YES;
         if (v != grow)
         {

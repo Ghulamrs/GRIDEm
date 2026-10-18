@@ -50,8 +50,8 @@ using namespace GRIDEm;
         __weak GRBatchBuildSheet* weakSelf = self;
         [self addTrailingButton:@"Clean" action:^{ [weakSelf run:GRBatchClean]; }];
         [self addTrailingButton:@"Rebuild" action:^{ [weakSelf run:GRBatchRebuild]; }];
-        [self addButton:@"Select All" action:^{ [weakSelf selectAll:YES]; }];
-        [self addButton:@"Deselect All" action:^{ [weakSelf selectAll:NO]; }];
+        [self addButton:@"Select All" action:^{ [weakSelf checkAll:YES]; }];
+        [self addButton:@"Deselect All" action:^{ [weakSelf checkAll:NO]; }];
     }
     return self;
 }
@@ -59,7 +59,7 @@ using namespace GRIDEm;
 - (GRBatchAction)action { return _action; }
 - (std::vector<GRBatchItem>)selected { return _selected; }
 
-- (void)selectAll:(BOOL)on { [_list setAll:on]; }
+- (void)checkAll:(BOOL)on { [_list setAll:on]; }   // not selectAll: - NSResponder's selectAll:(id) would be taken
 
 - (BOOL)collect
 {

@@ -167,34 +167,34 @@ using namespace GRIDEm::Core;
 
 - (void)testTextFileUtf8AndBom
 {
-    TextEncoding e;
+    FileEncoding e;
     GRAssertEq(TextFile::Decode("caf\xC3\xA9\r\n", e), "caf\xC3\xA9\r\n");
-    XCTAssertTrue(e == TextEncoding::Utf8);
+    XCTAssertTrue(e == FileEncoding::Utf8);
     GRAssertEq(TextFile::Decode("\xEF\xBB\xBFx", e), "x");
-    XCTAssertTrue(e == TextEncoding::Utf8Bom);
+    XCTAssertTrue(e == FileEncoding::Utf8Bom);
     GRAssertEq(TextFile::Encode("x", e), "\xEF\xBB\xBFx");
 }
 
 - (void)testTextFileUtf16
 {
-    TextEncoding e;
+    FileEncoding e;
     std::string le("\xFF\xFE" "a\0\xE9\0" "=\xD8\0\xDE", 10);       // a, e-acute, U+1F600
     std::string text = TextFile::Decode(le, e);
-    XCTAssertTrue(e == TextEncoding::Utf16LE);
+    XCTAssertTrue(e == FileEncoding::Utf16LE);
     GRAssertEq(text, "a\xC3\xA9\xF0\x9F\x98\x80");
     GRAssertEq(TextFile::Encode(text, e), le);
     std::string be("\xFE\xFF" "\0a", 4);
     GRAssertEq(TextFile::Decode(be, e), "a");
-    XCTAssertTrue(e == TextEncoding::Utf16BE);
+    XCTAssertTrue(e == FileEncoding::Utf16BE);
     GRAssertEq(TextFile::Encode("a", e), be);
 }
 
 - (void)testTextFileWindows1252RoundTrip
 {
-    TextEncoding e;
+    FileEncoding e;
     std::string bytes = "caf\xE9 \x80\r\n";
     std::string text = TextFile::Decode(bytes, e);
-    XCTAssertTrue(e == TextEncoding::Windows1252);
+    XCTAssertTrue(e == FileEncoding::Windows1252);
     GRAssertEq(text, "caf\xC3\xA9 \xE2\x82\xAC\r\n");
     GRAssertEq(TextFile::Encode(text, e), bytes);
     GRAssertEq(TextFile::EncodingLabel(e), "WINDOWS-1252");
@@ -204,9 +204,9 @@ using namespace GRIDEm::Core;
 {
     std::string path = GRTempDir() + "/crlf.c";
     std::string error;
-    XCTAssertTrue(TextFile::Write(path, "a\r\nb\r\n", TextEncoding::Utf8, error));
+    XCTAssertTrue(TextFile::Write(path, "a\r\nb\r\n", FileEncoding::Utf8, error));
     std::string text;
-    TextEncoding e;
+    FileEncoding e;
     XCTAssertTrue(TextFile::Read(path, text, e, error));
     GRAssertEq(text, "a\r\nb\r\n");
 }

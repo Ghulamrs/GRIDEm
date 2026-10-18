@@ -9,6 +9,7 @@
 #import "TabBar.h"
 #import "../Icons.h"
 #import "../Theme.h"
+#import "Highlighter.h"
 
 @interface GREditorArea () <GRTabBarDelegate, NSTextViewDelegate>
 @end

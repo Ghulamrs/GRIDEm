@@ -39,7 +39,7 @@ extern NSString* const GRSourceDocumentStateNotification;
 @property (nonatomic, copy) NSString* text;                       // "\n" line ends
 @property (nonatomic, readonly) NSString* path;                   // nil while untitled
 // displayName (NSDocument's): the file name, or "Untitled1.c" while untitled
-@property (nonatomic, assign) GRIDEm::Core::TextEncoding fileEncoding;
+@property (nonatomic, assign) GRIDEm::Core::FileEncoding fileEncoding;
 @property (nonatomic, copy) NSString* lineEnding;                 // "CRLF" or "LF"
 @property (nonatomic, readonly) NSString* encodingName;           // "UTF-8", "UTF-16 LE" ...
 @property (nonatomic, assign) GRIDEm::Core::Language language;

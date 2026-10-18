@@ -4,6 +4,10 @@
 //  gdb, lldb and cdb answer (DebugTranscript), live or recorded.
 // =============================================================================
 #import "TestSupport.h"
+#include <mutex>
+#include "Settings/GrideSettings.h"
+#include "Services/BuildEngine.h"
+#include "Model/Workspace.h"
 #include "Core/LanguageTarget.h"
 #include "Services/BuildMessage.h"
 #include "Services/GdbDebugger.h"
@@ -276,6 +280,38 @@ static BuildMessagePtr Parse(const std::string& line)
         }
     }
     if (read == 0) XCTSkip(@"no recorded sessions yet in Tests/Fixtures/sessions");
+}
+
+
+// a C++ program for macOS is linked by the host C++ driver, so the C++ runtime is there
+// (regression: linked with cc, compilerpp missed operator new, the RTTI vtables, __gxx_personality_v0)
+- (void)testCxxProgramForTheMacLinksTheCxxRuntime
+{
+    std::string dir = GRCopyFixture("samples/cxxlink");
+    Model::GrideProjectPtr p = Model::GrideProject::Load(dir + "/cxxlink.pro");
+    Settings::GrideSettingsPtr settings = Settings::GrideSettings::FromJson(Core::JsonValue::MakeObject());
+    settings->PublishPaths();
+    Services::BuildRequestPtr r = std::make_shared<Services::BuildRequest>();
+    r->Projects.push_back(p);
+    r->Config = "Debug";
+    r->TargetKind = Core::Target::MacOS;
+    r->Action = Services::BuildAction::Rebuild;
+    r->WorkspaceDir = dir;
+    std::mutex lock;
+    std::vector<std::string> output;
+    Services::BuildEngine engine(settings);
+    engine.OnOutput = [&lock, &output](const std::string& line)
+    {
+        std::lock_guard<std::mutex> hold(lock);
+        output.push_back(line);
+    };
+    Services::BuildSummaryPtr s = engine.RunBatch(std::vector<Services::BuildRequestPtr>(1, r));
+    std::string all;
+    for (const std::string& l : output) all += l + "\n";
+    if (all.find("cpp11 not found") != std::string::npos) XCTSkip(@"cpp11 is not installed here");
+    XCTAssertTrue(all.find("Undefined symbols") == std::string::npos, @"%s", all.c_str());
+    XCTAssertTrue(s && s->Ok(), @"%s", all.c_str());
+    XCTAssertTrue(all.find("linked with c++") != std::string::npos, @"%s", all.c_str());
 }
 
 @end

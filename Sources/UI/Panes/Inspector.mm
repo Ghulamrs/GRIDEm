@@ -106,7 +106,7 @@ static GRPropertyItem* Editable(NSString* category, NSString* name, NSString* he
     std::vector<std::string> targets;
     for (Core::Target t : p.Targets) targets.push_back(Core::TargetInfo::Name(t));
     [r addObject:[GRPropertyItem category:@"Project" name:@"Targets" value:GRNS(Core::StringUtil::Join(", ", targets))]];
-    GRPropertyItem* ro = [GRPropertyItem category:@"Project" name:@"Read-only (CCS / Visual Studio)"
+    GRPropertyItem* ro = [GRPropertyItem category:@"Project" name:@"Read-only (CCS, Visual Studio, RIDE)"
                                             value:p.IsReadOnly ? @"Yes" : @"No"];
     ro.isBool = YES;
     [r addObject:ro];

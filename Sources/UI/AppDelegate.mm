@@ -8,6 +8,23 @@
 #import "Session.h"
 #import "Welcome.h"
 #include "../Platform/Paths.h"
+#import "Editor/CodeView.h"
+#import "Editor/SourceDocument.h"
+#import "Panes/BreakpointsNavigator.h"
+#import "Panes/ClassNavigator.h"
+#import "Panes/DisassemblyView.h"
+#import "Panes/FilesNavigator.h"
+#import "Panes/FindResultsView.h"
+#import "Panes/Inspector.h"
+#import "Panes/IssuesView.h"
+#import "Panes/MemoryView.h"
+#import "Panes/OutputView.h"
+#import "Panes/PaneHost.h"
+#import "Panes/RegistersView.h"
+#import "Panes/StackView.h"
+#import "Panes/TerminalView.h"
+#import "Panes/VariablesView.h"
+#import "Panes/WorkspaceNavigator.h"
 
 using namespace GRIDEm;
 

@@ -55,7 +55,7 @@ using namespace GRIDEm;
     }
     _header.stringValue = asmPath;
     std::string text, error;
-    Core::TextEncoding enc;
+    Core::FileEncoding enc;
     if (!Core::TextFile::Read(a8, text, enc, error)) { [self showText:GRNS(error)]; return; }
     [self showText:GRNS(text)];
 }

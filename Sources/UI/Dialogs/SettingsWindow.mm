@@ -363,7 +363,7 @@ using namespace GRIDEm;
 {
     GRPathField* _toShl;
     GRPathField* _toC;
-    NSTextField* _cmd;
+    NSTextField* _template;     // not "_cmd": every Objective-C method has a hidden parameter of that name
     NSButton* _open;
 }
 
@@ -378,7 +378,7 @@ using namespace GRIDEm;
     _toC = [[GRPathField alloc] initFolder:NO status:YES];
     _toC.value = GRNS(c->ShalimarToC);
     [form addRow:@"Shalimar -> C tool" view:_toC];
-    _cmd = [form addMono:@"Command template" value:GRNS(c->CommandTemplate)];
+    _template = [form addMono:@"Command template" value:GRNS(c->CommandTemplate)];
     [form addNote:@"Leave the tools and the template empty to use toolchain.json's converter (c2s, --to-shalimar / "
                    "--to-c), found inside GRIDEm.app or as its lookup says. Template macros: $(Tool) $(Input) $(Output)"];
     _open = [form addCheck:@"Open the converted file in the editor" on:c->OpenResult];
@@ -390,7 +390,7 @@ using namespace GRIDEm;
     Settings::ConverterSettingsPtr c = self.work->Converter;
     c->CToShalimar = GRStd(_toShl.value);
     c->ShalimarToC = GRStd(_toC.value);
-    c->CommandTemplate = GRStd(_cmd.stringValue);
+    c->CommandTemplate = GRStd(_template.stringValue);
     c->OpenResult = _open.state == NSControlStateValueOn;
 }
 @end

@@ -24,6 +24,20 @@
 #include "../Core/TextFile.h"
 #include "../Platform/Environment.h"
 #include "../Platform/Paths.h"
+#import "Editor/Gutter.h"
+#import "Editor/Highlighter.h"
+#import "Panes/BreakpointsNavigator.h"
+#import "Panes/ClassNavigator.h"
+#import "Panes/DisassemblyView.h"
+#import "Panes/FilesNavigator.h"
+#import "Panes/Inspector.h"
+#import "Panes/IssuesView.h"
+#import "Panes/MemoryView.h"
+#import "Panes/RegistersView.h"
+#import "Panes/StackView.h"
+#import "Panes/TerminalView.h"
+#import "Panes/VariablesView.h"
+#import "Panes/WorkspaceNavigator.h"
 #include <regex>
 
 using namespace GRIDEm;
@@ -175,7 +189,7 @@ static bool BuildRegex(const std::string& pattern, bool matchCase, bool wholeWor
         if (d != nil) text = GRStd(d.text);
         else
         {
-            Core::TextEncoding enc;
+            Core::FileEncoding enc;
             std::string error;
             if (!Core::TextFile::Read(GRStd(f), text, enc, error)) continue;
         }
@@ -228,7 +242,7 @@ static bool BuildRegex(const std::string& pattern, bool matchCase, bool wholeWor
             {
                 // written back in the file's own encoding (Windows-1252, UTF-16, BOM or not)
                 std::string text, error;
-                Core::TextEncoding enc;
+                Core::FileEncoding enc;
                 if (!Core::TextFile::Read(GRStd(f), text, enc, error))
                 {
                     [self.outputView append:GRNS("Replace All: cannot read " + GRStd(f) + ": " + error) source:@"Tools"];
@@ -287,7 +301,7 @@ static bool BuildRegex(const std::string& pattern, bool matchCase, bool wholeWor
     for (NSString* f in files)
     {
         std::string text, error;
-        Core::TextEncoding enc;
+        Core::FileEncoding enc;
         GRSourceDocument* open = [self.editorArea documentForPath:f];
         if (open != nil) text = GRStd(open.text);
         else if (!Core::TextFile::Read(GRStd(f), text, enc, error)) continue;

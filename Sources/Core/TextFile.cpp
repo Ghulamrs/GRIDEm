@@ -106,32 +106,32 @@ namespace GRIDEm { namespace Core {
         return out;
     }
 
-    std::string TextFile::Decode(const std::string& bytes, TextEncoding& enc)
+    std::string TextFile::Decode(const std::string& bytes, FileEncoding& enc)
     {
         size_t n = bytes.size();
         const unsigned char* b = (const unsigned char*)bytes.data();
         if (n >= 3 && b[0] == 0xEF && b[1] == 0xBB && b[2] == 0xBF)
         {
-            enc = TextEncoding::Utf8Bom;
+            enc = FileEncoding::Utf8Bom;
             return bytes.substr(3);
         }
         if (n >= 2 && b[0] == 0xFF && b[1] == 0xFE)
         {
-            enc = TextEncoding::Utf16LE;
+            enc = FileEncoding::Utf16LE;
             return DecodeUtf16(bytes, 2, false);
         }
         if (n >= 2 && b[0] == 0xFE && b[1] == 0xFF)
         {
-            enc = TextEncoding::Utf16BE;
+            enc = FileEncoding::Utf16BE;
             return DecodeUtf16(bytes, 2, true);
         }
         // valid UTF-8 without BOM, else the single-byte code page
         if (IsValidUtf8(bytes))
         {
-            enc = TextEncoding::Utf8;
+            enc = FileEncoding::Utf8;
             return bytes;
         }
-        enc = TextEncoding::Windows1252;
+        enc = FileEncoding::Windows1252;
         std::string out;
         for (size_t i = 0; i < n; i++)
         {
@@ -148,16 +148,16 @@ namespace GRIDEm { namespace Core {
         else { out += (char)(unit & 0xFF); out += (char)(unit >> 8); }
     }
 
-    std::string TextFile::Encode(const std::string& text, TextEncoding enc)
+    std::string TextFile::Encode(const std::string& text, FileEncoding enc)
     {
         switch (enc)
         {
-        case TextEncoding::Utf8: return text;
-        case TextEncoding::Utf8Bom: return std::string("\xEF\xBB\xBF") + text;
-        case TextEncoding::Utf16LE:
-        case TextEncoding::Utf16BE:
+        case FileEncoding::Utf8: return text;
+        case FileEncoding::Utf8Bom: return std::string("\xEF\xBB\xBF") + text;
+        case FileEncoding::Utf16LE:
+        case FileEncoding::Utf16BE:
         {
-            bool be = enc == TextEncoding::Utf16BE;
+            bool be = enc == FileEncoding::Utf16BE;
             std::string out;
             PutUnit(out, 0xFEFF, be);
             size_t i = 0;
@@ -174,7 +174,7 @@ namespace GRIDEm { namespace Core {
             }
             return out;
         }
-        case TextEncoding::Windows1252:
+        case FileEncoding::Windows1252:
         {
             std::string out;
             size_t i = 0;
@@ -194,7 +194,7 @@ namespace GRIDEm { namespace Core {
         return text;
     }
 
-    bool TextFile::Read(const std::string& path, std::string& text, TextEncoding& enc, std::string& error)
+    bool TextFile::Read(const std::string& path, std::string& text, FileEncoding& enc, std::string& error)
     {
         std::string bytes;
         if (!Platform::Paths::ReadFile(path, bytes, error)) return false;
@@ -202,20 +202,20 @@ namespace GRIDEm { namespace Core {
         return true;
     }
 
-    bool TextFile::Write(const std::string& path, const std::string& text, TextEncoding enc, std::string& error)
+    bool TextFile::Write(const std::string& path, const std::string& text, FileEncoding enc, std::string& error)
     {
         return Platform::Paths::WriteFile(path, Encode(text, enc), error);
     }
 
-    std::string TextFile::EncodingLabel(TextEncoding enc)
+    std::string TextFile::EncodingLabel(FileEncoding enc)
     {
         switch (enc)
         {
-        case TextEncoding::Utf8:        return "UTF-8";
-        case TextEncoding::Utf8Bom:     return "UTF-8 BOM";
-        case TextEncoding::Utf16LE:     return "UTF-16 LE";
-        case TextEncoding::Utf16BE:     return "UTF-16 BE";
-        case TextEncoding::Windows1252: return "WINDOWS-1252";
+        case FileEncoding::Utf8:        return "UTF-8";
+        case FileEncoding::Utf8Bom:     return "UTF-8 BOM";
+        case FileEncoding::Utf16LE:     return "UTF-16 LE";
+        case FileEncoding::Utf16BE:     return "UTF-16 BE";
+        case FileEncoding::Windows1252: return "WINDOWS-1252";
         }
         return "UTF-8";
     }

@@ -472,6 +472,18 @@ namespace GRIDEm { namespace Services {
         }
     }
 
+    bool BuildEngine::NeedsCxxRuntime(const GrideProjectPtr& p, const std::vector<std::string>& sources) const
+    {
+        for (const std::string& src : sources)
+        {
+            Language lang = settings->DetectLanguage(src, p->Lang);
+            if (lang == Language::Assembly) continue;
+            RideTool tool = RideToolchain::Resolve(RideToolchain::FromWord(p->ToolchainFor(FolderOf(p, src))), lang);
+            if (tool == RideTool::Cpp11 || tool == RideTool::Shalimar || tool == RideTool::HostCxx) return true;
+        }
+        return false;
+    }
+
     // a Visual Studio project's own cl settings as the switches the tool's projectSettings name
     std::string BuildEngine::ProjectToolFlags(const GrideProjectPtr& p, const BuildConfigurationPtr& cfg,
                                               const ToolDefinitionPtr& d, std::vector<std::string>* unmapped)
@@ -846,6 +858,24 @@ namespace GRIDEm { namespace Services {
         Step ld = LinkerFor(tc, t, debug, native,
                             codeView || (debug && !emulated && !native && RideToolchain::DebugsWithCodeView(RideTool::C90, t, debug)),
                             clObjects && !emulated);
+        // Linux and macOS: the linker role is the C driver (cc), which leaves the C++ runtime out. C++ and
+        // Shalimar objects are linked by the target's host C++ driver (c++) with the same arguments, as cpp11
+        // and shalimar link their own programs on these hosts (new in GRIDEm: GRIDEd links only Windows and
+        // the C6747 itself)
+        if (!emulated && (t == Target::MacOS || t == Target::Linux) && ld.Role == "linker" && NeedsCxxRuntime(p, sources))
+        {
+            ToolDefinitionPtr cxx = ToolchainDefinitions::Current()->ToolFor(t, "hostCompiler");
+            std::string cxxPath = cxx ? tc->ResolveFor("hostCompiler", cxx->Exe) : std::string();
+            if (Paths::IsFile(cxxPath))
+            {
+                Say("[C++ objects: linked with " + cxx->Name + ", which brings the C++ runtime]");
+                ld.Path = cxxPath;
+                ld.Name = cxx->Name;
+            }
+            else
+                Report(Severity::Warning, std::string(), "the host C++ driver (" + std::string(cxx ? cxx->Exe : "c++") +
+                       ") was not found - C++ objects linked with " + ld.Name + " lack the C++ runtime");
+        }
         // tms6747 with the named linker gone: TI's stands in, and the console says so (RIDE's tiLinker)
         if (emulated && !native && !viaSetup && !Paths::IsFile(ld.Path))
         {

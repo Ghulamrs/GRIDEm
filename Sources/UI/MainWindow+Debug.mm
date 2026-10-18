@@ -23,6 +23,15 @@
 #include "../Services/GdbDebugger.h"
 #include "../Services/ShalimarSession.h"
 #include "../Services/RideToolchain.h"
+#import "Editor/Gutter.h"
+#import "Editor/Highlighter.h"
+#import "Panes/ClassNavigator.h"
+#import "Panes/FilesNavigator.h"
+#import "Panes/FindResultsView.h"
+#import "Panes/Inspector.h"
+#import "Panes/IssuesView.h"
+#import "Panes/TerminalView.h"
+#import "Panes/WorkspaceNavigator.h"
 
 using namespace GRIDEm;
 

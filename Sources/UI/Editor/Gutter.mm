@@ -5,6 +5,7 @@
 #import "CodeView.h"
 #import "SourceDocument.h"
 #import "../Theme.h"
+#import "Highlighter.h"
 #include <cmath>
 
 static const CGFloat kMarkArea = 16;       // breakpoints, the arrow, build marks

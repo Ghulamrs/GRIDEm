@@ -61,6 +61,7 @@ namespace GRIDEm { namespace Model {
     {
         if (IsCcs() && Ccs) return Ccs->ReportLines;
         if (IsVs() && Vs) return Vs->ReportLines;
+        if (IsRide()) return RideReportLines;
         return std::vector<std::string>();
     }
 
@@ -252,10 +253,135 @@ namespace GRIDEm { namespace Model {
         return p;
     }
 
+
+    // ---- RIDE's own .pro ----------------------------------------------------------
+    bool GrideProject::IsRideForm(const JsonPtr& j)
+    {
+        if (!j || !j->IsObject()) return false;
+        if (j->Has("gride") || j->Has("folders") || j->Has("formatVersion") || j->Has("sourceFiles")) return false;
+        if (j->GetObject("ccs")) return false;       // a CCS workspace project's .pro: not this form
+        return j->Has("groups") || j->Has("build") || j->Has("arch") || j->Has("toolchain");
+    }
+
+    // the language a RIDE project's files say most of: Shalimar, C++ or C
+    static Language LanguageOfFiles(const std::vector<ProjectFolderPtr>& folders)
+    {
+        int c = 0, cpp = 0, shl = 0;
+        for (const ProjectFolderPtr& f : folders)
+            for (const std::string& file : f->Files)
+            {
+                std::string ext = StringUtil::ToLower(Paths::Extension(file));
+                if (ext == ".shl" || ext == ".shm") shl++;
+                else if (ext == ".cpp" || ext == ".cc" || ext == ".cxx" || ext == ".c++") cpp++;
+                else if (ext == ".c") c++;
+            }
+        if (shl > 0 && shl >= cpp && shl >= c) return Language::Shalimar;
+        if (cpp > 0 && cpp >= c) return Language::Cpp11;
+        return Language::C90;
+    }
+
+    static bool TargetOfArch(const std::string& arch, Target& t)
+    {
+        std::string a = StringUtil::ToLower(arch);
+        if (a == "tms6747") { t = Target::C6747; return true; }
+        if (StringUtil::EndsWith(a, "-windows")) { t = Target::Windows; return true; }
+        if (StringUtil::EndsWith(a, "-linux")) { t = Target::Linux; return true; }
+        if (StringUtil::EndsWith(a, "-darwin")) { t = Target::MacOS; return true; }
+        return false;
+    }
+
+    GrideProjectPtr GrideProject::FromRide(const std::string& path, const JsonPtr& j)
+    {
+        GrideProjectPtr p = std::make_shared<GrideProject>();
+        p->FilePath = Paths::FullPath(PathUtil::Normalize(path));
+        p->Kind = "ride";
+        p->Template = "Program";
+        std::string dirName = Paths::FileName(Paths::DirectoryName(p->FilePath));
+        p->Name = j->GetString("name", dirName);
+        p->Toolchain = j->GetString("toolchain", "auto");
+
+        // groups: name -> [files], or name -> { "files": [...], "toolchain": word }
+        JsonPtr groups = j->GetObject("groups");
+        if (groups)
+            for (const std::string& name : groups->KeyNames())
+            {
+                ProjectFolderPtr f = std::make_shared<ProjectFolder>(name);
+                JsonPtr entry = groups->Get(name);
+                JsonPtr files = entry && entry->IsObject() ? entry->Get("files") : entry;
+                if (entry && entry->IsObject())
+                {
+                    std::string word = entry->GetString("toolchain", "auto");
+                    if (!StringUtil::IsNullOrWhiteSpace(word) && word != "auto") p->FolderToolchains.Set(name, word);
+                }
+                if (files && files->IsArray())
+                    for (const std::string& file : files->ToStringList())
+                    {
+                        std::string rel = PathUtil::Normalize(file);
+                        if (!rel.empty()) f->Files.push_back(rel);
+                    }
+                p->Folders.push_back(f);
+            }
+        if (p->Folders.empty()) p->Folders.push_back(std::make_shared<ProjectFolder>("Sources"));
+        p->Lang = LanguageOfFiles(p->Folders);
+
+        // the build: the groups compiled into the program and its arguments. No "build" entry at all
+        // builds Sources (RIDE's projects from before 2026-09-16); an empty one builds nothing.
+        std::vector<std::string> built;
+        JsonPtr build = j->GetObject("build");
+        if (build)
+        {
+            built = build->GetStringList("groups");
+            p->ProgramArgs = build->GetStringList("args");
+        }
+        else if (!j->Has("build")) built.push_back("Sources");
+        // a group the build does not take (RIDE's Input: sample.cpp) is shown and never compiled
+        std::vector<std::string> skipped;
+        for (const ProjectFolderPtr& f : p->Folders)
+        {
+            if (StringUtil::ContainsIgnoreCase(built, f->Name)) continue;
+            bool any = false;
+            for (const std::string& file : f->Files)
+                if (DefaultFolderFor(file) == "src")      // a source; headers and libraries are never compiled anyway
+                {
+                    p->ExcludedFiles.push_back(file);
+                    any = true;
+                }
+            if (any) skipped.push_back(f->Name);
+        }
+
+        // targets: the file's arch first (another Mac's or PC's host arch means this host), then the
+        // Mac and the C6747, so both are offered as RIDE offers them
+        Target first = Target::MacOS;
+        std::string arch = j->GetString("arch", "");
+        if (TargetOfArch(arch, first) && (first == Target::Windows || first == Target::Linux)) first = Target::MacOS;
+        p->Targets.push_back(first);
+        if (first != Target::MacOS) p->Targets.push_back(Target::MacOS);
+        if (first != Target::C6747) p->Targets.push_back(Target::C6747);
+        for (Target t : p->Targets)
+        {
+            p->Configurations.push_back(std::make_shared<BuildConfiguration>("Debug", t));
+            p->Configurations.push_back(std::make_shared<BuildConfiguration>("Release", t));
+        }
+        for (const std::string& inc : j->GetStringList("include"))
+            for (const BuildConfigurationPtr& c : p->Configurations) c->IncludeDirs.push_back(PathUtil::Normalize(inc));
+        p->EmulateOnly = j->GetBool("emulateOnly", false);
+        p->Options->FromJson(j->GetObject("options"));
+
+        std::string line = "RIDE project " + p->Name + ": read as RIDE writes it (" + std::to_string(p->Folders.size())
+                           + " groups), never rewritten; builds " + (built.empty() ? std::string("nothing")
+                                                                                  : StringUtil::Join(", ", built));
+        if (!skipped.empty()) line += "; not built: " + StringUtil::Join(", ", skipped);
+        p->RideReportLines.push_back(line);
+        p->IsReadOnly = true;
+        p->IsDirty = false;
+        return p;
+    }
+
     GrideProjectPtr GrideProject::Load(const std::string& path)
     {
         JsonPtr j = JsonParser::ParseFile(path);
         if (IsGrey(j)) return FromGrey(path, j);
+        if (IsRideForm(j)) return FromRide(path, j);
         GrideProjectPtr p = std::make_shared<GrideProject>();
         p->FilePath = Paths::FullPath(PathUtil::Normalize(path));
         p->raw = j;

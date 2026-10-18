@@ -158,6 +158,35 @@ def phase(target, kind, files):
     return add(oid('phase', target, kind), {'isa': kind, 'buildActionMask': '2147483647', 'files': files,
                                             'runOnlyForDeploymentPostprocessing': '0'})
 
+# the toolchain inside the app, as `make app` puts it there: Tools/build-toolchain.sh's programs into
+# Contents/MacOS (each signed ad hoc, so the app's own signature can be made), its runtimes into
+# Contents/Resources/lib, and Contents/lib for shalimar, which looks in ../lib beside itself
+TOOLCHAIN_SCRIPT = """TC="${SRCROOT}/build/toolchain"
+if [ ! -d "$TC/bin" ]; then
+  echo "warning: no toolchain in $TC - run Tools/build-toolchain.sh first; GRIDEm will not find cpp11, c90 ..."
+  exit 0
+fi
+MACOS="${TARGET_BUILD_DIR}/${EXECUTABLE_FOLDER_PATH}"
+RES="${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}"
+mkdir -p "$MACOS" "$RES/lib"
+for f in "$TC"/bin/*; do
+  if [ -f "$f" ] && [ -x "$f" ]; then
+    cp -f "$f" "$MACOS/"
+    codesign --force --sign - "$MACOS/$(basename "$f")" >/dev/null 2>&1 || true
+  fi
+done
+if [ -d "$TC/lib" ]; then cp -R "$TC/lib/." "$RES/lib/"; fi
+CONTENTS="$(dirname "$MACOS")"
+if [ ! -e "$CONTENTS/lib" ]; then ln -s Resources/lib "$CONTENTS/lib"; fi
+"""
+
+def script_phase(target, name, body):
+    return add(oid('phase', target, 'script', name), {
+        'isa': 'PBXShellScriptBuildPhase', 'buildActionMask': '2147483647', 'files': [],
+        'inputPaths': [], 'outputPaths': [], 'name': name, 'alwaysOutOfDate': '1',
+        'runOnlyForDeploymentPostprocessing': '0', 'shellPath': '/bin/sh', 'shellScript': body,
+        'showEnvVarsInLog': '0'})
+
 # ---- build settings ----------------------------------------------------------------------
 COMMON = {
     'ALWAYS_SEARCH_USER_PATHS': 'NO',
@@ -190,7 +219,7 @@ project_debug = dict(COMMON, **{'DEBUG_INFORMATION_FORMAT': 'dwarf', 'GCC_OPTIMI
 project_release = dict(COMMON, **{'DEBUG_INFORMATION_FORMAT': 'dwarf-with-dsym', 'GCC_OPTIMIZATION_LEVEL': 's'})
 
 lib_settings = {'PRODUCT_NAME': 'GRIDEm', 'EXECUTABLE_PREFIX': 'lib', 'SKIP_INSTALL': 'YES'}
-app_settings = {'PRODUCT_NAME': 'GRIDEm', 'INFOPLIST_FILE': plist,
+app_settings = {'PRODUCT_NAME': 'GRIDEm', 'ENABLE_USER_SCRIPT_SANDBOXING': 'NO', 'INFOPLIST_FILE': plist,
                 'PRODUCT_BUNDLE_IDENTIFIER': 'com.akhtar.GRIDEm', 'COMBINE_HIDPI_IMAGES': 'YES',
                 'LD_RUNPATH_SEARCH_PATHS': ['$(inherited)', '@executable_path/../Frameworks']}
 test_settings = {'PRODUCT_NAME': 'GRIDEmTests', 'PRODUCT_BUNDLE_IDENTIFIER': 'com.akhtar.GRIDEmTests',
@@ -230,7 +259,8 @@ objects[app_key] = {
     'buildConfigurationList': configs('GRIDEm', app_settings, app_settings),
     'buildPhases': [phase('app', 'PBXSourcesBuildPhase', build_files('app', ui_sources, 'src')),
                     phase('app', 'PBXFrameworksBuildPhase', app_frameworks),
-                    phase('app', 'PBXResourcesBuildPhase', build_files('app', resources + folders, 'res'))],
+                    phase('app', 'PBXResourcesBuildPhase', build_files('app', resources + folders, 'res')),
+                    script_phase('app', 'Copy the toolchain into the app', TOOLCHAIN_SCRIPT)],
     'buildRules': [], 'dependencies': [proxy_dependency('GRIDEm', lib_key, 'libGRIDEm')]}
 
 test_frameworks = [lib_link_tests] + build_files('tests', ['fw:CoreServices'], 'fw')
@@ -253,7 +283,7 @@ objects[project_key] = {
 
 # ---- write project.pbxproj -------------------------------------------------------------------
 ISA_ORDER = ['PBXBuildFile', 'PBXContainerItemProxy', 'PBXFileReference', 'PBXFrameworksBuildPhase',
-             'PBXGroup', 'PBXNativeTarget', 'PBXProject', 'PBXResourcesBuildPhase', 'PBXSourcesBuildPhase',
+             'PBXGroup', 'PBXNativeTarget', 'PBXProject', 'PBXResourcesBuildPhase', 'PBXShellScriptBuildPhase', 'PBXSourcesBuildPhase',
              'PBXTargetDependency', 'XCBuildConfiguration', 'XCConfigurationList']
 out = ['// !$*UTF8*$!', '{', '\tarchiveVersion = 1;', '\tclasses = {', '\t};', '\tobjectVersion = 56;',
        '\tobjects = {']

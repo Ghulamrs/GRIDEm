@@ -107,7 +107,7 @@ namespace GRIDEm { namespace Model {
         s->Dir = Paths::DirectoryName(s->Path);
         s->Name = Paths::FileNameWithoutExtension(s->Path);
         std::string text, error;
-        TextEncoding enc;
+        FileEncoding enc;
         if (!TextFile::Read(s->Path, text, enc, error)) throw std::runtime_error(error);
         std::vector<std::string> lines = StringUtil::SplitLines(text);
         static const std::regex projectLine(

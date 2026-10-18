@@ -347,7 +347,7 @@ namespace GRIDEm { namespace Model {
     XmlDocument XmlDocument::Load(const std::string& path)
     {
         std::string text, error;
-        Core::TextEncoding enc;
+        Core::FileEncoding enc;
         if (!Core::TextFile::Read(path, text, enc, error)) throw XmlException(error);
         return Parse(text);
     }

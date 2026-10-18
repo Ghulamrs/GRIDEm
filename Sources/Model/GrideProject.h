@@ -96,7 +96,7 @@ namespace GRIDEm { namespace Model {
         std::string Name;
         Core::Language Lang;
         std::string Template;
-        std::string Kind;              // "gride", "ccs7" or "vs"
+        std::string Kind;              // "gride", "ccs7", "vs" or "ride"
         bool IsReadOnly;
         bool IsDirty;
         CcsInfoPtr Ccs;
@@ -128,8 +128,12 @@ namespace GRIDEm { namespace Model {
         std::string ProjectDir() const;
         bool IsCcs() const { return Kind == "ccs7"; }
         bool IsVs() const { return Kind == "vs"; }
+        // RIDE's own .pro ("groups", "build"), as GRIDE 1.0 (RIDE 5.17) and RIDE 4.7 write it
+        bool IsRide() const { return Kind == "ride"; }
         // a project read from another IDE's files, shown and built but never written
-        bool IsImported() const { return IsCcs() || IsVs(); }
+        bool IsImported() const { return IsCcs() || IsVs() || IsRide(); }
+        // what was read from a RIDE .pro, for the Output pane
+        std::vector<std::string> RideReportLines;
         // the report lines of an imported project, for the Output pane
         std::vector<std::string> ImportReportLines() const;
 
@@ -162,6 +166,11 @@ namespace GRIDEm { namespace Model {
         // the Visual Studio solution a GRIDE 2.0 .pro stands for ("visualStudio"), else ""
         static std::string GreySolution(const std::string& path);
         static GrideProjectPtr FromGrey(const std::string& path, const Core::JsonPtr& j);
+        // RIDE's own .pro: none of GRIDE's keys (gride, folders, formatVersion, sourceFiles) - the test
+        // GRIDE 1.0 makes the other way round. Read here, never written back (new in GRIDEm: GRIDEd
+        // reads only GRIDE's forms)
+        static bool IsRideForm(const Core::JsonPtr& j);
+        static GrideProjectPtr FromRide(const std::string& path, const Core::JsonPtr& j);
         // throws std::runtime_error (Core::JsonException for a malformed file)
         static GrideProjectPtr Load(const std::string& path);
         Core::JsonPtr ToJson();

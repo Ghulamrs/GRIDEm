@@ -61,7 +61,11 @@ static NSPasteboardType const GRFilePathPasteboardType = @"org.gride.gridem.proj
 - (void)loadView
 {
     NSView* root = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 260, 400)];
-    _tree = [GRPaneUtil outlineWithColumns:@[ @"Name" ] widths:@[ @240 ] scroll:&_scroll];
+    // a local for the out-parameter: ARC refuses the address of an instance variable
+    // for an __autoreleasing write-back
+    NSScrollView* scroll = nil;
+    _tree = [GRPaneUtil outlineWithColumns:@[ @"Name" ] widths:@[ @240 ] scroll:&scroll];
+    _scroll = scroll;
     _tree.headerView = nil;
     _tree.style = NSTableViewStyleSourceList;
     _tree.dataSource = self;

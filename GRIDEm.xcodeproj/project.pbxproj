@@ -11,6 +11,10 @@
 			isa = PBXBuildFile;
 			fileRef = 9DF28BC60E767D625D48B693;
 		};
+		01D35D36B8735B1FBB736169 = {
+			isa = PBXBuildFile;
+			fileRef = 623653AED13960AA7776A652;
+		};
 		094AA540A2B57DB4AD7C5BBF = {
 			isa = PBXBuildFile;
 			fileRef = A30135076C7C2B3FF8FF84D4;
@@ -223,6 +227,10 @@
 			isa = PBXBuildFile;
 			fileRef = FB68B2D148B62936E6AA63B1;
 		};
+		80C7BD8BDFE6DCC2D58B27C6 = {
+			isa = PBXBuildFile;
+			fileRef = F9D96C078D10DC5B1F59CED1;
+		};
 		812A4B33B4CB69907C9168C0 = {
 			isa = PBXBuildFile;
 			fileRef = 16D9E0E1AEA70918A4508DC6;
@@ -254,6 +262,10 @@
 		9092D669418C6566744EF83A = {
 			isa = PBXBuildFile;
 			fileRef = 8A1C7D0664A9402EBE3F938C;
+		};
+		9357FC31D0A4443F44B4CCB1 = {
+			isa = PBXBuildFile;
+			fileRef = C0E9186A3733FA20904B59E4;
 		};
 		97AF99191A9F9795BC51A269 = {
 			isa = PBXBuildFile;
@@ -298,6 +310,10 @@
 		B1C4B80B1EB2427F9E4056B2 = {
 			isa = PBXBuildFile;
 			fileRef = BB04A853F2F177B2C5054876;
+		};
+		B42629AAFE7567B7B33E18D1 = {
+			isa = PBXBuildFile;
+			fileRef = 2EAB24466A66C62472A04843;
 		};
 		B4C9E1FCC109B1A9E9AA05DC = {
 			isa = PBXBuildFile;
@@ -662,10 +678,22 @@
 			path = WorkspaceNavigator.mm;
 			sourceTree = "<group>";
 		};
+		2D1B4A7191B74A6ED7C450F9 = {
+			isa = PBXFileReference;
+			lastKnownFileType = net.daringfireball.markdown;
+			path = README.md;
+			sourceTree = "<group>";
+		};
 		2E73C0ACB0AFED05EC15EAD3 = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.objcpp;
 			path = "MainWindow+Commands.mm";
+			sourceTree = "<group>";
+		};
+		2EAB24466A66C62472A04843 = {
+			isa = PBXFileReference;
+			lastKnownFileType = folder;
+			path = docs;
 			sourceTree = "<group>";
 		};
 		2F8A34809065C2D6A9570F33 = {
@@ -908,6 +936,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			path = VsProjectReader.h;
+			sourceTree = "<group>";
+		};
+		623653AED13960AA7776A652 = {
+			isa = PBXFileReference;
+			lastKnownFileType = folder;
+			path = samples;
 			sourceTree = "<group>";
 		};
 		623F256C5EAE1A175C3D1B8D = {
@@ -1360,6 +1394,12 @@
 			path = MemoryView.mm;
 			sourceTree = "<group>";
 		};
+		C0E9186A3733FA20904B59E4 = {
+			isa = PBXFileReference;
+			lastKnownFileType = folder;
+			path = lib;
+			sourceTree = "<group>";
+		};
 		C45B0739302A5ED168E61EEB = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
@@ -1664,6 +1704,12 @@
 			path = GrideSettings.h;
 			sourceTree = "<group>";
 		};
+		F9D96C078D10DC5B1F59CED1 = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.rtf;
+			path = Credits.rtf;
+			sourceTree = "<group>";
+		};
 		FB68B2D148B62936E6AA63B1 = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
@@ -1850,6 +1896,7 @@
 			isa = PBXGroup;
 			children = (
 				53A2B02721BC8B70D509C5DF,
+				2D1B4A7191B74A6ED7C450F9,
 				78293C213848B86FA7E3E3C8,
 				383D757645B5B01E5BF68DAC,
 				3184AC997C8F88876EF76A8C,
@@ -1920,7 +1967,11 @@
 		78293C213848B86FA7E3E3C8 = {
 			isa = PBXGroup;
 			children = (
+				F9D96C078D10DC5B1F59CED1,
 				B22926E02D1FAD2EB6A83FFD,
+				2EAB24466A66C62472A04843,
+				C0E9186A3733FA20904B59E4,
+				623653AED13960AA7776A652,
 				39FEB83718974F8AC24258AF,
 			);
 			path = Resources;
@@ -2072,6 +2123,7 @@
 				A0281A9F4390C9355999535F,
 				42D1D5DEA2E8573DBF31740A,
 				DBCB6FBE9174F32D57D467AD,
+				F385DEAF8213869F5D126F73,
 			);
 			buildRules = (
 			);
@@ -2135,10 +2187,33 @@
 			buildActionMask = 2147483647;
 			files = (
 				9BDA17486F58B1600A025433,
+				80C7BD8BDFE6DCC2D58B27C6,
+				9357FC31D0A4443F44B4CCB1,
+				B42629AAFE7567B7B33E18D1,
+				01D35D36B8735B1FBB736169,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		F385DEAF8213869F5D126F73 = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy the toolchain into the app";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "TC=\"${SRCROOT}/build/toolchain\"\nif [ ! -d \"$TC/bin\" ]; then\n  echo \"warning: no toolchain in $TC - run Tools/build-toolchain.sh first; GRIDEm will not find cpp11, c90 ...\"\n  exit 0\nfi\nMACOS=\"${TARGET_BUILD_DIR}/${EXECUTABLE_FOLDER_PATH}\"\nRES=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\"\nmkdir -p \"$MACOS\" \"$RES/lib\"\nfor f in \"$TC\"/bin/*; do\n  if [ -f \"$f\" ] && [ -x \"$f\" ]; then\n    cp -f \"$f\" \"$MACOS/\"\n    codesign --force --sign - \"$MACOS/$(basename \"$f\")\" >/dev/null 2>&1 || true\n  fi\ndone\nif [ -d \"$TC/lib\" ]; then cp -R \"$TC/lib/.\" \"$RES/lib/\"; fi\nCONTENTS=\"$(dirname \"$MACOS\")\"\nif [ ! -e \"$CONTENTS/lib\" ]; then ln -s Resources/lib \"$CONTENTS/lib\"; fi\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		89F0C40E92F7338E3D32122D = {
@@ -2283,6 +2358,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = GRIDEm;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = Resources/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.akhtar.GRIDEm;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -2335,6 +2411,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = GRIDEm;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = Resources/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.akhtar.GRIDEm;
 				COMBINE_HIDPI_IMAGES = YES;

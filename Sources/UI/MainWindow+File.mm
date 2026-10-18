@@ -30,6 +30,17 @@
 #include "../Model/VsSolution.h"
 #include "../Services/ProjectTemplates.h"
 #include "../Services/RideToolchain.h"
+#import "Editor/Gutter.h"
+#import "Editor/Highlighter.h"
+#import "Panes/BreakpointsNavigator.h"
+#import "Panes/DisassemblyView.h"
+#import "Panes/FindResultsView.h"
+#import "Panes/IssuesView.h"
+#import "Panes/MemoryView.h"
+#import "Panes/RegistersView.h"
+#import "Panes/StackView.h"
+#import "Panes/TerminalView.h"
+#import "Panes/VariablesView.h"
 #include <regex>
 
 using namespace GRIDEm;
@@ -1059,7 +1070,7 @@ static const char* const kMainPattern = "^\\s*((int|void)?\\s*|fun\\s*<[^>]*>\\s
     for (size_t i = 0; i < w->Projects.size(); i++)
     {
         Model::GrideProjectPtr p = w->Projects[i];
-        if (!p->IsImported()) continue;
+        if (!p->IsCcs() && !p->IsVs()) continue;      // a RIDE .pro is not refreshed from CCS or Visual Studio
         try
         {
             Model::GrideProjectPtr again;

@@ -165,6 +165,8 @@ namespace GRIDEm { namespace Services {
         static std::string RoleName(Core::Target t, const std::string& role, const std::string& tool);
         static Settings::ToolDefinitionPtr ProgramDefinition(RideTool tool, const std::string& program);
         void PartsOf(const Model::GrideProjectPtr& p, const std::vector<std::string>& sources, bool& cl, bool& other) const;
+        // a source compiled as C++ or Shalimar: the program needs the C++ runtime (new, delete, RTTI, exceptions)
+        bool NeedsCxxRuntime(const Model::GrideProjectPtr& p, const std::vector<std::string>& sources) const;
         static std::string ProjectToolFlags(const Model::GrideProjectPtr& p, const Model::BuildConfigurationPtr& cfg,
                                             const Settings::ToolDefinitionPtr& d, std::vector<std::string>* unmapped);
         Step AssemblerFor(const Settings::ToolchainSettingsPtr& tc, Core::Target t, bool debug, bool native, RideTool tool);

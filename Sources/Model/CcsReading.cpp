@@ -31,7 +31,7 @@ namespace GRIDEm { namespace Model {
     static std::string ReadText(const std::string& path)
     {
         std::string text, error;
-        TextEncoding enc;
+        FileEncoding enc;
         if (!TextFile::Read(path, text, enc, error)) return std::string();
         return text;
     }

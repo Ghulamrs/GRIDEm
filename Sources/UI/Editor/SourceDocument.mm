@@ -3,10 +3,10 @@
 // =============================================================================
 #import "SourceDocument.h"
 #import "../Common.h"
+#import "EditorArea.h"
 #include <string>
 
 using GRIDEm::Core::Language;
-using GRIDEm::Core::TextEncoding;
 using GRIDEm::Core::TextFile;
 
 NSString* const GRSourceDocumentStateNotification = @"GRSourceDocumentStateNotification";
@@ -37,7 +37,7 @@ static std::string Std(NSString* s) { return s.UTF8String ? std::string(s.UTF8St
     if (self)
     {
         storage = [[NSTextStorage alloc] init];
-        _fileEncoding = TextEncoding::Utf8;
+        _fileEncoding = GRIDEm::Core::FileEncoding::Utf8;
         _lineEnding = @"LF";        // GRIDEd's new files are CRLF; the Mac's are LF
         _language = Language::C90;
         _projectLanguage = Language::C90;
@@ -116,7 +116,7 @@ static std::string Std(NSString* s) { return s.UTF8String ? std::string(s.UTF8St
     (void)typeName;
     (void)outError;
     std::string bytes((const char*)data.bytes, (size_t)data.length);
-    TextEncoding enc = TextEncoding::Utf8;
+    GRIDEm::Core::FileEncoding enc = GRIDEm::Core::FileEncoding::Utf8;
     std::string text = TextFile::Decode(bytes, enc);
     self.fileEncoding = enc;
     // GRIDEd: CRLF when the file has it, or has no line end at all; the Mac: LF for the latter

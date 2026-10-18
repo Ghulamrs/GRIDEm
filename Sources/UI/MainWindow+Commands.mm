@@ -24,6 +24,20 @@
 #include "../Core/StringUtil.h"
 #include "../Platform/Paths.h"
 #include "../Services/RideToolchain.h"
+#import "Editor/Gutter.h"
+#import "Editor/Highlighter.h"
+#import "Panes/BreakpointsNavigator.h"
+#import "Panes/ClassNavigator.h"
+#import "Panes/DisassemblyView.h"
+#import "Panes/FilesNavigator.h"
+#import "Panes/FindResultsView.h"
+#import "Panes/Inspector.h"
+#import "Panes/IssuesView.h"
+#import "Panes/MemoryView.h"
+#import "Panes/OutputView.h"
+#import "Panes/RegistersView.h"
+#import "Panes/StackView.h"
+#import "Panes/TerminalView.h"
 
 using namespace GRIDEm;
 

@@ -96,7 +96,7 @@ namespace {
     NSImageSymbolConfiguration* cfg = [NSImageSymbolConfiguration configurationWithPointSize:pointSize
                                                                                       weight:NSFontWeightRegular];
     NSImage* sized = [img imageWithSymbolConfiguration:cfg];
-    sized.template = YES;
+    [sized setTemplate:YES];     // not sized.template: 'template' is a C++ keyword in Objective-C++
     return sized;
 }
 
@@ -154,7 +154,7 @@ namespace {
         [label drawAtPoint:NSMakePoint(NSMidX(body) - ls.width / 2, NSMidY(body) - ls.height / 2) withAttributes:attrs];
         return YES;
     }];
-    img.template = YES;
+    [img setTemplate:YES];
     return img;
 }
 
@@ -184,7 +184,7 @@ namespace {
         [arch stroke];
         return YES;
     }];
-    img.template = YES;
+    [img setTemplate:YES];
     return img;
 }
 

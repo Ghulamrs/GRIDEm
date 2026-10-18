@@ -109,7 +109,7 @@ namespace GRIDEm { namespace Services {
         if (!file.empty() && Paths::IsFile(file))
         {
             std::string text, error;
-            Core::TextEncoding enc;
+            Core::FileEncoding enc;
             if (Core::TextFile::Read(file, text, enc, error))
             {
                 lines = StringUtil::SplitLines(text);

@@ -368,7 +368,7 @@ using namespace GRIDEm;
     }
     std::string whole = _pending.substr(0, cut);
     _pending.erase(0, cut);
-    Core::TextEncoding enc;
+    Core::FileEncoding enc;
     std::string text = Core::TextFile::Decode(whole, enc);
     [_screen feed:GRNS(text)];
     if (!_redrawQueued)

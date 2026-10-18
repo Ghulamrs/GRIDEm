@@ -29,6 +29,8 @@
 #include "../Core/StringUtil.h"
 #include "../Platform/Paths.h"
 #include "../Settings/ToolchainDefinitions.h"
+#import "Editor/Gutter.h"
+#import "Editor/Highlighter.h"
 
 using namespace GRIDEm;
 
@@ -388,8 +390,9 @@ static NSArray<NSString*>* StepItems()
     tb.displayMode = NSToolbarDisplayModeIconOnly;
     tb.allowsUserCustomization = YES;
     tb.autosavesConfiguration = NO;
-    self.window.toolbar = tb;
 
+    // the views the toolbar items hold are made first: setting window.toolbar asks the delegate for
+    // every item at once, and a nil view in an item crashed the launch
     _schemeButton = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(0, 0, 300, 24) pullsDown:YES];
     _schemeButton.menu.delegate = self;
     _activityText = [NSTextField labelWithString:@"Ready"];
@@ -400,6 +403,8 @@ static NSArray<NSString*>* StepItems()
     _activitySpinner.style = NSProgressIndicatorStyleSpinning;
     _activitySpinner.controlSize = NSControlSizeSmall;
     _activitySpinner.displayedWhenStopped = NO;
+
+    self.window.toolbar = tb;
 }
 
 - (NSArray<NSToolbarItemIdentifier>*)toolbarDefaultItemIdentifiers:(NSToolbar*)toolbar

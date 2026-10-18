@@ -83,6 +83,38 @@ using namespace GRIDEm::Model;
     XCTAssertTrue(p->AllFiles().size() >= 70, @"%d files", (int)p->AllFiles().size());
 }
 
+// a RIDE .pro ("groups", "build") - GRIDE 1.0's and RIDE 4.7's compilerpp - shows its files
+// (regression: it opened with no folders and no targets)
+- (void)testRideProjectShowsItsGroups
+{
+    std::string dir = GRCopyFixture("samples/ride/compilerpp");
+    std::string pro = dir + "/compilerpp.pro";
+    std::string before = GRRead(pro);
+    GrideProjectPtr p = GrideProject::Load(pro);
+    XCTAssertTrue(p->IsRide());
+    XCTAssertTrue(p->IsReadOnly);
+    GRAssertEq(p->Name, "compilerpp");
+    GRAssertEq(p->Folders.size(), (size_t)3);
+    if (p->Folders.size() == 3)
+    {
+        GRAssertEq(p->Folders[0]->Name, "Sources");
+        GRAssertEq(p->Folders[0]->Files.size(), (size_t)16);
+        GRAssertEq(p->Folders[1]->Name, "Headers");
+        GRAssertEq(p->Folders[2]->Name, "Input");
+    }
+    XCTAssertTrue(p->Lang == Core::Language::Cpp11);
+    XCTAssertTrue(!p->Targets.empty());
+    XCTAssertTrue(p->SupportsTarget(Core::Target::C6747));
+    // the Input group is not in build.groups: shown, never compiled
+    XCTAssertTrue(p->IsExcluded(p->ToAbsolute("sample.cpp")));
+    XCTAssertFalse(p->IsExcluded(p->ToAbsolute("main.cpp")));
+    GRAssertEq(p->ProgramArgs.size(), (size_t)2);
+    // never written back in GRIDE's form
+    p->IsDirty = true;
+    p->Save();
+    GRAssertEq(GRRead(pro), before);
+}
+
 - (void)testSolutionOpensAsAWorkspace
 {
     std::string dir = GRCopyFixture("samples/cppparse");

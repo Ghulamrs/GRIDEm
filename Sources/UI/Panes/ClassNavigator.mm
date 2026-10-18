@@ -59,7 +59,7 @@ static void ScanFile(const std::string& path, std::vector<FoundSymbol>& out)
     static const std::regex mc("^\\s*#\\s*define\\s+([A-Za-z_]\\w*)");
 
     std::string text, error;
-    Core::TextEncoding enc;
+    Core::FileEncoding enc;
     if (!Core::TextFile::Read(path, text, enc, error)) return;
     std::vector<std::string> lines = Core::StringUtil::SplitLines(text);
     for (size_t i = 0; i < lines.size(); i++)
@@ -115,7 +115,11 @@ static NSString* SymbolFor(const std::string& icon)
 - (void)loadView
 {
     NSView* root = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 260, 400)];
-    _tree = [GRPaneUtil outlineWithColumns:@[ @"Symbol" ] widths:@[ @240 ] scroll:&_scroll];
+    // a local for the out-parameter: ARC refuses the address of an instance variable
+    // for an __autoreleasing write-back
+    NSScrollView* scroll = nil;
+    _tree = [GRPaneUtil outlineWithColumns:@[ @"Symbol" ] widths:@[ @240 ] scroll:&scroll];
+    _scroll = scroll;
     _tree.headerView = nil;
     _tree.style = NSTableViewStyleSourceList;
     _tree.dataSource = self;

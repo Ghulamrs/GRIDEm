@@ -11,19 +11,21 @@
 
 namespace GRIDEm { namespace Core {
 
-    enum class TextEncoding { Utf8, Utf8Bom, Utf16LE, Utf16BE, Windows1252 };
+    // FileEncoding, not TextEncoding: Apple's CoreServices declares a global TextEncoding,
+    // and the two names would collide in the Objective-C++ files
+    enum class FileEncoding { Utf8, Utf8Bom, Utf16LE, Utf16BE, Windows1252 };
 
     class TextFile
     {
     public:
-        static std::string Decode(const std::string& bytes, TextEncoding& enc);
-        static std::string Encode(const std::string& text, TextEncoding enc);
+        static std::string Decode(const std::string& bytes, FileEncoding& enc);
+        static std::string Encode(const std::string& text, FileEncoding enc);
         // false with error set when the file cannot be read
-        static bool Read(const std::string& path, std::string& text, TextEncoding& enc, std::string& error);
+        static bool Read(const std::string& path, std::string& text, FileEncoding& enc, std::string& error);
         // a BOM is written exactly when the encoding has one
-        static bool Write(const std::string& path, const std::string& text, TextEncoding enc, std::string& error);
+        static bool Write(const std::string& path, const std::string& text, FileEncoding enc, std::string& error);
         // "UTF-8", "UTF-8 BOM", "UTF-16 LE", "UTF-16 BE", "WINDOWS-1252"
-        static std::string EncodingLabel(TextEncoding enc);
+        static std::string EncodingLabel(FileEncoding enc);
         static bool IsValidUtf8(const std::string& bytes);
     };
 }}
