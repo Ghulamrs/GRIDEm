@@ -141,6 +141,10 @@ namespace GRIDEm { namespace Core {
         // Throws std::runtime_error when the file cannot be written.
         static void WriteFile(const std::string& path, const JsonPtr& v);
         static std::string Quote(const std::string& s);
+        // RIDE's layout (RIDE's Json::write): every entry of an array or object on a line of its own,
+        // two spaces a level, "\n" line ends, whole numbers without a fraction - and a "\n" at the end
+        static std::string WriteRide(const JsonPtr& v);
+        static void WriteRideFile(const std::string& path, const JsonPtr& v);   // throws std::runtime_error
         // a number as .NET's "R" format writes it: the shortest text that reads back
         static std::string FormatNumber(double d);
 
@@ -148,5 +152,6 @@ namespace GRIDEm { namespace Core {
         static void Indent(std::string& sb, int level);
         static bool IsScalarArray(const JsonValue& v);
         static void WriteValue(std::string& sb, const JsonPtr& v, int level);
+        static void WriteRideValue(std::string& sb, const JsonPtr& v, int level);
     };
 }}

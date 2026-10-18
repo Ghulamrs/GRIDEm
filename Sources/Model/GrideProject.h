@@ -131,8 +131,9 @@ namespace GRIDEm { namespace Model {
         bool IsVs() const { return Kind == "vs"; }
         // RIDE's own .pro ("groups", "build"), as GRIDE 1.0 (RIDE 5.17) and RIDE 4.7 write it
         bool IsRide() const { return Kind == "ride"; }
-        // a project read from another IDE's files, shown and built but never written
-        bool IsImported() const { return IsCcs() || IsVs() || IsRide(); }
+        // a project read from another IDE's files, shown and built but never written (a RIDE .pro is
+        // written back, in RIDE's own form - see Save)
+        bool IsImported() const { return IsCcs() || IsVs(); }
         // what was read from a RIDE .pro, for the Output pane
         std::vector<std::string> RideReportLines;
         // the report lines of an imported project, for the Output pane
@@ -168,8 +169,8 @@ namespace GRIDEm { namespace Model {
         static std::string GreySolution(const std::string& path);
         static GrideProjectPtr FromGrey(const std::string& path, const Core::JsonPtr& j);
         // RIDE's own .pro: none of GRIDE's keys (gride, folders, formatVersion, sourceFiles) - the test
-        // GRIDE 1.0 makes the other way round. Read here, never written back (new in GRIDEm: GRIDEd
-        // reads only GRIDE's forms)
+        // GRIDE 1.0 makes the other way round. Read here and written back as RIDE writes it (new in
+        // GRIDEm: GRIDEd reads only GRIDE's forms)
         static bool IsRideForm(const Core::JsonPtr& j);
         static GrideProjectPtr FromRide(const std::string& path, const Core::JsonPtr& j);
         // throws std::runtime_error (Core::JsonException for a malformed file)
@@ -186,5 +187,10 @@ namespace GRIDEm { namespace Model {
 
     private:
         Core::JsonPtr raw;             // the file as loaded, so unknown keys survive a save
+        // a RIDE .pro: what GRIDEm keeps of it, as RideFields gave it when read or last saved. Save
+        // writes only the entries that differ from it, so what GRIDEm did not change stays as RIDE wrote it
+        Core::JsonPtr rideRead;
+        Core::JsonPtr RideFields() const;
+        void SaveRide();
     };
 }}

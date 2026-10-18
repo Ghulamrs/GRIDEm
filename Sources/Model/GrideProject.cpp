@@ -368,13 +368,99 @@ namespace GRIDEm { namespace Model {
         p->Options->FromJson(j->GetObject("options"));
 
         std::string line = "RIDE project " + p->Name + ": read as RIDE writes it (" + std::to_string(p->Folders.size())
-                           + " groups), never rewritten; builds " + (built.empty() ? std::string("nothing")
+                           + " groups), saved back the same way; builds " + (built.empty() ? std::string("nothing")
                                                                                   : StringUtil::Join(", ", built));
         if (!skipped.empty()) line += "; not built: " + StringUtil::Join(", ", skipped);
         p->RideReportLines.push_back(line);
-        p->IsReadOnly = true;
+        p->raw = j;
+        p->rideRead = p->RideFields();
+        p->IsReadOnly = false;
         p->IsDirty = false;
         return p;
+    }
+
+    // what GRIDEm keeps of a RIDE .pro, in RIDE's words. "buildGroups" and "buildArgs" stand for the
+    // build entry's groups and args. A group is built when one of its sources is not excluded; a group
+    // with no sources keeps what the file said.
+    JsonPtr GrideProject::RideFields() const
+    {
+        JsonPtr f = JsonValue::MakeObject();
+        f->SetString("name", Name);
+        f->SetString("toolchain", Toolchain);
+        JsonPtr groups = JsonValue::MakeObject();
+        for (const ProjectFolderPtr& g : Folders)
+        {
+            std::string word;
+            if (FolderToolchains.Find(g->Name, word) && word != "auto")
+            {
+                JsonPtr named = JsonValue::MakeObject();
+                named->SetList("files", g->Files);
+                named->SetString("toolchain", word);
+                groups->SetValue(g->Name, named);
+            }
+            else groups->SetList(g->Name, g->Files);
+        }
+        f->SetValue("groups", groups);
+        f->SetList("include", Configurations.empty() ? std::vector<std::string>() : Configurations[0]->IncludeDirs);
+        f->SetBool("emulateOnly", EmulateOnly);
+        f->SetValue("options", Options->ToJson());
+
+        std::vector<std::string> said;
+        JsonPtr build = raw ? raw->GetObject("build") : JsonPtr();
+        if (build) said = build->GetStringList("groups");
+        else if (!raw || !raw->Has("build")) said.push_back("Sources");
+        std::vector<std::string> built;
+        for (const ProjectFolderPtr& g : Folders)
+        {
+            bool sources = false, any = false;
+            for (const std::string& file : g->Files)
+                if (DefaultFolderFor(file) == "src")
+                {
+                    sources = true;
+                    if (!StringUtil::ContainsIgnoreCase(ExcludedFiles, file)) any = true;
+                }
+            if (sources ? any : StringUtil::ContainsIgnoreCase(said, g->Name)) built.push_back(g->Name);
+        }
+        f->SetList("buildGroups", built);
+        f->SetList("buildArgs", ProgramArgs);
+        return f;
+    }
+
+    static bool SameJson(const JsonPtr& a, const JsonPtr& b)
+    {
+        return JsonWriter::WriteRide(a ? a : JsonValue::MakeNull()) == JsonWriter::WriteRide(b ? b : JsonValue::MakeNull());
+    }
+
+    void GrideProject::SaveRide()
+    {
+        JsonPtr out = raw ? raw->Clone() : JsonValue::MakeObject();
+        JsonPtr now = RideFields();
+        JsonPtr was = rideRead ? rideRead : JsonValue::MakeObject();
+        const char* const keys[] = { "name", "toolchain", "groups", "include", "emulateOnly", "options" };
+        for (const char* k : keys)
+        {
+            JsonPtr v = now->Get(k);
+            if (SameJson(v, was->Get(k))) continue;               // as read: the file keeps its own
+            std::string key = k;
+            bool says = !(key == "include" && v->ToStringList().empty()) && !(key == "emulateOnly" && !v->AsBool())
+                        && !(key == "options" && Options->Empty());
+            if (says) out->SetValue(key, v);
+            else out->Remove(key);
+        }
+        if (!SameJson(now->Get("buildGroups"), was->Get("buildGroups")) || !SameJson(now->Get("buildArgs"), was->Get("buildArgs")))
+        {
+            JsonPtr old = out->GetObject("build");
+            JsonPtr build = old ? old->Clone() : JsonValue::MakeObject();
+            if (!build->Has("target")) build->SetString("target", Name);
+            build->SetList("groups", now->GetStringList("buildGroups"));
+            if (!ProgramArgs.empty()) build->SetList("args", ProgramArgs);
+            else build->Remove("args");
+            out->SetValue("build", build);
+        }
+        JsonWriter::WriteRideFile(FilePath, out);
+        raw = out;
+        rideRead = now;
+        IsDirty = false;
     }
 
     GrideProjectPtr GrideProject::Load(const std::string& path)
@@ -470,6 +556,7 @@ namespace GRIDEm { namespace Model {
     {
         if (IsReadOnly) return;
         if (BeforeWrite && !BeforeWrite(FilePath)) return;
+        if (IsRide()) { SaveRide(); return; }
         JsonPtr j = ToJson();
         JsonWriter::WriteFile(FilePath, j);
         raw = j;

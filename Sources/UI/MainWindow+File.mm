@@ -303,14 +303,14 @@ static const char* const kMainPattern = "^\\s*((int|void)?\\s*|fun\\s*<[^>]*>\\s
     [self updateScheme];
 }
 
-// RIDE's Messages lines for every imported project of the workspace
+// RIDE's Messages lines for every imported project of the workspace, and for every RIDE .pro
 - (void)reportImportedProjects
 {
     Model::WorkspacePtr w = self.session.workspace;
     if (!w) return;
     [self applyCcsStates];
     for (const Model::GrideProjectPtr& p : w->Projects)
-        if (p->IsImported())
+        if (p->IsImported() || p->IsRide())
             for (const std::string& line : p->ImportReportLines()) [self.outputView append:GRNS(line) source:@"Tools"];
 }
 
@@ -994,7 +994,7 @@ static const char* const kMainPattern = "^\\s*((int|void)?\\s*|fun\\s*<[^>]*>\\s
             if (!w->AddProject(p)) { GRShowMessage(me.window, @"GRIDEm", @"That project is already in the workspace."); return; }
             [me saveWorkspace];
             [me refreshProjectViews];
-            if (p->IsImported()) [me reportImportedProjects];
+            if (p->IsImported() || p->IsRide()) [me reportImportedProjects];
         }
         catch (const std::exception& ex) { GRShowMessage(me.window, @"Add Project", GRNS(ex.what())); }
     }];

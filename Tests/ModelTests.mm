@@ -94,7 +94,8 @@ using namespace GRIDEm::Model;
     std::string before = GRRead(pro);
     GrideProjectPtr p = GrideProject::Load(pro);
     XCTAssertTrue(p->IsRide());
-    XCTAssertTrue(p->IsReadOnly);
+    XCTAssertFalse(p->IsReadOnly);
+    XCTAssertFalse(p->IsImported());
     GRAssertEq(p->Name, "compilerpp");
     GRAssertEq(p->Folders.size(), (size_t)3);
     if (p->Folders.size() == 3)
@@ -111,10 +112,61 @@ using namespace GRIDEm::Model;
     XCTAssertTrue(p->IsExcluded(p->ToAbsolute("sample.cpp")));
     XCTAssertFalse(p->IsExcluded(p->ToAbsolute("main.cpp")));
     GRAssertEq(p->ProgramArgs.size(), (size_t)2);
-    // never written back in GRIDE's form
+    // saved with nothing changed: the same bytes RIDE wrote
     p->IsDirty = true;
     p->Save();
     GRAssertEq(GRRead(pro), before);
+}
+
+// a RIDE .pro changed in GRIDEm is written back in RIDE's own form: what changed is changed, what
+// GRIDEm does not know (build.target, arch, open ...) stays where RIDE put it, and RIDE reads it
+// (regression: the project opened locked, and Save would have written GRIDE's form over it)
+- (void)testRideProjectSavesInRideForm
+{
+    std::string dir = GRTempDir();
+    std::string pro = dir + "/SampleExt.pro";
+    GRWrite(pro, "{\n  \"name\": \"SampleExt\",\n  \"toolchain\": \"auto\",\n  \"arch\": \"arm64-darwin\",\n"
+                 "  \"groups\": {\n    \"Sources\": [\n      \"Math.cpp\"\n    ],\n    \"Headers\": [\n      \"Matrix.h\"\n    ]\n  },\n"
+                 "  \"open\": \"Vector.h\",\n  \"indent\": 4,\n"
+                 "  \"build\": {\n    \"target\": \"SampleExt\",\n    \"groups\": [\n      \"Sources\"\n    ]\n  }\n}\n");
+    GrideProjectPtr p = GrideProject::Load(pro);
+    XCTAssertTrue(p->IsRide());
+    XCTAssertFalse(p->IsReadOnly);
+
+    XCTAssertTrue(p->AddFile(p->ToAbsolute("Vector.h"), "Headers"));
+    XCTAssertTrue(p->AddFile(p->ToAbsolute("Quat.cpp"), "Sources"));
+    p->ProgramArgs.push_back("-v");
+    p->EmulateOnly = true;
+    p->SetFolderToolchain("Sources", "cpp11");
+    p->IsDirty = true;
+    p->Save();
+
+    std::string text = GRRead(pro);
+    XCTAssertTrue(text.find("\r") == std::string::npos);                // RIDE's "\n", never CRLF
+    XCTAssertTrue(text.find("\"gride\"") == std::string::npos);         // never GRIDE's form
+    XCTAssertTrue(text.find("\"folders\"") == std::string::npos);
+    XCTAssertTrue(text.find("  \"indent\": 4,\n") != std::string::npos);   // kept, whole number as RIDE writes it
+    XCTAssertTrue(text.find("\"open\": \"Vector.h\"") != std::string::npos);
+    XCTAssertTrue(text.find("\"arch\": \"arm64-darwin\"") != std::string::npos);
+    XCTAssertTrue(text.find("\"target\": \"SampleExt\"") != std::string::npos);
+    XCTAssertTrue(text.find("    \"Headers\": [\n      \"Matrix.h\",\n      \"Vector.h\"\n    ]") != std::string::npos);
+    XCTAssertTrue(text.size() > 0 && text[text.size() - 1] == '\n');
+    XCTAssertFalse(p->IsDirty);
+
+    GrideProjectPtr back = GrideProject::Load(pro);
+    XCTAssertTrue(back->IsRide());
+    GRAssertEq(back->Folders.size(), (size_t)2);
+    XCTAssertTrue(back->ContainsFile(back->ToAbsolute("Vector.h")));
+    XCTAssertTrue(back->ContainsFile(back->ToAbsolute("Quat.cpp")));
+    XCTAssertFalse(back->IsExcluded(back->ToAbsolute("Quat.cpp")));
+    GRAssertEq(back->ProgramArgs.size(), (size_t)1);
+    XCTAssertTrue(back->EmulateOnly);
+    GRAssertEq(back->ToolchainFor("Sources"), "cpp11");
+
+    // saved again with nothing changed: the same bytes
+    back->IsDirty = true;
+    back->Save();
+    GRAssertEq(GRRead(pro), text);
 }
 
 // an imported project's lock is on its structure, never on the text of its files: a Visual Studio

@@ -641,4 +641,70 @@ namespace GRIDEm { namespace Core {
         }
         }
     }
+
+    // ---- RIDE's layout ----------------------------------------------------------------
+    std::string JsonWriter::WriteRide(const JsonPtr& v)
+    {
+        std::string sb;
+        WriteRideValue(sb, v, 0);
+        return sb + "\n";
+    }
+
+    void JsonWriter::WriteRideFile(const std::string& path, const JsonPtr& v)
+    {
+        std::string error;
+        if (!Platform::Paths::WriteFileAtomically(path, WriteRide(v), error)) throw std::runtime_error(error);
+    }
+
+    void JsonWriter::WriteRideValue(std::string& sb, const JsonPtr& v, int level)
+    {
+        if (!v) { sb += "null"; return; }
+        switch (v->kind)
+        {
+        case JsonKind::Null:   sb += "null"; break;
+        case JsonKind::Bool:   sb += v->flag ? "true" : "false"; break;
+        case JsonKind::String: sb += Quote(v->str); break;
+        case JsonKind::Number:
+        {
+            char buf[32];
+            if (v->num == (double)(long)v->num) std::snprintf(buf, sizeof buf, "%ld", (long)v->num);
+            else std::snprintf(buf, sizeof buf, "%g", v->num);
+            sb += buf;
+            break;
+        }
+        case JsonKind::Array:
+        {
+            if (v->items.empty()) { sb += "[]"; break; }
+            sb += "[\n";
+            for (size_t i = 0; i < v->items.size(); i++)
+            {
+                Indent(sb, level + 1);
+                WriteRideValue(sb, v->items[i], level + 1);
+                if (i < v->items.size() - 1) sb += ',';
+                sb += "\n";
+            }
+            Indent(sb, level);
+            sb += ']';
+            break;
+        }
+        case JsonKind::Object:
+        {
+            if (v->order.empty()) { sb += "{}"; break; }
+            sb += "{\n";
+            for (size_t i = 0; i < v->order.size(); i++)
+            {
+                const std::string& k = v->order[i];
+                Indent(sb, level + 1);
+                sb += Quote(k);
+                sb += ": ";
+                WriteRideValue(sb, v->map.find(k)->second, level + 1);
+                if (i < v->order.size() - 1) sb += ',';
+                sb += "\n";
+            }
+            Indent(sb, level);
+            sb += '}';
+            break;
+        }
+        }
+    }
 }}
