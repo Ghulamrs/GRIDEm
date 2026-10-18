@@ -105,10 +105,8 @@ static std::vector<std::string> SplitSemi(NSString* v)
 
 + (NSString*)readOnlyNote:(const Model::GrideProjectPtr&)p
 {
-    if (p->IsVs()) return @"(read-only Visual Studio project: the compiler, the compiler per folder and the arguments "
-                          "can be changed - kept in the workspace)";
-    if (p->IsCcs()) return @"(read-only CCS project: the compiler, the compiler per folder, the arguments and Emulate "
-                           "only can be changed - kept in the workspace)";
+    if (p->IsVs()) return @"(Visual Studio project: its files are never written - changes here are kept in the workspace)";
+    if (p->IsCcs()) return @"(CCS project: its files are never written - changes here are kept in GRIDEm)";
     return @"(read-only project: the compiler, the compiler per folder and the arguments can be changed - kept in the workspace)";
 }
 
@@ -145,7 +143,7 @@ static std::vector<std::string> SplitSemi(NSString* v)
         [self addPage:GRProjectPageGeneral view:[self makeGeneral]];
         [self addPage:GRProjectPageConfigurations view:[self makeConfigurations:config target:target]];
         [self addPage:GRProjectPageCompiler view:[self makeCompiler]];
-        _options = [[GRCompilerOptionsView alloc] initWithStore:p->Options config:config target:target readOnly:p->IsReadOnly];
+        _options = [[GRCompilerOptionsView alloc] initWithStore:p->Options config:config target:target readOnly:!p->SettingsEditable()];
         [self addPage:GRProjectPageCompilerOptions view:_options];
         [self addPage:GRProjectPageDebugging view:[self makeDebugging]];
 
@@ -192,7 +190,7 @@ static std::vector<std::string> SplitSemi(NSString* v)
         [checks addObject:@(on)];
     }
     [_targets setItems:titles checked:checks];
-    _targets.enabled = !_project->IsReadOnly;
+    _targets.enabled = _project->SettingsEditable();
     [form addRow:@"" view:_targets.view];
     [form addSection:@"Depends on (built first)"];
     _deps = [[GRCheckList alloc] initWithHeight:140];
@@ -207,7 +205,7 @@ static std::vector<std::string> SplitSemi(NSString* v)
             [on addObject:@(d)];
         }
     [_deps setItems:names checked:on];
-    _deps.enabled = !_project->IsReadOnly;
+    _deps.enabled = _project->SettingsEditable();
     [form addRow:@"" view:_deps.view];
     return form.view;
 }
@@ -250,7 +248,7 @@ static std::vector<std::string> SplitSemi(NSString* v)
     _libDirs = [form addMono:@"Library Directories" value:@""];
     [form addNote:@"Separate with ';'."];
     _linkFlags = [form addMono:@"Additional Options" value:@""];
-    if (_project->IsReadOnly)
+    if (!_project->SettingsEditable())
         for (NSControl* c in @[_outDir, _objDir, _outputName, _defines, _includes, _optimise, _compileFlags,
                                _linkerCmd, _libs, _libDirs, _linkFlags])
             c.enabled = NO;
@@ -293,7 +291,7 @@ static std::vector<std::string> SplitSemi(NSString* v)
 // ---- the configuration shown -----------------------------------------------------
 - (void)capture
 {
-    if (!_shown || _project->IsReadOnly) return;
+    if (!_shown || !_project->SettingsEditable()) return;
     _shown->OutDir = GRStd(_outDir.stringValue);
     _shown->ObjDir = GRStd(_objDir.stringValue);
     _shown->OutputName = GRStd(_outputName.stringValue);
@@ -348,7 +346,7 @@ static std::vector<std::string> SplitSemi(NSString* v)
 {
     [self capture];
     Model::GrideProjectPtr p = _project;
-    if (!p->IsReadOnly)
+    if (p->SettingsEditable())
     {
         p->Configurations = _clones;
         p->Targets.clear();

@@ -338,6 +338,8 @@ static const char* const kMainPattern = "^\\s*((int|void)?\\s*|fun\\s*<[^>]*>\\s
                 if (!p->FolderToolchains.Find(folder, have) && Services::RideToolchain::FromWord(word) != Services::RideTool::Auto)
                     p->FolderToolchains.Set(folder, word);
             }
+        // the Property Pages' changes, unless the workspace's entry has its own
+        if (!Model::Workspace::ImportedSettingsChanged(p)) p->ApplyImportedSettings(state->GetObject("settings"));
     }
 }
 
@@ -355,6 +357,8 @@ static const char* const kMainPattern = "^\\s*((int|void)?\\s*|fun\\s*<[^>]*>\\s
         for (const std::pair<std::string, std::string>& kv : p->FolderToolchains.Items()) ft->SetString(kv.first, kv.second);
         state->SetValue("folderToolchains", ft);
     }
+    Core::JsonPtr settings = Model::Workspace::ImportedSettingsChanged(p);
+    if (settings) state->SetValue("settings", settings);
     self.session.settings->RememberCcsState(p->ProjectDir(), state);
     [self.session saveSettings];
 }

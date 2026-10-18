@@ -157,6 +157,7 @@ namespace GRIDEm { namespace Model {
             + (!others.empty() ? "; not built here: " + StringUtil::Join(", ", others) : std::string()));
         for (const std::string& note : r->Notes) p->Vs->ReportLines.push_back("VS project " + r->Name + ": not mapped - " + note);
         p->IsDirty = false;
+        p->ImportedBaseline = p->ImportedSettings();      // what the file says, before the workspace's own
         return p;
     }
 }}

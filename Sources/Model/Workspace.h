@@ -132,6 +132,9 @@ namespace GRIDEm { namespace Model {
         // what GRIDE keeps for an imported project, in its entry: each field only when it says something
         static void WriteImportedState(const Core::JsonPtr& e, const GrideProjectPtr& p);
         static void ReadImportedState(const Core::JsonPtr& e, const GrideProjectPtr& p);
+        // the Property Pages' changes to an imported project: the entries of ImportedSettings that differ
+        // from what its files say (ImportedBaseline); nullptr when there are none
+        static Core::JsonPtr ImportedSettingsChanged(const GrideProjectPtr& p);
 
     private:
         bool hasSavedText;

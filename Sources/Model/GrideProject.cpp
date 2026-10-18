@@ -550,6 +550,43 @@ namespace GRIDEm { namespace Model {
         return j;
     }
 
+    JsonPtr GrideProject::ImportedSettings() const
+    {
+        JsonPtr s = JsonValue::MakeObject();
+        std::vector<std::string> t;
+        for (Target x : Targets) t.push_back(TargetInfo::Name(x));
+        s->SetList("targets", t);
+        s->SetList("dependsOn", DependsOn);
+        JsonPtr cfgs = JsonValue::MakeObject();
+        for (const BuildConfigurationPtr& c : Configurations) cfgs->SetValue(c->Key(), c->ToJson());
+        s->SetValue("configurations", cfgs);
+        s->SetValue("options", Options->ToJson());
+        return s;
+    }
+
+    void GrideProject::ApplyImportedSettings(const JsonPtr& s)
+    {
+        if (!s || !s->IsObject()) return;
+        if (s->Has("targets"))
+        {
+            Targets.clear();
+            for (const std::string& name : s->GetStringList("targets")) Targets.push_back(TargetInfo::Parse(name));
+        }
+        if (s->Has("dependsOn")) DependsOn = s->GetStringList("dependsOn");
+        JsonPtr cfgs = s->GetObject("configurations");
+        if (cfgs)
+            for (const std::string& key : cfgs->KeyNames())
+            {
+                BuildConfigurationPtr c = BuildConfiguration::FromJson(key, cfgs->Get(key));
+                if (!c) continue;
+                bool replaced = false;
+                for (BuildConfigurationPtr& x : Configurations)
+                    if (StringUtil::EqualsIgnoreCase(x->Key(), key)) { x = c; replaced = true; break; }
+                if (!replaced) Configurations.push_back(c);
+            }
+        if (s->Has("options")) Options->FromJson(s->GetObject("options"));
+    }
+
     std::function<bool(const std::string& path)> GrideProject::BeforeWrite;
 
     void GrideProject::Save()

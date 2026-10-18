@@ -255,6 +255,38 @@ using namespace GRIDEm::Model;
     XCTAssertTrue(p->IsDirty);
 }
 
+// a Visual Studio project's settings changed in the Property Pages are kept in the workspace's entry
+// - only what differs from its files - and come back on the next open; its own files are never written
+- (void)testImportedProjectSettingsKeptInWorkspace
+{
+    std::string dir = GRCopyFixture("samples/cppparse");
+    std::string grws = dir + "/cppparse.grws";
+    WorkspacePtr w = Workspace::Load(grws, std::string());
+    GrideProjectPtr p = w->Projects[0];
+    XCTAssertTrue(p->IsVs() && p->IsReadOnly && p->SettingsEditable());
+    XCTAssertFalse(Workspace::ImportedSettingsChanged(p));       // nothing changed yet
+    std::string vcxproj = GRRead(p->FilePath);
+    XCTAssertFalse(p->Configurations.empty());
+    if (p->Configurations.empty()) return;
+    std::string key = p->Configurations[0]->Key();
+    p->Configurations[0]->Defines.push_back("GRIDEM_TEST=1");
+    p->Save();                                                    // the .vcxproj is never written
+    w->IsDirty = true;
+    w->Save();
+    GRAssertEq(GRRead(p->FilePath), vcxproj);
+    std::string text = GRRead(grws);
+    XCTAssertTrue(text.find("GRIDEM_TEST=1") != std::string::npos);
+    XCTAssertTrue(text.find("\"targets\"") == std::string::npos);   // unchanged entries are not kept
+
+    WorkspacePtr again = Workspace::Load(grws, std::string());
+    GrideProjectPtr q = again->Projects[0];
+    bool found = false;
+    for (const BuildConfigurationPtr& c : q->Configurations)
+        if (c->Key() == key)
+            for (const std::string& d : c->Defines) if (d == "GRIDEM_TEST=1") found = true;
+    XCTAssertTrue(found);
+}
+
 - (void)testSolutionOpensAsAWorkspace
 {
     std::string dir = GRCopyFixture("samples/cppparse");

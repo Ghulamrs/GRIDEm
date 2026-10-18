@@ -168,6 +168,7 @@ namespace GRIDEm { namespace Model {
             p->Ccs->ReportLines.push_back("CCS project " + r->Name + ": RIDE would refuse it - " + refusal
                                           + "; read all the same, the build stands on what was read");
         p->IsDirty = false;
+        p->ImportedBaseline = p->ImportedSettings();      // what the file says, before the workspace's own
         return p;
     }
 }}

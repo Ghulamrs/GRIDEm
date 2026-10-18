@@ -378,6 +378,20 @@ namespace GRIDEm { namespace Model {
         }
         if (!p->ProgramArgs.empty()) e->SetList("programArgs", p->ProgramArgs);
         if (p->EmulateOnly) e->SetBool("emulateOnly", true);
+        JsonPtr settings = ImportedSettingsChanged(p);
+        if (settings) e->SetValue("settings", settings);
+    }
+
+    JsonPtr Workspace::ImportedSettingsChanged(const GrideProjectPtr& p)
+    {
+        JsonPtr now = p->ImportedSettings();
+        JsonPtr settings = JsonValue::MakeObject();
+        for (const std::string& k : now->KeyNames())
+        {
+            JsonPtr was = p->ImportedBaseline ? p->ImportedBaseline->Get(k) : JsonPtr();
+            if (!was || JsonWriter::Write(was) != JsonWriter::Write(now->Get(k))) settings->SetValue(k, now->Get(k));
+        }
+        return settings->KeyNames().empty() ? JsonPtr() : settings;
     }
 
     void Workspace::ReadImportedState(const JsonPtr& e, const GrideProjectPtr& p)
@@ -393,6 +407,7 @@ namespace GRIDEm { namespace Model {
             }
         if (e->Has("programArgs")) p->ProgramArgs = e->GetStringList("programArgs");
         p->EmulateOnly = e->GetBool("emulateOnly", false);
+        p->ApplyImportedSettings(e->GetObject("settings"));
         p->IsDirty = false;
     }
     // ---- DiskLocks ----------------------------------------------------------------

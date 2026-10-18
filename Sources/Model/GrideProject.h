@@ -134,6 +134,15 @@ namespace GRIDEm { namespace Model {
         // a project read from another IDE's files, shown and built but never written (a RIDE .pro is
         // written back, in RIDE's own form - see Save)
         bool IsImported() const { return IsCcs() || IsVs(); }
+        // the Property Pages may change it: a writable project, or an imported one - whose changes are
+        // kept in the workspace (Workspace::WriteImportedState), never in the other IDE's files
+        bool SettingsEditable() const { return !IsReadOnly || IsImported(); }
+        // an imported project's settings the Property Pages change: "targets", "dependsOn",
+        // "configurations" (key -> BuildConfiguration::ToJson) and "options"
+        Core::JsonPtr ImportedSettings() const;
+        void ApplyImportedSettings(const Core::JsonPtr& s);     // the entries s has
+        // ImportedSettings as the reader left them: the workspace keeps only what differs
+        Core::JsonPtr ImportedBaseline;
         // what was read from a RIDE .pro, for the Output pane
         std::vector<std::string> RideReportLines;
         // the report lines of an imported project, for the Output pane
