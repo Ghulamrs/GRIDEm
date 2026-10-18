@@ -224,6 +224,11 @@ app_settings = {'PRODUCT_NAME': 'GRIDEm', 'ENABLE_USER_SCRIPT_SANDBOXING': 'NO',
                 'LD_RUNPATH_SEARCH_PATHS': ['$(inherited)', '@executable_path/../Frameworks']}
 test_settings = {'PRODUCT_NAME': 'GRIDEmTests', 'PRODUCT_BUNDLE_IDENTIFIER': 'com.akhtar.GRIDEmTests',
                  'GENERATE_INFOPLIST_FILE': 'YES',
+                 # XCTest's own macros are not -pedantic clean: XCTAssertTrue(x) with no message passes
+                 # nothing to the '...' (a C++20 extension), and XCTAssertEqual and its kin are GNU
+                 # statement expressions. The warnings come from XCTest, not from GRIDEm's code
+                 'WARNING_CFLAGS': ['$(inherited)', '-Wno-c++20-extensions', '-Wno-gnu-zero-variadic-macro-arguments',
+                                    '-Wno-gnu-statement-expression', '-Wno-gnu-statement-expression-from-macro-expansion'],
                  'GCC_PREPROCESSOR_DEFINITIONS': ['$(inherited)', 'GRIDEM_SOURCE_ROOT=\\"$(SRCROOT)\\"'],
                  'LD_RUNPATH_SEARCH_PATHS': ['$(inherited)', '@loader_path/../Frameworks']}
 

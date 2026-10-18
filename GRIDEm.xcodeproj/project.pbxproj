@@ -2428,6 +2428,13 @@
 				PRODUCT_NAME = GRIDEmTests;
 				PRODUCT_BUNDLE_IDENTIFIER = com.akhtar.GRIDEmTests;
 				GENERATE_INFOPLIST_FILE = YES;
+				WARNING_CFLAGS = (
+					"$(inherited)",
+					"-Wno-c++20-extensions",
+					-Wno-gnu-zero-variadic-macro-arguments,
+					-Wno-gnu-statement-expression,
+					-Wno-gnu-statement-expression-from-macro-expansion,
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"GRIDEM_SOURCE_ROOT=\\\"$(SRCROOT)\\\"",
@@ -2489,6 +2496,13 @@
 				PRODUCT_NAME = GRIDEmTests;
 				PRODUCT_BUNDLE_IDENTIFIER = com.akhtar.GRIDEmTests;
 				GENERATE_INFOPLIST_FILE = YES;
+				WARNING_CFLAGS = (
+					"$(inherited)",
+					"-Wno-c++20-extensions",
+					-Wno-gnu-zero-variadic-macro-arguments,
+					-Wno-gnu-statement-expression,
+					-Wno-gnu-statement-expression-from-macro-expansion,
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"GRIDEM_SOURCE_ROOT=\\\"$(SRCROOT)\\\"",
