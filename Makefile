@@ -15,7 +15,13 @@
 # =============================================================================
 
 UNAME   := $(shell uname -s)
+# the Mac builds into build/, any other box into build/<its uname>: the folder is shared with a
+# Linux VM, and Linux objects left in build/obj went into the Mac's libGRIDEm.a as files ar skips
+ifeq ($(UNAME),Darwin)
 BUILD   := build
+else
+BUILD   := build/$(UNAME)
+endif
 CXX     ?= c++
 STD     := -std=c++14 -pedantic -Wall -Wextra -Werror
 CXXFLAGS := $(STD) -O2 -g -ISources
@@ -51,8 +57,10 @@ endif
 
 lib: $(BUILD)/libGRIDEm.a
 
+# written whole each time, never updated in place, so no member outlives its object
 $(BUILD)/libGRIDEm.a: $(LIB_OBJ)
 	@mkdir -p $(dir $@)
+	rm -f $@
 	ar rcs $@ $^
 
 $(BUILD)/obj/%.o: Sources/%.cpp
