@@ -219,7 +219,7 @@ static std::string Std(NSString* s) { return s.UTF8String ? std::string(s.UTF8St
     [self postState];
 }
 
-// a read-only file (CCS / VS project) is never written
+// a document held read-only is never written
 - (BOOL)isInViewingMode { return self.readOnly || [super isInViewingMode]; }
 
 - (void)makeWindowControllers

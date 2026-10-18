@@ -137,6 +137,12 @@ namespace GRIDEm { namespace Model {
         return nullptr;
     }
 
+    bool Workspace::IsDocumentReadOnly(const std::string& abs) const
+    {
+        (void)abs;
+        return false;
+    }
+
     bool Workspace::AddProject(const GrideProjectPtr& p)
     {
         for (const GrideProjectPtr& x : Projects)

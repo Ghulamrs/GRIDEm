@@ -44,7 +44,7 @@ extern NSString* const GRSourceDocumentStateNotification;
 @property (nonatomic, readonly) NSString* encodingName;           // "UTF-8", "UTF-16 LE" ...
 @property (nonatomic, assign) GRIDEm::Core::Language language;
 @property (nonatomic, assign) GRIDEm::Core::Language projectLanguage;   // what a .h follows
-@property (nonatomic, assign) BOOL readOnly;                      // a CCS / VS project's file
+@property (nonatomic, assign) BOOL readOnly;                      // held read-only: Workspace::IsDocumentReadOnly
 @property (nonatomic, assign) BOOL pinned;                        // a pinned tab
 @property (nonatomic, readonly) BOOL isModified;
 

@@ -115,6 +115,27 @@ using namespace GRIDEm::Model;
     GRAssertEq(GRRead(pro), before);
 }
 
+// an imported project's lock is on its structure, never on the text of its files: a Visual Studio
+// or RIDE project's sources edit and save in the editor (regression: they opened read-only, so not
+// even one line could be commented out)
+- (void)testImportedProjectsFilesAreEditable
+{
+    std::string dir = GRCopyFixture("samples/cppparse");
+    WorkspacePtr w = Workspace::Load(dir + "/cppparse.grws", std::string());
+    XCTAssertFalse(w->Projects.empty());
+    if (w->Projects.empty()) return;
+    GrideProjectPtr vs = w->Projects[0];
+    XCTAssertTrue(vs->IsVs());
+    XCTAssertFalse(vs->AllFiles().empty());
+    for (const std::string& f : vs->AllFiles()) XCTAssertFalse(w->IsDocumentReadOnly(f), @"%s", f.c_str());
+
+    std::string rideDir = GRCopyFixture("samples/ride/compilerpp");
+    WorkspacePtr r = Workspace::ForSingleProject(GrideProject::Load(rideDir + "/compilerpp.pro"));
+    GrideProjectPtr ride = r->Projects[0];
+    XCTAssertTrue(ride->IsRide());
+    for (const std::string& f : ride->AllFiles()) XCTAssertFalse(r->IsDocumentReadOnly(f), @"%s", f.c_str());
+}
+
 - (void)testSolutionOpensAsAWorkspace
 {
     std::string dir = GRCopyFixture("samples/cppparse");

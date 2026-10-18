@@ -76,6 +76,10 @@ namespace GRIDEm { namespace Model {
         GrideProjectPtr StartupProject() const;
         GrideProjectPtr FindProject(const std::string& name) const;
         GrideProjectPtr FindProjectForFile(const std::string& abs) const;
+        // whether the editor holds a file read-only: never, while its project is open. An imported
+        // project's lock (IsReadOnly) is on its structure - files, folders, settings - not on the text
+        // of the files it lists, so a CCS or Visual Studio project's sources edit and save like any other.
+        bool IsDocumentReadOnly(const std::string& abs) const;
         bool AddProject(const GrideProjectPtr& p);
         void RemoveProject(const GrideProjectPtr& p);
         // projects ordered so that dependencies are built first

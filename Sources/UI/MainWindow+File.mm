@@ -200,7 +200,7 @@ static const char* const kMainPattern = "^\\s*((int|void)?\\s*|fun\\s*<[^>]*>\\s
         if (d.path == nil) continue;
         d.breakpoints = [self.session breakpointsFor:d.path];
         Model::GrideProjectPtr p = w ? w->FindProjectForFile(GRStd(d.path)) : Model::GrideProjectPtr();
-        d.readOnly = p && p->IsReadOnly;
+        d.readOnly = p && w->IsDocumentReadOnly(GRStd(d.path));
         if (p) d.projectLanguage = p->Lang;
     }
     [self.editorArea refreshGutters];
@@ -267,7 +267,7 @@ static const char* const kMainPattern = "^\\s*((int|void)?\\s*|fun\\s*<[^>]*>\\s
         Model::WorkspacePtr w = self.session.workspace;
         Model::GrideProjectPtr p = w ? w->FindProjectForFile(GRStd(d.path)) : Model::GrideProjectPtr();
         d.breakpoints = [self.session breakpointsFor:d.path];
-        d.readOnly = p && p->IsReadOnly;
+        d.readOnly = p && w->IsDocumentReadOnly(GRStd(d.path));
         if (p) d.projectLanguage = p->Lang;
         [self.editorArea refreshGutters];
         [self addRecentFile:d.path];
@@ -1095,7 +1095,7 @@ static const char* const kMainPattern = "^\\s*((int|void)?\\s*|fun\\s*<[^>]*>\\s
     {
         if (d.path == nil) continue;
         Model::GrideProjectPtr p = w->FindProjectForFile(GRStd(d.path));
-        d.readOnly = p && p->IsReadOnly;
+        d.readOnly = p && w->IsDocumentReadOnly(GRStd(d.path));
     }
     [self refreshProjectViews];
     [self reportImportedProjects];
