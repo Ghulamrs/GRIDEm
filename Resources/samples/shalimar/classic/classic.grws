@@ -1,0 +1,43 @@
+{
+  "gride": "1.0",
+  "type": "workspace",
+  "name": "shalimar-classic",
+  "projects": [
+    {
+      "path": "factorial/factorial.pro"
+    },
+    {
+      "path": "fibonacci/fibonacci.pro"
+    },
+    {
+      "path": "gaussseidel/gaussseidel.pro"
+    },
+    {
+      "path": "invert/invert.pro"
+    },
+    {
+      "path": "prime/prime.pro"
+    },
+    {
+      "path": "quadratic/quadratic.pro"
+    },
+    {
+      "path": "rotations/rotations.pro"
+    },
+    {
+      "path": "rotmat/rotmat.pro"
+    },
+    {
+      "path": "sqroot/sqroot.pro"
+    },
+    {
+      "path": "strsplit/strsplit.pro"
+    },
+    {
+      "path": "table/table.pro"
+    }
+  ],
+  "startup": "factorial",
+  "activeConfig": "Debug",
+  "activeTarget": "Windows"
+}

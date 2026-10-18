@@ -1,0 +1,1073 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RIDE 5.17 — The Complete Manual</title><style>
+:root{--bg:#fff;--fg:#1a1a1a;--muted:#5a5a5a;--rule:#e2e2e2;--accent:#6a4a2a;
+--codebg:#f5f3ef;--codefg:#3a2a1a;--tableh:#f0ece6;--link:#8a5a2a}
+@media (prefers-color-scheme:dark){:root{--bg:#1b1b1b;--fg:#e6e6e6;--muted:#a5a5a5;
+--rule:#333;--accent:#d8b48a;--codebg:#242220;--codefg:#e6d8c8;--tableh:#2a2724;--link:#e0b487}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:52rem;margin:0 auto;padding:2.5rem 1.25rem 6rem}
+h1,h2,h3,h4,h5,h6{line-height:1.25;font-weight:650;scroll-margin-top:1rem}
+h1{font-size:2rem;margin:2.2rem 0 .6rem;padding-bottom:.3rem;border-bottom:2px solid var(--rule)}
+h2{font-size:1.5rem;margin:2rem 0 .5rem;color:var(--accent)}
+h3{font-size:1.2rem;margin:1.5rem 0 .4rem}
+h4{font-size:1.02rem;margin:1.2rem 0 .3rem}
+p{margin:.6rem 0}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+code{background:var(--codebg);color:var(--codefg);padding:.1rem .3rem;border-radius:4px;
+font:0.85em ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+pre{background:var(--codebg);color:var(--codefg);padding:1rem;border-radius:8px;
+overflow-x:auto;border:1px solid var(--rule)}
+pre code{background:none;padding:0;font-size:.82rem;line-height:1.45}
+blockquote{margin:.8rem 0;padding:.3rem 1rem;border-left:3px solid var(--accent);color:var(--muted)}
+hr{border:none;border-top:1px solid var(--rule);margin:2rem 0}
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--rule);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--tableh);font-weight:650}
+ul,ol{margin:.5rem 0;padding-left:1.5rem}li{margin:.25rem 0}
+.masthead{margin:0 0 1rem}.masthead .sub{color:var(--muted);font-size:.95rem}
+nav.toc{background:var(--codebg);border:1px solid var(--rule);border-radius:8px;
+padding:1rem 1.25rem;margin:1.5rem 0 2.5rem}
+nav.toc .t{font-weight:650;margin-bottom:.4rem}
+nav.toc ul{list-style:none;margin:0;padding:0}
+nav.toc li{margin:.15rem 0}
+nav.toc .l2{padding-left:1rem}nav.toc .l3{padding-left:2rem;font-size:.9rem}
+nav.toc a{color:var(--fg)}
+@media print{body{font-size:11pt}.wrap{max-width:none;padding:0}
+nav.toc{break-after:page}h1,h2{break-after:avoid}pre,table,blockquote{break-inside:avoid}
+a{color:inherit;text-decoration:none}}
+</style></head><body><div class="wrap"><div class="masthead"><h1 style="border:none;margin-top:0">RIDE 5.17 — The Complete Manual</h1><div class="sub">C, C++ and Shalimar · four targets · one editor</div></div><nav class="toc"><div class="t">Contents</div><ul>
+<li class="l2"><a href="#table-of-the-whole-manual">Table of the whole manual</a></li>
+<li class="l2"><a href="#1-what-ride-is">1. What RIDE is</a></li>
+<li class="l2"><a href="#2-what-a-compiler-takes-as-input">2. What a compiler takes as input</a></li>
+<li class="l2"><a href="#3-what-a-compiler-produces">3. What a compiler produces</a></li>
+<li class="l2"><a href="#4-the-pipeline-inside-a-compiler">4. The pipeline inside a compiler</a></li>
+<li class="l2"><a href="#5-what-help-the-compiler-gets-from-native-tools">5. What help the compiler gets from native tools</a></li>
+<li class="l2"><a href="#6-which-output-goes-where">6. Which output goes where</a></li>
+<li class="l1"><a href="#part-ii-the-three-languages-what-each-supports-and-what-it-does-not">Part II — The three languages: what each supports, and what it does not</a></li>
+<li class="l2"><a href="#7-c-c90">7. C — <code>c90</code></a></li>
+<li class="l2"><a href="#8-c-cpp11">8. C++ — <code>cpp11</code></a></li>
+<li class="l2"><a href="#9-shalimar-shalimar">9. Shalimar — <code>shalimar</code></a></li>
+<li class="l2"><a href="#10-header-routing-lib-is-c-include-is-c">10. Header routing: <code>lib/</code> is C, <code>include/</code> is C++</a></li>
+<li class="l1"><a href="#part-iii-projects-the-pro-file-and-making-and-updating-one">Part III — Projects: the <code>.pro</code> file, and making and updating one</a></li>
+<li class="l2"><a href="#11-the-project-file-pro">11. The project file (<code>.pro</code>)</a></li>
+<li class="l2"><a href="#12-making-and-updating-a-project">12. Making and updating a project</a></li>
+<li class="l2"><a href="#13-groups-the-build-target-and-mixed-c-c">13. Groups, the build target, and mixed C/C++</a></li>
+<li class="l1"><a href="#part-iv-choosing-a-compiler-the-command-line-and-building-by-hand">Part IV — Choosing a compiler, the command line, and building by hand</a></li>
+<li class="l2"><a href="#14-how-the-compiler-is-selected">14. How the compiler is selected</a></li>
+<li class="l2"><a href="#15-c90-command-line-reference">15. <code>c90</code> — command-line reference</a></li>
+<li class="l2"><a href="#16-cpp11-command-line-reference">16. <code>cpp11</code> — command-line reference</a></li>
+<li class="l2"><a href="#17-shalimar-command-line-reference">17. <code>shalimar</code> — command-line reference</a></li>
+<li class="l2"><a href="#18-compiling-from-the-command-line">18. Compiling from the command line</a></li>
+<li class="l1"><a href="#part-v-the-four-targets-their-native-tools-and-how-windows-is-debugged">Part V — The four targets, their native tools, and how Windows is debugged</a></li>
+<li class="l2"><a href="#19-host-versus-target-and-runs-here">19. Host versus target, and "runs here"</a></li>
+<li class="l2"><a href="#20-the-three-host-targets">20. The three host targets</a></li>
+<li class="l2"><a href="#21-tms6747-the-fourth-target">21. <code>tms6747</code> — the fourth target</a></li>
+<li class="l2"><a href="#22-the-two-windows-spellings-and-how-a-windows-program-is-debugged">22. The two Windows spellings, and how a Windows program is debugged</a></li>
+<li class="l1"><a href="#part-vi-the-c6000-target-the-emulator-and-real-silicon">Part VI — The C6000 target, the emulator, and real silicon</a></li>
+<li class="l2"><a href="#23-the-tms320c6747-c6000-target">23. The TMS320C6747 / C6000 target</a></li>
+<li class="l2"><a href="#24-the-vm6747-emulator">24. The <code>vm6747</code> emulator</a></li>
+<li class="l2"><a href="#25-real-silicon-a-out-from-the-editor-and-the-ti-build-path">25. Real silicon: a <code>.out</code> from the editor, and the TI build path</a></li>
+<li class="l1"><a href="#part-vii-reference-keys-the-editor-s-command-line-diagnostics-troubleshooting">Part VII — Reference: keys, the editor's command line, diagnostics, troubleshooting</a></li>
+<li class="l2"><a href="#26-keys-and-menus">26. Keys and menus</a></li>
+<li class="l2"><a href="#27-the-editor-s-own-command-line">27. The editor's own command line</a></li>
+<li class="l2"><a href="#28-reading-a-diagnostic">28. Reading a diagnostic</a></li>
+<li class="l2"><a href="#29-troubleshooting-why-a-thing-fails">29. Troubleshooting — why a thing fails</a></li>
+<li class="l2"><a href="#30-glossary">30. Glossary</a></li>
+<li class="l1"><a href="#part-viii-the-shalimar-ecosystem-and-the-c2s-converter">Part VIII — The Shalimar ecosystem and the c2s converter</a></li>
+<li class="l2"><a href="#31-the-map-what-is-inside-ride-and-what-is-beside-it">31. The map: what is inside RIDE, and what is beside it</a></li>
+<li class="l2"><a href="#32-compiler-s-shc-and-shalimar">32. Compiler-S, <code>shc</code> and <code>shalimar</code></a></li>
+<li class="l2"><a href="#33-the-c2s-converter-what-it-is">33. The <code>c2s</code> converter — what it is</a></li>
+<li class="l2"><a href="#34-c2s-features-c-shalimar-in-detail">34. <code>c2s</code> features — C → Shalimar, in detail</a></li>
+<li class="l2"><a href="#35-c2s-features-shalimar-c">35. <code>c2s</code> features — Shalimar → C</a></li>
+<li class="l2"><a href="#36-using-c2s-from-the-command-line">36. Using <code>c2s</code> from the command line</a></li>
+<li class="l1"><a href="#part-ix-worked-examples">Part IX — Worked examples</a></li>
+<li class="l2"><a href="#37-c-one-file">37. C, one file</a></li>
+<li class="l2"><a href="#38-c-several-files-that-link">38. C, several files that link</a></li>
+<li class="l2"><a href="#39-c-classes-and-virtual-dispatch">39. C++, classes and virtual dispatch</a></li>
+<li class="l2"><a href="#40-c-operator-new-delete-global-class-placement">40. C++, operator new/delete (global, class, placement)</a></li>
+<li class="l2"><a href="#41-shalimar-one-file">41. Shalimar, one file</a></li>
+<li class="l2"><a href="#42-the-same-programs-on-the-four-targets">42. The same programs on the four targets</a></li>
+<li class="l2"><a href="#43-a-mixed-c-and-c-project">43. A mixed C-and-C++ project</a></li>
+<li class="l2"><a href="#44-the-whole-project-lifecycle-in-the-editor">44. The whole project lifecycle in the editor</a></li>
+<li class="l2"><a href="#45-converting-between-c-and-shalimar">45. Converting between C and Shalimar</a></li>
+<li class="l2"><a href="#46-a-real-c674x-binary-out-hex">46. A real C674x binary (.out / .hex)</a></li>
+<li class="l1"><a href="#part-x-c-11-in-cpp11-feature-by-feature">Part X — C++11 in cpp11, feature by feature</a></li>
+<li class="l2"><a href="#47-types-declarations-expressions">47. Types, declarations, expressions</a></li>
+<li class="l2"><a href="#48-classes-inheritance-special-members">48. Classes, inheritance, special members</a></li>
+<li class="l2"><a href="#49-templates">49. Templates</a></li>
+<li class="l2"><a href="#50-exceptions">50. Exceptions</a></li>
+<li class="l2"><a href="#51-rtti">51. RTTI</a></li>
+<li class="l2"><a href="#52-new-delete-lambdas-and-the-library">52. new / delete, lambdas, and the library</a></li>
+<li class="l2"><a href="#53-the-exclusions-gathered">53. The exclusions, gathered</a></li>
+<li class="l1"><a href="#part-xi-the-abis-how-each-target-passes-arguments-and-lays-out-types">Part XI — The ABIs: how each target passes arguments and lays out types</a></li>
+<li class="l2"><a href="#54-why-the-abi-is-per-target-and-the-instructions-are-mostly-shared">54. Why the ABI is per-target and the instructions are (mostly) shared</a></li>
+<li class="l2"><a href="#55-type-widths-across-the-four-targets">55. Type widths across the four targets</a></li>
+<li class="l2"><a href="#56-x86-64-system-v-linux-and-microsoft-windows">56. x86-64 — System V (Linux) and Microsoft (Windows)</a></li>
+<li class="l2"><a href="#57-arm64-darwin-aarch64-apple">57. arm64-darwin (AArch64, Apple)</a></li>
+<li class="l2"><a href="#58-tms6747-the-c6000-eabi">58. tms6747 — the C6000 EABI</a></li>
+<li class="l2"><a href="#59-name-decoration-mangling">59. Name decoration (mangling)</a></li>
+<li class="l1"><a href="#part-xii-building-ride-and-its-compilers-from-source">Part XII — Building RIDE and its compilers from source</a></li>
+<li class="l2"><a href="#60-the-pieces-and-where-they-live">60. The pieces and where they live</a></li>
+<li class="l2"><a href="#61-one-command-per-platform">61. One command per platform</a></li>
+<li class="l2"><a href="#62-the-relay-scripts">62. The relay scripts</a></li>
+<li class="l2"><a href="#63-the-generated-project-files">63. The generated project files</a></li>
+<li class="l2"><a href="#64-verification-three-boxes-and-proving-the-artefact">64. Verification — three boxes, and proving the artefact</a></li>
+<li class="l1"><a href="#part-xiii-diagnostics-exit-codes-and-how-the-tools-report">Part XIII — Diagnostics, exit codes, and how the tools report</a></li>
+<li class="l2"><a href="#65-the-shape-of-a-diagnostic">65. The shape of a diagnostic</a></li>
+<li class="l2"><a href="#66-messages-you-will-actually-meet">66. Messages you will actually meet</a></li>
+<li class="l2"><a href="#67-exit-codes">67. Exit codes</a></li>
+<li class="l2"><a href="#68-reading-a-build-in-the-editor-s-console">68. Reading a build in the editor's console</a></li>
+<li class="l2"><a href="#69-when-a-whole-suite-fails-on-one-machine">69. When a whole suite fails on one machine</a></li>
+<li class="l1"><a href="#part-xiv-the-libraries-that-ship-lib-c-and-include-c">Part XIV — The libraries that ship: <code>lib/</code> (C) and <code>include/</code> (C++)</a></li>
+<li class="l2"><a href="#70-lib-the-c-standard-headers">70. <code>lib/</code> — the C standard headers</a></li>
+<li class="l2"><a href="#71-include-the-c-headers">71. <code>include/</code> — the C++ headers</a></li>
+<li class="l2"><a href="#72-what-is-not-in-the-library">72. What is not in the library</a></li>
+<li class="l2"><a href="#73-the-shalimar-runtime-as-a-library">73. The Shalimar runtime as a "library"</a></li>
+<li class="l1"><a href="#part-xv-faq-why-does-it">Part XV — FAQ: "why does it…"</a></li>
+<li class="l2"><a href="#index-of-the-parts">Index of the parts</a></li>
+</ul></nav><p><strong>Part I — What the compilers are, what they eat, and what they make</strong></p>
+<hr>
+<h2 id="table-of-the-whole-manual">Table of the whole manual</h2>
+<ul>
+<li>Part I — The compilation model (this file): input, output, the pipeline, the native tools, and where every artefact lands.</li>
+<li>Part II — The three languages: C (c90), C++ (cpp11) and Shalimar (shalimar) — what each supports and, just as carefully, what each does not.</li>
+<li>Part III — Projects: the <code>.pro</code> file, what it provides and what it lacks, making and updating a project, groups, the build target, mixed C/C++.</li>
+<li>Part IV — Choosing and driving a compiler: <code>auto</code> vs the Language and Tools menus, the full command-line flag reference, compiling from a shell.</li>
+<li>Part V — The four targets: the three host targets and tms6747, the assembler and linker each uses, and how a Windows program is debugged.</li>
+<li>Part VI — The fourth target in depth: the C6000, the <code>vm6747</code> emulator, and the license-safe TI build path to real <code>.out</code>/<code>.hex</code>.</li>
+<li>Part VII — Reference: keys, diagnostics, troubleshooting, the glossary.</li>
+</ul>
+<hr>
+<h2 id="1-what-ride-is">1. What RIDE is</h2>
+<p>RIDE is one editor over three separate command-line compilers and a small set of tools. Nothing about the editor is a compiler; nothing about a compiler is the editor. The editor's whole job is to find the right compiler for a file, run it with the right arguments, show you what it said, and — when the target can run here — run the program and show you that too.</p>
+<p>The pieces that ship, and what each one is:</p>
+<table><thead><tr><th>Program</th><th>What it is</th></tr></thead><tbody><tr><td><code>RIDE.exe</code></td><td>the windowed editor (on Windows). On Unix the same name is the console editor.</td></tr><tr><td><code>RIDEConsole.exe</code></td><td>the console (terminal) editor on Windows.</td></tr><tr><td><code>c90.exe</code></td><td>the C compiler. ISO C 90. Four targets.</td></tr><tr><td><code>cpp11.exe</code></td><td>the C++ compiler. ISO C++ 11. Four targets.</td></tr><tr><td><code>shalimar.exe</code></td><td>the Shalimar compiler. Three host targets + tms6747.</td></tr><tr><td><code>vm6747.exe</code></td><td>the TMS320C6747 (C6000) instruction-set emulator.</td></tr><tr><td><code>c2s.exe</code></td><td>the C89 ↔ Shalimar converter.</td></tr></tbody></table>
+<p>The three compilers are the point. The editor is a convenience around them, and everything the editor does you can do yourself from a shell — Part IV shows how. That separation is deliberate: a compiler you can only run through an editor is a compiler you cannot script, cannot put in a build, and cannot test in isolation. Each of these runs on its own, reads files, writes files, and says what it did on its standard streams.</p>
+<p>The "i" in <code>c90</code>/<code>cpp11</code>/<code>shalimar</code> is the <em>i-line</em> — the same three compilers, one target on (the fourth, tms6747), built beside the originals under distinct names. RIDE drives the i-line since 3.5; RIDE 3.0 drove the originals (<code>cc1</code>/<code>cxx1</code>/<code>shc</code>), which are frozen and three-target. Everything in this manual is about 4.0 and the i-line unless it says otherwise. What 4.0 adds over 3.5 is the project's own assembler for x86-64, <code>masm</code>, docked beside the editor and used in place of Microsoft's <code>ml64</code> (section 5); the C6000 one, <code>asm6x</code>, arrived in 3.5 (Part VI).</p>
+<hr>
+<h2 id="2-what-a-compiler-takes-as-input">2. What a compiler takes as input</h2>
+<p>A compiler's input is three things: <strong>source text</strong>, <strong>options</strong>, and the <strong>headers</strong> its includes pull in. Nothing else. It does not read a project file, an environment of settings, or a registry; the editor turns your project into a command line, and the command line is the whole of what the compiler sees.</p>
+<p><strong>Source text.</strong> One or more source files named on the command line. The suffix declares the language, and each compiler refuses a language that is not its own:</p>
+<ul>
+<li><code>c90</code> takes <code>.c</code> (and <code>.h</code> if you hand it one). A <code>.cpp</code>, <code>.cc</code>, <code>.cxx</code>, <code>.hpp</code>, <code>.hh</code> or <code>.hxx</code> is turned away by name, with a message that points you at <code>cpp11</code>, rather than being read as C and failing on the first <code>class</code> or <code>::</code> with a confusing "expected a type".</li>
+<li><code>cpp11</code> takes <code>.cpp</code> and its family. A <code>.c</code> is turned away by name, because a C source read as C++ can be quietly miscompiled where the two languages disagree; the message points at <code>c90</code>.</li>
+<li><code>shalimar</code> takes <code>.shl</code> (and <code>.shm</code>, the suffix the phone app writes). It reads nothing else.</li>
+</ul>
+<p>A compiler can also take an object or a library as an input — but that is an input to the <em>link</em> step only, not something to compile. <code>cpp11</code> sorts <code>.o</code>, <code>.obj</code>, <code>.a</code> and <code>.lib</code> out of its inputs and hands them straight to the linker.</p>
+<p><strong>Options.</strong> Flags that say what to produce (<code>-S</code>, <code>-c</code>, plain), where to put it (<code>-o</code>), what target to generate for (<code>-arch</code>, or <code>--target</code> for shalimar), what to define (<code>-D</code>, <code>-U</code>), where to look for headers (<code>-I</code>), and how much to say (<code>-nologo</code>, <code>-time</code>). Part IV is the complete list.</p>
+<p><strong>Headers.</strong> What <code>#include</code> reaches. The system headers are found beside the compiler (see chapter 4 of Part I and the header-routing chapter of Part II); your own headers are found by <code>-I</code> directories and by the directory of the file that included them. The preprocessor resolves every include before the parser sees a token — the compiler proper never opens a header itself; it sees one flat stream of text with <code>#line</code> records marking where each piece came from.</p>
+<p>What a compiler does <strong>not</strong> take: it does not take a directory and "figure out" what to build (that is the editor's or your build's job); it does not take a list of libraries to search by convention (you name them); it does not read <code>CFLAGS</code> or any ambient variable except the few documented include-path overrides. If it is not on the command line or in an included header, the compiler does not know about it.</p>
+<hr>
+<h2 id="3-what-a-compiler-produces">3. What a compiler produces</h2>
+<p>A compiler produces exactly one of three things, chosen by a flag:</p>
+<ol>
+<li><strong>Assembly</strong> (<code>-S</code>). It stops after code generation and writes assembly text — one <code>.s</code> per input (<code>.asm</code> for the MASM spelling on <code>x86_64-windows</code>). This is the compiler's real output; everything past it is the native assembler's and linker's work. The Assembly tab in the editor shows exactly this.</li>
+</ol>
+<ol>
+<li><strong>An object</strong> (<code>-c</code>). It goes one step further: it hands the assembly to the native assembler and writes one object file per input (<code>.o</code> on Unix, <code>.obj</code> on Windows). No linking. This is what a project build makes for each source before the link step gathers them.</li>
+</ol>
+<ol>
+<li><strong>A program</strong> (neither flag). It compiles, assembles and links every input into one runnable program, named by <code>-o</code> (or <code>a.out</code>, <code>a.exe</code> on Windows). Several inputs link together into one program.</li>
+</ol>
+<p>The thing to hold onto: the compiler's <em>own</em> product is the assembly. The object and the program are the assembly plus the native tools. That is why a target you cannot assemble here still reaches <code>-S</code> — the compiler has done all of its own work; only the host's assembler is missing. And it is why the Assembly tab works for every target while "run" works only for the ones this machine can build.</p>
+<p>Debug information, when asked for (<code>-g</code>, or the editor's Debug configuration), is written <em>into</em> the assembly and objects as DWARF, for the targets that can carry it. See Part V for which targets, and why one cannot.</p>
+<hr>
+<h2 id="4-the-pipeline-inside-a-compiler">4. The pipeline inside a compiler</h2>
+<p>All three compilers are one pass per stage, with no separate intermediate representation:</p>
+<pre><code>Driver → Preprocessor → Lexer → Parser (+ type work) → Backend</code></pre>
+<ul>
+<li><strong>Driver</strong> reads the command line, decides the language, target, and output kind, and orchestrates the stages and the native tools.</li>
+<li><strong>Preprocessor</strong> turns text into text: it expands macros, obeys <code>#include</code>, <code>#if</code>, <code>#define</code> and the rest, and leaves <code>#line</code> records so later stages know the original file, line and column. (Shalimar has no preprocessor; see Part II.)</li>
+<li><strong>Lexer</strong> turns the preprocessed text into tokens.</li>
+<li><strong>Parser</strong> builds the syntax tree and does all the type work in one place, so a diagnostic and the code that is generated can never disagree about what a construct meant.</li>
+<li><strong>Backend</strong> walks the tree and writes assembly for the chosen target.</li>
+</ul>
+<p>One source object owns the preprocessed text and turns any byte offset back into a file/line/column, so diagnostics and the line table are always consistent — they go through the same map.</p>
+<p>The backends share exactly one thing: a single statement-walk (the "Walker") holding the control-flow visitors, the jump stack and the label discipline in one place. Each target supplies a handful of one-line primitives (compare-and-branch, jump, label, case-compare). Everything else — expressions, and calls most of all, because that is where ABIs genuinely differ — is per-target. A difference between two targets is therefore a visible decision in one small place, not a smear across the code generator. This is the mechanism that lets <code>x86_64-linux</code> and <code>x86_64-windows</code> share one instruction stream and differ only in how it is spelled (GNU vs MASM).</p>
+<hr>
+<h2 id="5-what-help-the-compiler-gets-from-native-tools">5. What help the compiler gets from native tools</h2>
+<p>The compiler generates assembly. It does <strong>not</strong> assemble or link — it calls the host's tools for that. Three jobs go to native tools:</p>
+<ol>
+<li><strong>Assembling</strong> the <code>.s</code>/<code>.asm</code> into an object. On <code>x86_64-windows</code> a <strong>Release</strong> build is the MASM dialect: since 4.0 the project's own <code>masm.exe</code> beside the editor assembles it (the installation's <code>settings.json</code> names it, <code>&quot;assembler&quot;: &quot;bin/masm.exe&quot;</code>; Tools &gt; Assembler for x86_64-windows... changes or clears it). <code>masm</code> takes ml64's own command line and is held to ml64 byte for byte on the compilers' whole corpus; Microsoft's <code>ml64.exe</code> is used only on the vendor fallback below. A <strong>Debug</strong> build on that target is the GNU spelling (<code>-masm=gnu</code>), which <code>clang</code>'s assembler turns into a COFF object carrying CodeView — the line table a Windows debugger reads, which the MASM spelling cannot carry (Part V chapter 22). Without an assembler named, cpp11 writes the GNU spelling in Release too and clang assembles it. On <code>x86_64-linux</code> it is the GNU assembler; on <code>arm64-darwin</code> it is the assembler <code>clang</code> drives.</li>
+</ol>
+<ol>
+<li><strong>Linking</strong> objects into a program. On Windows a <strong>Release</strong> build goes to the project's own linker, <code>link.exe</code> beside the editor (LINK, held to Microsoft's byte for byte on its probe bed), built and shipped with 4.0 and named by the installed <code>settings.json</code> (<code>&quot;linker&quot;: &quot;bin/link.exe&quot;</code>) as it names <code>masm</code>; a <strong>Debug</strong> build goes to Microsoft's <code>link.exe /DEBUG</code>, which writes the <code>.pdb</code> cdb reads and LINK does not. When one of the project's own tools fails a build and the compilers found no fault in the source, the editor asks - <em>"The project's own masm and link did not build it. Use Visual Studio's ml64 and link.exe for this build instead?"</em> - and a Yes builds again through the vendor's, found as always (vswhere, never PATH); <code>&quot;askNative&quot;: false</code> in <code>settings.json</code> never asks and lets the build fail. It is asked only when masm or link itself failed: not for a program's own link error - a missing <code>main</code>, an unresolved or duplicate symbol, a library made for another platform, which Microsoft's tools refuse the same way - and never for a <code>cl</code> build, which links with its own. On Linux the linker is the host driver (<code>cc</code>/<code>gcc</code>) or, for C++, <code>clang++</code>/<code>g++</code>; on macOS <code>clang++</code>. A link of C++ objects goes through the C++ driver so the C++ runtime is pulled in.</li>
+</ol>
+<ol>
+<li><strong>Finding Visual Studio's tools.</strong> On Windows <code>cl</code>, <code>link.exe</code>, <code>ml64</code> and clang's assembler are on <code>PATH</code> only inside a Developer Command Prompt. The compiler finds Visual Studio itself (via <code>vswhere</code>, pinned to VS 2022) and runs the step inside a shell that has sourced <code>vcvars64.bat</code>, so a build started from an editor opened off the Desktop works the same as one started from a developer prompt. This is why a bare build once failed with <code>&#x27;ml64.exe&#x27; is not recognized</code> — the environment, not the compiler, was missing.</li>
+</ol>
+<p>For the fourth target, tms6747, the tools are the project's own on every host: <code>asm6x</code> assembles each <code>.s</code>, <code>lnk6x</code> links the objects against RTS6x into a <code>.out</code>, <code>sim6747</code> runs that <code>.out</code> and <code>vm6747</code> runs the assembly text as it is (Part VI). And, optionally, TI's own tools can assemble and link our <code>.s</code> into a chip binary (Part VI, the TI build path).</p>
+<p><strong>What runs at once.</strong> A project build is one compiler command per group, in the order the build names them; inside that command cpp11 compiles its files on a pool of threads, one per file up to the machine's cores (one thread below four files; <code>-j n</code> on a command line asks for another count) and assembles on the same pool, while c90 and shalimar go file by file. A tms6747 group runs on RIDE's own pool instead: each source is its own <code>-S</code> command, and RIDE runs them at once, one per source up to the machine's cores, writing each one's output in source order, before one <code>asm6x</code> and one <code>lnk6x</code> command take them all.</p>
+<p>The consequence worth internalising: <strong>a target's "runs here" is a fact about this machine's tools, not about the compiler.</strong> The compiler can generate <code>arm64-darwin</code> on Windows all day; it just cannot assemble it there, so that target reaches <code>-S</code> and stops.</p>
+<hr>
+<h2 id="6-which-output-goes-where">6. Which output goes where</h2>
+<p>There are four kinds of place output lands, and knowing them removes most "where did my file go" confusion:</p>
+<p><strong>Beside the source.</strong> <code>-S</code> and <code>-c</code> without <code>-o</code> write beside each input: a <code>.s</code>/<code>.asm</code> or <code>.o</code>/<code>.obj</code> next to the <code>.c</code>/<code>.cpp</code>. With <code>-o</code> you name the single output of a single input. A project's program is written beside its <code>.pro</code> file, so it is there when the editor is not.</p>
+<p><strong>The install's <code>bin\</code>.</strong> The editor and every compiler live in <code>bin\</code>. The editor finds the compilers it drives <em>beside itself</em> (<code>path::besideProgram</code>) before it looks at <code>PATH</code>, which is why they must sit together — see Part VII's layout. A build you started from the installed editor runs the installed compilers, not whatever else is on the machine.</p>
+<p><strong><code>bin\lib\</code>.</strong> The Shalimar runtime archives live here, beside <code>shalimar</code> — <code>shmrt-x86_64-windows.lib</code> (release) and <code>-debug.lib</code> (debug) — because <code>shalimar</code> looks for <code>lib\</code> next to its own binary when it links. The C6000 Shalimar runtime is here twice: as libraries beside RTS6x, <code>rts6x-tms6747\shmrt6x.lib</code> (release) and <code>shmrt6xd.lib</code> (debug), which a <code>.out</code> links; and as <code>shmrt-tms6747\*.s</code> and <code>shmrt-tms6747-debug\*.s</code>, assembly the <code>vm6747</code> emulator reads beside a program (Part VI says why).</p>
+<p><strong><code>include\</code> and <code>lib\</code>, one level up from <code>bin\</code>.</strong> <code>cpp11</code>'s C++ headers and C headers. <code>cpp11</code> looks for them beside its binary and then one directory up, so from <code>bin\cpp11.exe</code> it finds <code>..\include</code> and <code>..\lib</code>. This is the reason the Shalimar <code>bin\lib\</code> (runtime) and the top-level <code>lib\</code> (C headers) never collide: they are at different levels, and <code>cpp11</code> accepts a <code>lib\</code> as its header directory only if it actually contains <code>stddef.h</code>.</p>
+<p><strong>Temporary directories.</strong> When the editor builds, intermediate <code>.s</code> and objects go to a temporary directory it makes and removes; only the final program is kept. When you build by hand, they go where your <code>-o</code>/defaults say.</p>
+<p>The single rule behind all of this: <strong>the editor finds what it drives beside itself, and each compiler finds its own support (headers, runtime) beside or just above itself.</strong> Put the pieces where the installer puts them and nothing is undiscoverable; scatter them and you will be naming paths by hand.</p>
+<h1 id="part-ii-the-three-languages-what-each-supports-and-what-it-does-not">Part II — The three languages: what each supports, and what it does not</h1>
+<p>RIDE compiles three languages with three compilers. This part says, for each, what it accepts and — with the same care — what it refuses. The refusals matter as much as the features: each compiler here <strong>refuses by name and never accepts quietly</strong>, so a construct it does not support stops the build with a message rather than miscompiling.</p>
+<hr>
+<h2 id="7-c-c90">7. C — <code>c90</code></h2>
+<p><strong>Standard: ISO C 90 (ANSI C / C89).</strong> <code>c90</code> is an ANSI C compiler. It is the oldest and most complete of the three; C90 is a small, closed language and <code>c90</code> implements it.</p>
+<p><strong>What it supports.</strong> The whole of C90: the type system (integer and floating types, <code>struct</code>, <code>union</code>, <code>enum</code>, bit-fields, pointers, arrays, function pointers, <code>const</code>/<code>volatile</code> qualifiers), the full expression grammar with C's integer promotions and usual arithmetic conversions, all statements and control flow including <code>switch</code> with fall-through and <code>goto</code> with labels, the storage classes (<code>auto</code>, <code>register</code>, <code>static</code>, <code>extern</code>, <code>typedef</code>), a complete preprocessor (<code>#define</code> object- and function-like macros, <code>#include</code>, the full <code>#if</code>/<code>#ifdef</code>/<code>#elif</code>/<code>#else</code>/<code>#endif</code> family, <code>#line</code>, <code>#error</code>, <code>#pragma</code>, stringising <code>#</code> and pasting <code>##</code>), and the standard library headers shipped in <code>lib/</code> (<code>stdio.h</code>, <code>stdlib.h</code>, <code>string.h</code>, <code>math.h</code>, <code>ctype.h</code>, <code>assert.h</code>, <code>errno.h</code>, <code>limits.h</code>, <code>float.h</code>, <code>stddef.h</code>, <code>stdarg.h</code>, <code>time.h</code>, <code>setjmp.h</code>, <code>signal.h</code>, <code>locale.h</code>, and the rest). Variadic functions work — both calling them and defining them with <code>va_start</code>/<code>va_arg</code>/<code>va_end</code>. A character constant is an <code>int</code>, as C90 says.</p>
+<p><strong>What it does not do.</strong> <code>c90</code> is C90, not C99 or C11, so the later additions are not there: no <code>//</code> line comments as a guaranteed dialect feature beyond what the lexer accepts, no <code>long long</code> as a <em>standard</em> type name expectation, no mixed declarations-and-code required by C99, no variable-length arrays, no <code>inline</code> as a C99 keyword, no <code>_Bool</code>/<code>&lt;stdbool.h&gt;</code>, no <code>restrict</code>, no designated initialisers, no compound literals, no <code>_Complex</code>, no <code>&lt;stdint.h&gt;</code> guarantees beyond what <code>lib/</code> provides. It does not compile C++ — hand it a <code>.cpp</code> and it refuses by name and points at <code>cpp11</code>. It is not a linker or an assembler; it emits assembly and calls the host tools (Part I chapter 5).</p>
+<p><strong>Targets.</strong> All four: <code>x86_64-linux</code>, <code>x86_64-windows</code>, <code>arm64-darwin</code>, <code>tms6747</code>. Debug information: DWARF on the two GNU targets, CodeView on <code>x86_64-windows</code> in the GNU spelling a Debug build uses (none in the MASM spelling, Part V), and none on <code>tms6747</code> (the emulator and the simulator run it, no debugger reads it).</p>
+<hr>
+<h2 id="8-c-cpp11">8. C++ — <code>cpp11</code></h2>
+<p><strong>Standard: ISO C++ 11, minus a documented list of exclusions.</strong> That headline needs the second half to be honest: <code>cpp11</code> accepts <em>C++11 minus a list</em>, and ships the simplified library in <code>include/</code> rather than a fully conforming one. A C++11 compiler that refuses a feature is a C++11 <em>subset</em>, and this manual says which subset so a program that fails has somewhere to look. The authoritative, source-derived inventory is <code>docs/EXCLUSIONS.md</code> in the C++ compiler's own tree (<code>tools/exclusions</code> regenerates it); what follows is the shape of it.</p>
+<p><strong>What it supports — the large majority of C++11:</strong></p>
+<ul>
+<li><strong>Classes</strong> with data and function members, access control, constructors (default, parameterised, copy, and move where the shapes are simple), destructors, <code>this</code>, member initialiser lists, nested classes, <code>friend</code>.</li>
+<li><strong>Inheritance</strong>, single and multiple; <strong>virtual functions</strong> and dynamic dispatch through a vtable; pure-virtual functions and abstract classes; <strong>virtual (shared) base classes</strong> — full Itanium virtual inheritance on the three Itanium targets (secondary vtables, the VTT, <code>_ZTv</code> virtual thunks, construction vtables, the C2/D2 constructors that take a VTT), matching clang's tables. (Virtual inheritance was <code>sizeof</code>-only earlier; it is real now.)</li>
+<li><strong>Templates</strong>: class and function templates, explicit specialisation (<code>template &lt;&gt; struct Box&lt;int&gt; {…}</code>), partial specialisation, non-type parameters, template instantiation and two-phase name resolution to the extent C++11 requires.</li>
+<li><strong>Exceptions</strong>: <code>throw</code>/<code>try</code>/<code>catch</code>, stack unwinding running destructors, catch-by-value (copying from <code>__cxa_begin_catch</code>), catch-by-reference, a thrown pointer, rethrow, <code>noexcept</code>/<code>throw()</code> with <code>std::terminate</code> on an escaping exception, and a destructor that throws while unwinding terminating — on the three Itanium targets, with the target's own exception tables.</li>
+<li><strong>RTTI</strong>: <code>typeid</code>, static and dynamic; <code>type_info</code>; <code>dynamic_cast</code> to a pointer (including <code>dynamic_cast&lt;void*&gt;</code>, the most-derived form) along a single-base chain.</li>
+<li><strong><code>operator new</code>/<code>operator delete</code></strong>: the replaceable global forms, class- specific forms, and placement new — each dispatching to the right operator.</li>
+<li><strong>Lambdas</strong>, <code>auto</code> for variables, <code>nullptr</code>, <code>enum class</code> and an enum's underlying type, <code>alignas</code>/<code>alignof</code>, <code>static_assert</code>, range-based ideas to the extent the library supports them, references and rvalue references where the shapes are simple, member and function pointers including pointer-to- virtual-member dispatch, and <code>constexpr</code> in the forms the compiler implements.</li>
+<li><strong>A working, if simplified, library</strong> in <code>include/</code>: <code>&lt;cstddef&gt;</code>, <code>&lt;cstdlib&gt;</code>, <code>&lt;cstring&gt;</code>, <code>&lt;cmath&gt;</code>, <code>&lt;cctype&gt;</code> (each the C header wrapped into <code>std</code>); <code>&lt;string&gt;</code> as a class; <code>&lt;utility&gt;</code>, <code>&lt;vector&gt;</code>, <code>&lt;map&gt;</code>, <code>&lt;set&gt;</code>, <code>&lt;algorithm&gt;</code> (a vector is a growing array, a map a sorted vector of pairs, a set a sorted vector, and an iterator in each is a pointer); and the streams — <code>&lt;iostream&gt;</code>, <code>&lt;ostream&gt;</code>, <code>&lt;istream&gt;</code>, <code>&lt;sstream&gt;</code>, <code>&lt;fstream&gt;</code>, <code>&lt;ios&gt;</code>, <code>&lt;cstdio&gt;</code>, with <code>std::cout</code>/<code>cin</code>/<code>cerr</code> as file-scope objects.</li>
+</ul>
+<p><strong>What it refuses — the exclusions (each refused by name):</strong></p>
+<ul>
+<li><strong><code>dynamic_cast</code> to a reference</strong> — it has no null to return, so it is refused rather than half-implemented; use the pointer form and test for null.</li>
+<li><strong><code>dynamic_cast</code> naming a class with more than one base</strong> — that needs <code>__vmi_class_type_info</code>, which is not emitted; refused.</li>
+<li>**A member <em>class</em> template** — refused (a member <em>function</em> template is fine).</li>
+<li><strong>A trailing return type</strong> <code>auto f(int) -&gt; int</code> — refused (documented exclusion).</li>
+<li><strong>Objects that would run code before <code>main</code></strong> in the forms the compiler does not do dynamic initialisation for — refused by name.</li>
+<li><strong>C++14 and C++17 forms</strong> — refused <em>naming the standard version</em>, because the target is C++11 (e.g. C++14 <code>constexpr</code> relaxations, C++14/17-only syntax).</li>
+<li><strong>Eight keywords the parser has no rule for yet</strong> — refused by name as "does not begin an expression" / "not supported yet" (see <code>pending[]</code> in the parser).</li>
+<li><strong><code>volatile</code></strong> — accepted in the grammar but <strong>read and dropped</strong>: it does not change code generation. Do not rely on it for memory-mapped I/O.</li>
+<li><strong>A few target-only refusals</strong> — e.g. a polymorphic virtual base is refused by name on <code>x86_64-windows</code> (Microsoft ABI), while the Itanium targets accept it.</li>
+</ul>
+<p>The rule to work by: <strong>if <code>cpp11</code> refuses something, it will say so by name.</strong> A program that compiles did not step on an exclusion; a program that fails names the reason. When in doubt about a single construct, compile a one-line program — some refusals read more broadly than they actually fire.</p>
+<hr>
+<h2 id="9-shalimar-shalimar">9. Shalimar — <code>shalimar</code></h2>
+<p>Shalimar is a small numeric language. The full, authoritative reference is Appendix A of this help set (<code>help/appendix-a-shalimar-language.md</code>, ~1,400 lines, a verbatim copy of the language's own specification), and the compiler's own deviations from the interpreter are in the C++... in the Shalimar compiler's <code>docs/CONFORMANCE.md</code>. This chapter is the shape and the boundaries.</p>
+<p><strong>What Shalimar is.</strong> A program is a set of functions; execution begins at <code>main</code>. The syntax is deliberately spare: a function is <code>fun &lt;capture&gt; = name(params) { … }</code>; assignment is <code>name : value</code>; <code>?</code> prints; <code>while</code>/<code>if</code> control flow; arithmetic and comparison operators; numbers (the core numeric type) and strings; arrays. A key point of divergence from C: <code>n : n + 1</code> is an <em>assignment</em> in Shalimar, where the same text is a goto label in C — which is why the editor lays Shalimar out by its own indent rules.</p>
+<p><strong>The runtime.</strong> A Shalimar program links against a runtime archive (<code>shmrt-&lt;target&gt;</code>), which owns <code>main</code>, the numeric formatting, the console I/O, the array machinery and the failure paths. Every Shalimar object exports the same three startup symbols whatever file it came from, and the runtime provides <code>main</code> — which is why two Shalimar objects cannot simply be linked together (see below).</p>
+<p><strong><code>uses</code> / borrowing.</strong> Shalimar borrows library functions by name; a borrowed name is resolved against the runtime and may not also be used as a variable. The compiler checks that a call names something the file actually borrowed, and reports at the point of interception rather than as a later phase.</p>
+<p><strong>What Shalimar cannot do — its boundaries, by design:</strong></p>
+<ul>
+<li><strong>No block comment, no character literal, no escapes in a string literal, and no preprocessor.</strong> The lexer is minimal.</li>
+<li><strong>No separate compilation into one program from two Shalimar files.</strong> Every unit exports the same three startup symbols and the runtime owns <code>main</code>, and the language has no cross-file declarations for a call across a link to be checked against. A project that wants Shalimar beside C is a project that builds two programs (<code>Compiler-S/docs/LINKING.md</code> has the detail). This is the one project refusal that did not go away.</li>
+<li><strong>No debugger.</strong> Shalimar carries no debug information on any target, by decision — the Debug menu turns it away by name.</li>
+<li><strong>It is not a systems language.</strong> No pointers-as-you-know-them-in-C, no manual memory model, no struct/union type zoo, no direct hardware access. It is a numeric language with arrays, strings and functions, and its power and its limits both follow from that.</li>
+<li><strong>The compiler tracks the interpreter, and where they differ it is a conformance bug</strong> recorded in the compiler's <code>docs/CONFORMANCE.md</code>, not a license to diverge.</li>
+</ul>
+<p><strong>Targets.</strong> <code>shalimar</code> compiles the three host targets and <code>tms6747</code>. On tms6747 a Shalimar program runs on the <code>vm6747</code> emulator beside the C6000 runtime (<code>shmrt-tms6747</code>), which the emulator assembles with the program, and its <code>.out</code> links the same runtime packed as <code>shmrt6x.lib</code> (<code>shmrt6xd.lib</code> in Debug) ahead of RTS6x. A Debug build stops itself on the C6000 too, run on <code>sim6747</code>.</p>
+<hr>
+<h2 id="10-header-routing-lib-is-c-include-is-c">10. Header routing: <code>lib/</code> is C, <code>include/</code> is C++</h2>
+<p>The two header folders hold different sets, and the <em>folder decides the header's language while the compiler decides which folder(s) it searches</em>:</p>
+<ul>
+<li><strong><code>lib/</code></strong> holds the <strong>C</strong> standard headers (<code>stdio.h</code>, <code>string.h</code>, <code>assert.h</code>, …). The name is historical; the content is C.</li>
+<li><strong><code>include/</code></strong> holds the <strong>C++</strong> standard headers (<code>&lt;vector&gt;</code>, <code>&lt;new&gt;</code>, <code>&lt;typeinfo&gt;</code>, <code>&lt;cstdio&gt;</code>, …).</li>
+</ul>
+<ul>
+<li><strong><code>c90</code></strong> (built with <code>-DCC1_INCLUDE_DIR=lib</code>) searches <strong>one</strong> system directory: <code>lib/</code>. <code>#include &lt;stdio.h&gt;</code> → <code>lib/stdio.h</code>. It never looks in <code>include/</code>.</li>
+<li><strong><code>cpp11</code></strong> (built with <code>-DCXX1_CXX_INCLUDE_DIR=include</code> and <code>-DCXX1_INCLUDE_DIR=lib</code>) searches <strong>two</strong>, in order: <code>include/</code> first, then <code>lib/</code>. <code>#include &lt;vector&gt;</code> → <code>include/vector</code>; <code>#include &lt;cstdio&gt;</code> → <code>include/cstdio</code>, which itself pulls <code>&lt;stdio.h&gt;</code> → <code>lib/stdio.h</code>.</li>
+</ul>
+<p>Both put your <code>-I</code> directories ahead of the system ones, so a project header wins over a standard one.</p>
+<p><strong>Discovery at run time</strong>: environment overrides (<code>CPP11_INCLUDE</code>/<code>CPP11_LIB</code>) first; else beside the binary, then one directory up (<code>../include</code>, <code>../lib</code>), accepting a pair only if <code>include/</code> actually has <code>vector</code> and <code>lib/</code> actually has <code>stddef.h</code>; else the paths compiled in with the <code>-D</code> flags. That "beside, then one up" is why the install puts compilers in <code>bin\</code> with <code>include\</code>/<code>lib\</code> one level above, and why the Shalimar <code>bin\lib\</code> (runtime) never collides with the top-level <code>lib\</code> (C headers) — different levels, and the <code>stddef.h</code> probe rejects the runtime folder.</p>
+<h1 id="part-iii-projects-the-pro-file-and-making-and-updating-one">Part III — Projects: the <code>.pro</code> file, and making and updating one</h1>
+<p>A compiler takes a command line, not a project. A <em>project</em> is the editor's way of remembering what a program is made of and turning that into command lines. This part covers the project file, what it can and cannot express, and the operations that create and change it.</p>
+<hr>
+<h2 id="11-the-project-file-pro">11. The project file (<code>.pro</code>)</h2>
+<p>Beside a project's file there is <strong>the installation's <code>settings.json</code></strong>, one directory above <code>bin\</code>, beside <code>include\</code> and <code>lib\</code>:</p>
+<pre><code>{
+  &quot;include&quot;: &quot;include&quot;,
+  &quot;lib&quot;: &quot;lib&quot;,
+  &quot;vcvars&quot;: &quot;&quot;,
+  &quot;compiler&quot;: &quot;auto&quot;,
+  &quot;indent&quot;: 4,
+  &quot;tabs&quot;: false,
+  &quot;font&quot;: &quot;&quot;,
+  &quot;includes&quot;: [&quot;C:/work/common/include&quot;],
+  &quot;libraries&quot;: [&quot;C:/work/common/lib/mathlib.lib&quot;]
+}</code></pre>
+<p>It is read for every compile, project or none. <code>include</code> is where <code>cpp11</code>'s headers are (its C++ headers and the C ones they wrap, in one directory) and <code>lib</code> where <code>c90</code>'s are, each relative to the file unless absolute; the editor passes each compiler its own as <code>-I</code>, and the compilers also look there themselves, so the command line works without the editor. <code>vcvars</code> is empty until Visual Studio's tools could not be found by looking, and then names the <code>vcvars64.bat</code> to use. <code>compiler</code> is the one chosen when the editor starts - <code>auto</code> (the file's extension decides), <code>c90</code>, <code>cpp11</code>, <code>shalimar</code>, <code>msvc</code> or <code>c++</code> - and choosing one from the Tools menu with no project open writes it here; with a project open the choice is the project's and goes to its <code>.pro</code>, and a project that names its own compiler takes precedence while it is open. <code>indent</code> and <code>tabs</code> are how a file is laid out unless its project says otherwise, and <code>font</code> is the window's, written by <em>Tools ▸ Font...</em>. <code>includes</code> and <code>libraries</code> are header directories every compile searches and libraries every host link takes, for the whole installation - <em>Tools ▸ Shared include paths...</em> and <em>Tools ▸ Shared libraries...</em> write them; a project carries its own in its <code>.pro</code>, searched first, written by <em>Tools ▸ Project include paths...</em> and <em>Tools ▸ Project libraries...</em> while it is open. <em>Tools ▸ Header directories...</em> and <em>Tools ▸ Locate vcvars64.bat...</em> write this file too; the editor writes it with the defaults on its first run where it finds none.</p>
+<p>A project is one JSON object in a file named <code>&lt;name&gt;.pro</code>, living in the project's directory. Here is a complete one:</p>
+<pre><code>{
+  &quot;name&quot;: &quot;demo&quot;,
+  &quot;toolchain&quot;: &quot;auto&quot;,
+  &quot;arch&quot;: &quot;x86_64-windows&quot;,
+  &quot;indent&quot;: 4,
+  &quot;tabs&quot;: false,
+  &quot;groups&quot;: {
+    &quot;Sources&quot;: [&quot;greet.c&quot;, &quot;main.c&quot;],
+    &quot;Headers&quot;: [&quot;greet.h&quot;]
+  },
+  &quot;include&quot;: [&quot;include&quot;, &quot;../common&quot;],
+  &quot;libraries&quot;: [&quot;lib/mathlib.lib&quot;],
+  &quot;build&quot;: { &quot;target&quot;: &quot;demo&quot;, &quot;groups&quot;: [&quot;Sources&quot;] }
+}</code></pre>
+<p>Field by field:</p>
+<ul>
+<li><strong><code>name</code></strong> — the project's name. Shown in the title bar (<code>RIDE 5.17 - &lt;name&gt; - &lt;file&gt;</code>).</li>
+<li><strong><code>toolchain</code></strong> — the project-wide compiler choice: <code>auto</code> (the file's suffix decides), or a named one: <code>c90</code>, <code>cpp11</code>, <code>shalimar</code>, or <code>msvc</code> (the host's <code>cl</code>). <code>auto</code> is almost always right; a named one forces every auto group to that compiler. The Tools menu (and Ctrl-K) writes it while the project is open.</li>
+<li><strong><code>arch</code></strong> — the target the project builds for: one of <code>x86_64-windows</code>, <code>x86_64-linux</code>, <code>arm64-darwin</code>, <code>tms6747</code>. The Target menu (and Ctrl-T) changes it and writes it while the project is open; a project that names none gets this machine's host target, and so does one that names another machine's - a project written on a Mac opens on Windows as <code>x86_64-windows</code>, since a host target is the machine's by nature. <code>tms6747</code> is kept wherever the project goes: the emulator runs it on every machine.</li>
+<li><strong><code>indent</code></strong> / <strong><code>tabs</code></strong> — how the editor lays this project's files out; absent, the installation's <code>settings.json</code> answers, and a new project writes neither.</li>
+<li><strong><code>groups</code></strong> — a set of named groups, each a list of files. The names are the headings in the left pane. A file's group is a display and organisation convenience <em>and</em> the unit the build selects. A group may carry its own <code>&quot;toolchain&quot;</code> to override the project's for that group only (an object form: <code>&quot;Legacy&quot;: { &quot;files&quot;: [...], &quot;toolchain&quot;: &quot;msvc&quot; }</code>).</li>
+<li><strong><code>include</code></strong> — header directories of the project's own, relative to the project's directory (an absolute path stays as written). Every compile of the project's sources searches them, in this order, before the shipped headers: <code>-I</code> to <code>c90</code>, <code>cpp11</code> and the host's C++, <code>/I</code> to <code>cl</code>. Shalimar has no include and <code>shalimar</code> is given none. The installation's own, from <code>settings.json</code>, are searched after these.</li>
+<li><strong><code>libraries</code></strong> — libraries linked into the program after its objects, each relative to the project's directory: <code>.lib</code> files under Windows, <code>.a</code> under Unix. A project that names any is built as objects and linked by the host's linker, whatever its compilers (<code>c90</code> and <code>cpp11</code> take sources only). They do not apply to <code>tms6747</code>, which is not linked. The installation's own, from <code>settings.json</code>, are linked after these.</li>
+<li><strong><code>open</code></strong> — the file that opens with the project, relative to its directory. Written by the editor from the file in front when the project is closed or the editor left, by the menu or by Ctrl-Q alike; a file removed or deleted from the project is forgotten here too. A project without it opens the file that defines <code>main</code> (<code>int main(</code> in C and C++, <code>fun &lt;&gt; = main()</code> in Shalimar), and failing that its first file.</li>
+<li><strong><code>build</code></strong> — what the project builds: <code>target</code> names the program, and <code>groups</code> lists which groups' sources compile into it. Files in un-named groups, and headers, are passed over. A project made in the editor gets one that builds its <code>Sources</code> group into a program of the project's name.</li>
+</ul>
+<p><strong>What the <code>.pro</code> provides:</strong></p>
+<ul>
+<li>A named program made from a chosen set of sources, so <code>Build project</code> (F4) and <code>Run project</code> know what to make without you naming files each time. <code>Run file</code> (F5) on one of those sources runs the project too: one file of several links against nothing on its own, and the status line says which it did.</li>
+<li>Per-group compiler choice, so a C-and-C++ program is expressible: a group of both languages is split, the C to <code>c90</code> and the C++ to <code>cpp11</code>, and the objects are linked (Part IV chapter 15).</li>
+<li>A remembered target and layout, so the project opens the same way wherever it is opened.</li>
+<li>A stable, human-readable, diffable file you can keep in version control — it is plain JSON, and every add/remove writes it back immediately.</li>
+</ul>
+<p><strong>What the <code>.pro</code> lacks — deliberately:</strong></p>
+<ul>
+<li><strong>No compiler flags per file or per project</strong> beyond the target, the compiler choice, the header directories and the libraries. There is no <code>cflags</code>/<code>cxxflags</code>/<code>defines</code> field. The editor builds each source with a fixed, correct recipe for its language and target; if you need custom flags, compile from the command line (Part IV).</li>
+<li><strong>No custom build steps, no rules, no dependencies you write.</strong> It is not <code>make</code>. The build is: compile the named groups' sources, link them, done.</li>
+<li><strong>No multiple programs from one <code>.pro</code>.</strong> One <code>build</code> entry, one <code>target</code>. Two programs is two projects. (This is why Shalimar-beside-C is refused — see below.)</li>
+<li><strong>No library targets, no install rules, no configurations beyond debug/release</strong> (which is an editor toggle, not a <code>.pro</code> field). A project <em>uses</em> libraries; it does not make one.</li>
+<li><strong>No conditional inclusion</strong> (files in / out by platform or setting). A file is in a group or it is not.</li>
+</ul>
+<p>The philosophy: the <code>.pro</code> says <em>what the program is made of</em>, and the editor knows <em>how</em> to build each language for each target. It keeps the file small and correct rather than a general-purpose build system. When you outgrow it, the command line (Part IV) is right there and takes over seamlessly.</p>
+<hr>
+<h2 id="12-making-and-updating-a-project">12. Making and updating a project</h2>
+<p>Everything is on the <strong>Project</strong> menu, and every operation that changes the file set writes the <code>.pro</code> back immediately (you do not have to Save after each):</p>
+<ul>
+<li><strong>New…</strong> — opens a folder picker and asks a name, then writes <code>&lt;name&gt;.pro</code> into the folder and opens it. An empty project has an empty <code>Sources</code> group.</li>
+<li><strong>New File</strong> (Ctrl-N) — asks a name (optionally <code>subdir/name</code>), creates the file on disk (empty), adds it to the right group by suffix, and opens it.</li>
+<li><strong>Add File</strong> — adds the file you are looking at to a group you name (defaults to the group its suffix suggests). The file must already be saved so it has a name.</li>
+<li><strong>Remove File</strong> — takes the open file out of the project. It leaves the file on disk — "remove from project" is not "delete from disk".</li>
+<li><strong>Save</strong> / <strong>Save as…</strong> — write the <code>.pro</code> (Save as… under a new name).</li>
+<li><strong>Open…</strong> / <strong>Close</strong> — open an existing <code>.pro</code>, or close the current project.</li>
+</ul>
+<p>Each of these is present and identical in both RIDE 3.0 and 3.5. A worked, step-by-step lifecycle — new project, add an empty file, give it content, add a second file, build, add an existing file, build and run, remove the file, change the call, run again — is the fastest way to learn them; the <code>demo</code> project in <code>projects/c-demo/</code> is the end state of exactly that sequence.</p>
+<p><strong>What you see as you work.</strong> The left pane shows the groups and their files. The title bar shows the project and file. The bottom-right status shows the language, configuration, compiler (with a <code>*</code> when the file chose it) and target; in 3.5 the top-right of the menu bar shows the compiler in use as plain text, changing as the file, the Language menu or the Tools menu change it.</p>
+<hr>
+<h2 id="13-groups-the-build-target-and-mixed-c-c">13. Groups, the build target, and mixed C/C++</h2>
+<p><strong>Groups</strong> are both organisation and the build's unit of selection. A group can hold one language or several. What happens at build time depends on the group's <code>toolchain</code>:</p>
+<ul>
+<li>A group left at <code>auto</code> holding <strong>one</strong> language compiles with that language's compiler.</li>
+<li>A group left at <code>auto</code> holding <strong>C and C++ together</strong> is <strong>split</strong>: the C files become one part compiled by <code>c90</code>, the C++ files another part compiled by <code>cpp11</code>, and the editor links the two sets of objects — because no compiler here takes an object as a compile input, and "a C and C++ project together" is the point. You see two lines in the console: <code>Sources (c90)</code> and <code>Sources (cpp11)</code>.</li>
+<li>A group that <strong>names</strong> a <code>toolchain</code> (say <code>msvc</code>) is one part and that compiler takes all of it — which is the only way to make <code>cl</code> compile C as C++ on purpose.</li>
+</ul>
+<p><strong>Shalimar in a group is the refusal that stayed.</strong> Shalimar cannot share a build with C or C++: in a group with C because no compiler takes both; in a group of its own beside C because of what a Shalimar object <em>is</em> (every unit exports the same three startup symbols, the runtime owns <code>main</code>, and there are no cross-file declarations to check a link against). A project that wants Shalimar beside C builds two programs.</p>
+<p><strong>Debug information does not mix.</strong> <code>cl</code> writes CodeView, <code>c90</code>/<code>cpp11</code> write DWARF on two targets and nothing on the third, and <code>shalimar</code> writes none anywhere. So a debug build of a mixed-compiler target is limited by the least-capable piece; the editor handles this rather than producing a debugger session that half-works.</p>
+<p><strong>The link driver</strong> is chosen by whether any part is C++: a program with C++ in it links through the C++ driver (so the C++ runtime is present); a pure-C program links through the C driver. The editor picks this for you and prints <code>linking with &lt;driver&gt;</code>.</p>
+<h1 id="part-iv-choosing-a-compiler-the-command-line-and-building-by-hand">Part IV — Choosing a compiler, the command line, and building by hand</h1>
+<p>Everything the editor does, it does by running one of the three compilers with a command line. This part is that command line: how the compiler is chosen, every flag each one takes, and how to drive them yourself.</p>
+<hr>
+<h2 id="14-how-the-compiler-is-selected">14. How the compiler is selected</h2>
+<p>Four things decide which compiler runs, in this order of authority:</p>
+<ol>
+<li><strong>The Tools menu (project/global toolchain).</strong> If you set a specific compiler (<code>c90</code>, <code>cpp11</code>, <code>shalimar</code>, or <code>msvc</code>/<code>cl</code>), that wins for every group left at <code>auto</code>. The default is <strong>auto</strong>, shown with a <code>*</code> in the status.</li>
+<li><strong>A group's own <code>toolchain</code>.</strong> A group in the <code>.pro</code> can name its compiler, overriding the project's for that group only.</li>
+<li><strong>The file's language, when everything above is <code>auto</code>.</strong> The suffix decides: <code>.c</code>/<code>.h</code> → <code>c90</code>, <code>.cpp</code>/<code>.hpp</code>/… → <code>cpp11</code>, <code>.shl</code>/<code>.shm</code> → <code>shalimar</code>. This is the normal case: C to the C compiler, C++ to the C++ compiler, Shalimar to the Shalimar compiler.</li>
+<li><strong>The Language menu</strong>, which overrides the suffix for a file whose name lies — a <code>.txt</code> holding C, a <code>.h</code> that is really C++, a <code>.shm</code> the app wrote. It sets the colouring, the layout rules, and (through Tools ▸ By language) the compiler.</li>
+</ol>
+<p>The resolution rule in one sentence: <strong>a named toolchain (project or group) wins; otherwise the language wins, and the language comes from the suffix unless the Language menu overrides it.</strong> The editor never sends a <code>.cpp</code> to <code>c90</code> or a <code>.c</code> to <code>cpp11</code> under <code>auto</code>; if you force it with a named toolchain, the compiler itself refuses by name.</p>
+<p><code>Ctrl-K</code> cycles the tool choice; <code>Ctrl-T</code> cycles the target; <code>Ctrl-D</code> toggles debug/release.</p>
+<hr>
+<h2 id="15-c90-command-line-reference">15. <code>c90</code> — command-line reference</h2>
+<pre><code>c90 &lt;file.c&gt; [more.c ...] [-S|-c] [-o out] [-D n[=v]] [-U n]
+     [-I dir] [-j n] [-arch a] [-masm=m] [-g] [-time] [-nologo]</code></pre>
+<table><thead><tr><th>Flag</th><th>Meaning</th></tr></thead><tbody><tr><td>(none)</td><td>compile, assemble and link into a program (<code>-o</code> names it, else <code>a.out</code>/<code>a.exe</code>). Several inputs link together.</td></tr><tr><td><code>-c</code></td><td>stop at one object per input (named by <code>-o</code>, or after the input).</td></tr><tr><td><code>-S</code></td><td>stop after this compiler; write assembly (one <code>.s</code>/<code>.asm</code> per input, or <code>-o</code> for a single one).</td></tr><tr><td><code>-o out</code></td><td>name the output.</td></tr><tr><td><code>-D n[=v]</code></td><td>define macro <code>n</code> as <code>v</code> (or <code>1</code>); may name a target's own macro.</td></tr><tr><td><code>-U n</code></td><td>undefine macro <code>n</code>.</td></tr><tr><td><code>-I dir</code></td><td>add a directory to the <code>&lt;...&gt;</code> include search (before the system <code>lib/</code>).</td></tr><tr><td><code>-j n</code></td><td>how many inputs to compile at once; <code>-j 1</code> is serial.</td></tr><tr><td><code>-arch a</code></td><td>the target: <code>x86_64-linux</code>, <code>x86_64-windows</code>, <code>arm64-darwin</code>, <code>tms6747</code>. Default is the host; a non-host host target reaches <code>-S</code> only.</td></tr><tr><td><code>-masm=m</code></td><td>assembly syntax for <code>x86_64-windows</code>: <code>masm</code> (ml64, default) or <code>gnu</code>.</td></tr><tr><td><code>-g</code></td><td>write a DWARF line table (so a debugger can stop on a line). <code>x86_64-linux</code> and <code>arm64-darwin</code> only.</td></tr><tr><td><code>-time</code></td><td>report how long each phase took.</td></tr><tr><td><code>-nologo</code></td><td>omit the start-of-compile banner.</td></tr><tr><td><code>--version</code></td><td>print the banner and stop.</td></tr></tbody></table>
+<hr>
+<h2 id="16-cpp11-command-line-reference">16. <code>cpp11</code> — command-line reference</h2>
+<pre><code>cpp11 &lt;file.cpp&gt; [more.cpp ... | objects/libs] [-S|-c] [-o out]
+      [-D n[=v]] [-U n] [-I dir] [-arch a] [-masm=m] [-g] [-nologo]</code></pre>
+<p>Its flags mirror <code>c90</code>'s, with the C++ differences:</p>
+<ul>
+<li>It accepts <strong><code>.cpp</code>/<code>.cc</code>/<code>.cxx</code></strong> (and refuses <code>.c</code> by name).</li>
+<li>Among its inputs it recognises <strong>objects and libraries</strong> (<code>.o</code>, <code>.obj</code>, <code>.a</code>, <code>.lib</code>) and passes them straight to the link step — they are not compiled.</li>
+<li>It searches <strong><code>include/</code> then <code>lib/</code></strong> for system headers (C++ then C).</li>
+<li>Its banner is <code>©2026 G. R. Akhtar - ISO C++ 11</code>; <code>-nologo</code> suppresses it; <code>--version</code> adds the sealed-version line.</li>
+<li><code>-arch</code> and <code>-masm</code> behave as for <code>c90</code>; DWARF on the two GNU targets.</li>
+</ul>
+<p><code>-S</code> for a single input to standard output happens when you name <code>-S</code>, one input and no <code>-o</code> — the editor's Assembly tab uses this.</p>
+<hr>
+<h2 id="17-shalimar-command-line-reference">17. <code>shalimar</code> — command-line reference</h2>
+<pre><code>shalimar &lt;file.shl&gt; [-S] [-o out] [--target=a] [--debug]
+     [-lNAME] [--no-search] [-nologo]</code></pre>
+<table><thead><tr><th>Flag</th><th>Meaning</th></tr></thead><tbody><tr><td>(none)</td><td>compile, assemble and link a program against the runtime.</td></tr><tr><td><code>-S</code></td><td>write assembly (<code>.s</code>, or <code>.asm</code> for <code>x86_64-windows</code>).</td></tr><tr><td><code>-o out</code></td><td>name the output.</td></tr><tr><td><code>--target=a</code></td><td>the target (note the <code>--target=</code> spelling, not <code>-arch</code>): the three host targets or <code>tms6747</code>.</td></tr><tr><td><code>--debug</code></td><td>link the debug runtime (not on the emulator; Shalimar carries no line info).</td></tr><tr><td><code>-lNAME</code></td><td>borrow a library, named where it lives (repeatable, in link order).</td></tr><tr><td><code>--no-search</code></td><td>do not add the default library search.</td></tr><tr><td><code>-nologo</code></td><td>omit the banner (<code>©2026 G. R. Akhtar - Shalimar 1.2</code>).</td></tr><tr><td><code>--version</code> / <code>-h</code> / <code>--help</code></td><td>say which shalimar this is, or the usage, and stop.</td></tr></tbody></table>
+<p>The one to remember: <strong>shalimar uses <code>--target=x</code>, while c90 and cpp11 use <code>-arch x</code>.</strong> The editor spells each correctly; a hand-written script must too.</p>
+<hr>
+<h2 id="18-compiling-from-the-command-line">18. Compiling from the command line</h2>
+<p>The compilers are in the install's <code>bin\</code>. Put it on <code>PATH</code> (the installer's "Add the bin folder to PATH" task does this) or name them by full path.</p>
+<p><strong>C, host, build and run:</strong></p>
+<pre><code>c90 hello.c -o hello
+./hello                        (hello.exe on Windows)</code></pre>
+<p><strong>C, several files into one program:</strong></p>
+<pre><code>c90 main.c sum.c -o prog</code></pre>
+<p><strong>C, just the assembly for a foreign target (reaches -S anywhere):</strong></p>
+<pre><code>c90 -S -arch arm64-darwin hello.c -o hello.s</code></pre>
+<p><strong>C++, host, with your own headers:</strong></p>
+<pre><code>cpp11 -I include src/app.cpp -o app</code></pre>
+<p><strong>C++, object then link (what a project build does):</strong></p>
+<pre><code>cpp11 -c -arch x86_64-windows a.cpp
+cpp11 -c -arch x86_64-windows b.cpp
+cpp11 a.obj b.obj -o prog        (objects are link inputs)</code></pre>
+<p><strong>Shalimar, host:</strong></p>
+<pre><code>shalimar gcd.shl -o gcd
+./gcd</code></pre>
+<p><strong>Shalimar, C6000, run on the emulator (needs the runtime beside the .s):</strong></p>
+<pre><code>shalimar -S --target=tms6747 gcd.shl -o gcd.s
+vm6747 gcd.s bin\lib\shmrt-tms6747</code></pre>
+<p><strong>tms6747 for C/C++ on the emulator:</strong></p>
+<pre><code>c90 -S -arch tms6747 hello.c -o hello.s
+vm6747 hello.s</code></pre>
+<p><strong>Windows note — the assembler and linker.</strong> On <code>x86_64-windows</code>, a full build (no <code>-S</code>) assembles with <code>ml64</code> and links with <code>link</code>, which are on <code>PATH</code> only inside a Developer Command Prompt. The compiler finds Visual Studio itself and sources <code>vcvars64.bat</code> for the assemble/link steps, so <code>c90 hello.c -o hello</code> works from an ordinary shell too. If you drive the tools yourself from Git bash, three rules bite: write <code>cl</code>/<code>link</code> options with a dash not a slash (MSYS rewrites <code>/x</code> into a path), translate paths with <code>cygpath -m</code>, and source vcvars in a <code>.bat</code> that then calls <code>bash -c</code> (a login shell drops what vcvars added).</p>
+<p><strong>A whole project by hand.</strong> There is no magic: read the <code>.pro</code>, compile each group's sources with the right compiler and <code>-c</code>, then link the objects with the C++ driver if any part is C++, else the C driver. The editor is doing exactly this and printing each command.</p>
+<h1 id="part-v-the-four-targets-their-native-tools-and-how-windows-is-debugged">Part V — The four targets, their native tools, and how Windows is debugged</h1>
+<p>A <em>target</em> is the machine the code is generated for. It is a separate thing from the <em>host</em> — the machine you are compiling on. The compiler can generate any target's assembly on any host; whether that assembly can be turned into a program depends on whether the host has the assembler and linker for it. This part is the four targets, what each needs, and the Windows tool story in detail.</p>
+<hr>
+<h2 id="19-host-versus-target-and-runs-here">19. Host versus target, and "runs here"</h2>
+<p>The compiler's own output is assembly (Part I). Turning assembly into a program needs a native assembler and linker <em>for that target</em>, and those live on the host. So:</p>
+<ul>
+<li>Generating a target's assembly (<code>-S</code>) works on <strong>any</strong> host.</li>
+<li>Building and running a target's program works only where the host has that target's tools.</li>
+</ul>
+<p>On each host, one target is native and the others reach <code>-S</code> and stop:</p>
+<table><thead><tr><th>Host</th><th>Native target</th><th>The others reach</th></tr></thead><tbody><tr><td>Windows</td><td><code>x86_64-windows</code></td><td><code>-S</code> only</td></tr><tr><td>Linux</td><td><code>x86_64-linux</code></td><td><code>-S</code> only</td></tr><tr><td>macOS (arm64)</td><td><code>arm64-darwin</code></td><td><code>-S</code> only</td></tr><tr><td>any</td><td><code>tms6747</code></td><td>assembled by <code>asm6x</code>, linked by <code>lnk6x</code>; runs on <code>vm6747</code> and <code>sim6747</code></td></tr></tbody></table>
+<p><code>tms6747</code> is the exception: its assembler, linker, runtime, emulator and simulator ship with the editor and are host-independent, so the fourth target builds and runs on all three hosts. When the editor says a target "only reaches -S here — switch to &lt;host&gt; to run it", that is this fact, not a failure.</p>
+<hr>
+<h2 id="20-the-three-host-targets">20. The three host targets</h2>
+<p><strong><code>x86_64-linux</code></strong> — 64-bit x86, System V ABI, GNU assembler and linker. Debug info is DWARF. This and <code>x86_64-windows</code> share <strong>one instruction stream</strong>: the same code generator produces both, and the only difference is how the instructions are spelled — GNU syntax here, MASM there. That is why <code>-masm=gnu</code> on <code>x86_64-windows</code> produces the same program: it is the same instructions in the other dialect.</p>
+<p><strong><code>arm64-darwin</code></strong> — 64-bit ARM, the Apple ABI, the assembler and linker <code>clang</code> drives, DWARF (gathered into a <code>.dSYM</code> on a real link). This is the native target on an Apple-silicon Mac.</p>
+<p><strong><code>x86_64-windows</code></strong> — 64-bit x86, the Microsoft ABI, two spellings of one instruction stream: <strong>MASM</strong>, which RIDE's own <code>masm</code> and <code>link</code> assemble and link for a Release build, and the <strong>GNU spelling</strong>, which clang's assembler and Microsoft's <code>link.exe /DEBUG</code> turn into a program with <strong>CodeView</strong> in it for a Debug build. The MASM spelling carries no line table; the GNU one carries CodeView since 5.1 — see the next chapter. This is the native target on the Windows box, and the one the installers target.</p>
+<p>The type model is shared where the standard allows and differs where the ABI demands: <code>long</code> is 64-bit on the Unix targets and 32-bit on Windows (LLP64), which the code generator knows per target.</p>
+<hr>
+<h2 id="21-tms6747-the-fourth-target">21. <code>tms6747</code> — the fourth target</h2>
+<p>The TI <strong>TMS320C6747</strong> (a C674x, C6000-family VLIW DSP). The compiler generates C6000 assembly; RIDE's own <strong><code>asm6x</code></strong> assembles it, <strong><code>lnk6x</code></strong> links the objects against <strong>RTS6x</strong>, RIDE's C6747 runtime, into a <code>.out</code>, and two programs run the result on any host — the <strong><code>vm6747</code> emulator</strong>, which takes the assembly text as it is, and the <strong><code>sim6747</code> simulator</strong>, which runs the linked <code>.out</code>. A <code>.out</code> for the chip can also be made through TI's own tools (Part VI). The C6000 has its own ABI (arguments and small-struct returns in A/B register pairs, DP-relative near data, TI's exception-table format), which the backend implements to match TI's <code>cl6x</code> — verified word-for-word. wchar_t is 16-bit and unsigned on the C6000; <code>long</code> is 32-bit; <code>long double</code> is 8 bytes. Part VI is this target in full.</p>
+<hr>
+<h2 id="22-the-two-windows-spellings-and-how-a-windows-program-is-debugged">22. The two Windows spellings, and how a Windows program is debugged</h2>
+<p>This is the most-asked Windows question, so here it is in full.</p>
+<p><strong>The MASM spelling, and the project's own <code>masm</code>.</strong> On <code>x86_64-windows</code> the compilers can write MASM-syntax assembly — the same instruction stream as the Linux target, spelled Microsoft's way (<code>MasmSpelling</code> versus <code>GnuSpelling</code>; the two are the whole of the difference). Where a construct has no MASM room — for instance an identifier that MASM treats as a reserved word — the backend spells around it (e.g. <code>OPTION NOKEYWORD</code> for a name like <code>fabs</code>, <code>OPTION PROC:PRIVATE</code> so a <code>static</code> function is not exported as an external symbol). These are decisions recorded at the emission site, not accidents. Since 4.0 the assembler that reads it in a RIDE build is RIDE's own <strong><code>masm</code></strong> beside the editor, held to Microsoft's <code>ml64</code> byte for byte on the compilers' corpus, and the linker RIDE's own <strong><code>link</code></strong>; Microsoft's <code>ml64.exe</code> and <code>link.exe</code> enter a build only when one of ours has failed and you say yes to the editor's question (Part I chapter 5). RIDE itself never names <code>ml64</code>.</p>
+<p>**Where Visual Studio's tools must be <em>found</em> first.** <code>ml64</code>, <code>link</code> and <code>cl</code> are on <code>PATH</code> only inside a Visual Studio Developer Command Prompt. An editor started from Explorer is not one. So where a build needs one of them — a Debug build's <code>link.exe</code>, a <code>cl</code> build, the vendor fallback — the compiler and the editor locate Visual Studio themselves and run the step inside a shell that has sourced <code>vcvars64.bat</code>. That sets both <code>PATH</code> and <code>LIB</code> (so the linker finds <code>libcmt.lib</code>). The search, in the compilers and the editor alike: already inside a developer prompt (<code>VCToolsInstallDir</code> set), nothing to do; else <code>vswhere</code> asked for the newest installation with the C++ tools, any version or edition, Build Tools and previews included; else the places the installer puts them - <code>Microsoft Visual Studio\18</code>, <code>\2022</code>, <code>\2019</code>, <code>\2017</code>, each edition. When none of that finds it - a Visual Studio somewhere of its own - <em>Tools ▸ Locate vcvars64.bat...</em> names the file once, in the installation's <code>settings.json</code> (<code>&quot;vcvars&quot;</code>), and every build from then on uses it. Before this, a build started from a double-clicked editor died with <code>&#x27;ml64.exe&#x27; is not recognized</code>, which read like a broken compiler and was a missing environment. The lesson: on Windows, "the compiler works from a developer prompt but not from the editor" is always an environment question, never a code-generation one.</p>
+<p><strong>Why a Debug build does not go through the MASM spelling.</strong> A native Windows debugger wants <strong>CodeView</strong>, not DWARF, and two things keep the MASM path from carrying it:</p>
+<ol>
+<li><strong>MASM carries no line table of its own</strong>, and neither <code>ml64</code> nor <code>masm</code> builds one from the assembly. So <code>-g</code> for <code>x86_64-windows</code> in the MASM spelling has nowhere to put a line table — the compiler refuses <code>-g</code> there and says why, rather than emit debug info a debugger cannot use.</li>
+<li><strong><code>ml64</code> cannot relocate CodeView.</strong> Emitting CodeView records into the assembly and having <code>ml64</code> fix them up was tried and does not work — <code>ml64</code> will not relocate those sections.</li>
+</ol>
+<p><strong>How a Debug build is debugged, since 5.1.</strong> The GNU spelling can. With <code>-masm=gnu -g</code> on <code>x86_64-windows</code>, c90 and cpp11 write CodeView — the line table, the procedure records and the locals — into the GNU-spelled assembly, <strong>clang's assembler</strong> (Visual Studio ships one) turns it into a COFF object with <code>.debug$S</code> in it, and <strong>Microsoft's <code>link.exe /DEBUG</code></strong> writes the <code>.pdb</code> that <strong>cdb</strong> reads. The editor gives every Debug build on this target exactly that: <code>-masm=gnu</code>, clang, <code>link.exe /DEBUG</code>, cdb — and a Release build the MASM spelling through RIDE's own <code>masm</code> and <code>link</code>. One target, two assemblers, and the configuration says which; the editor names what ran in the console.</p>
+<p><strong>C++ on Windows through <code>cl</code></strong> is debugged the same way it always was: <code>cl</code> writes CodeView into a <code>.pdb</code> and <code>cdb</code> reads it (cdb is installed under the Windows Kits, found by the debugger even though it is not on <code>PATH</code>). So on the box every Debug build of C or C++ steps, whichever compiler made it; what cannot be stepped is a Release build, and a tms6747 program, which has no debugger. The editor's status and Debug menu say which case you are in rather than failing quietly.</p>
+<p><strong>Summary of the Windows debug matrix:</strong></p>
+<table><thead><tr><th>Built by</th><th>Target</th><th>Debug info</th><th>Steppable on the box</th></tr></thead><tbody><tr><td><code>c90</code>, <code>cpp11</code></td><td>x86_64-windows, Debug (GNU spelling, clang, <code>link.exe /DEBUG</code>)</td><td>CodeView</td><td>yes (cdb)</td></tr><tr><td><code>c90</code>, <code>cpp11</code></td><td>x86_64-windows, Release (MASM, <code>masm</code>, <code>link</code>)</td><td>none</td><td>no (MASM, no line table)</td></tr><tr><td><code>cl</code></td><td>x86_64-windows</td><td>CodeView</td><td>yes (cdb)</td></tr><tr><td><code>c90</code>/<code>cpp11</code></td><td>x86_64-linux / arm64-darwin</td><td>DWARF</td><td>yes (gdb/lldb)</td></tr><tr><td>any</td><td>tms6747</td><td>none</td><td>no (runs on the emulator or the simulator; neither is a debugger)</td></tr></tbody></table>
+<h1 id="part-vi-the-c6000-target-the-emulator-and-real-silicon">Part VI — The C6000 target, the emulator, and real silicon</h1>
+<p>The fourth target, since 3.5, sets RIDE apart from 3.0. This part is the TMS320C6747 target end to end: what the compiler emits, how the emulator runs it without any TI install, and how to produce a genuine chip binary with TI's tools.</p>
+<hr>
+<h2 id="23-the-tms320c6747-c6000-target">23. The TMS320C6747 / C6000 target</h2>
+<p>The TMS320C6747 is a C674x member of TI's C6000 family — a VLIW DSP: up to eight functional units issue in parallel, instructions carry unit specifiers and <code>||</code> parallel markers, and branches have delay slots. The compilers (<code>c90</code>, <code>cpp11</code>, <code>shalimar</code>) generate C6000 assembly for <code>-arch tms6747</code> (<code>--target=tms6747</code> for shalimar).</p>
+<p><strong>The ABI, matched to TI's <code>cl6x</code>.</strong> The backend implements the C6000 EABI as TI does it, verified against <code>cl6x</code> output:</p>
+<ul>
+<li>Arguments in A4/B4/A6/B6/A8/B8/A10/B10/A12/B12, then the stack from B15+4; 64-bit values in even:odd register pairs.</li>
+<li>A class of 8 bytes or less returned in A5:A4 and passed by value in a register or pair; a larger one through a hidden pointer in A4 (before <code>this</code>).</li>
+<li>Near (DP-relative, B14) data for scalars; the TI section conventions.</li>
+<li>16-bit unsigned <code>wchar_t</code>, 32-bit <code>long</code>, 8-byte <code>long double</code>, 1-byte <code>bool</code>, <code>size_t</code> = <code>unsigned int</code>.</li>
+<li>TI's exception model: <code>.c6xabi.extab</code>/<code>.c6xabi.exidx</code>-style tables, the frame the unwinder expects, <code>__cxa_end_cleanup</code> at a cleanup pad — so a C++ exception thrown through our frames behaves as TI's does.</li>
+<li>Itanium C++ machinery (vtables, VTT, typeinfo, virtual thunks) laid out to match <code>cl6x</code> word-for-word, so our objects interoperate with TI-built ones.</li>
+</ul>
+<p>The compiler emits the assembly TI's assembler accepts (<code>$</code> for the dots in symbol names, <code>.ref</code> for undefined symbols, <code>EXTU</code>/<code>CLR</code> where an <code>AND</code> immediate has no room, and the rest). Every emitted <code>.s</code> assembles under <code>cl6x</code>.</p>
+<hr>
+<h2 id="24-the-vm6747-emulator">24. The <code>vm6747</code> emulator</h2>
+<p><code>vm6747.exe</code> is a C674x instruction-set simulator with just enough runtime to run a compiled program and see what it computes — <strong>no TI tools required, on any host.</strong> You hand it the assembly (and, for Shalimar, the runtime directory) and it assembles the text in memory and executes it:</p>
+<pre><code>vm6747 program.s                          (C or C++)
+vm6747 program.s bin\lib\shmrt-tms6747     (Shalimar: runtime beside it)</code></pre>
+<p>It provides the C6000 helper functions the code calls (<code>__c6xabi_div*</code>, the 64-bit shift/multiply helpers), a <code>printf</code>-class I/O path, <code>exit</code>, a heap, and argc/argv. It is deliberately strict where that catches bugs (it faults an unaligned load that silicon would allow) and it invents a few behaviours a real board would define differently (division-by-zero faults; <code>abort</code> → 134; a fixed 16 MB heap; its own epoch for <code>time()</code>).</p>
+<p><strong>What the emulator is for.</strong> It is how tms6747 is a <em>first-class, trusted</em> target and not a text-only backend: the same program's output is checked on the emulator against the host targets, so a C, C++ or Shalimar program that computes the right answer on x86-64 computes it on the C6000 too. In the editor, <strong>Build ▸ Emulate on vm6747</strong> on <code>tms6747</code> builds with <code>-S</code> and runs on <code>vm6747</code>, linking no <code>.out</code>; F5 / Run project builds the TI program with asm6x and lnk6x against RTS6x and runs the <code>.out</code> on <code>sim6747</code>. Either way the console shows the program's output and <code>[program returned N]</code>.</p>
+<p><strong>What the emulator is not.</strong> It is not a debugger (the Debug menu turns tms6747 away by name), and it does not produce a file you flash to a chip — it runs the assembly directly. Nor is it the toolchain's judge: it reads the assembly <em>text</em>, so it never sees the bytes <code>asm6x</code> encoded or the image <code>lnk6x</code> laid out, and it runs the program over <strong>a C library and an exception-handling runtime of its own</strong>, not over RTS6x or TI's <code>rts6740</code>. A fault in the assembler, the linker or the runtime runs clean on vm6747; it is <strong>sim6747</strong>, running the linked <code>.out</code> with TI's boot code and the real runtime, that sees them (section 25). Both have caught what the other could not, which is why <strong>Build ▸ Verify</strong> runs a program on both and compares.</p>
+<hr>
+<h2 id="25-real-silicon-a-out-from-the-editor-and-the-ti-build-path">25. Real silicon: a <code>.out</code> from the editor, and the TI build path</h2>
+<p><strong>The editor's own way (since 2026-09-19).</strong> <code>asm6x.exe</code> beside the editor is the project's own C6000 assembler — ASM6x, a sibling of the MASM assembler, held to TI's <code>asm6x</code> object for object on the compilers' whole tms6747 corpus. With it there, every project build for <code>tms6747</code> turns the assembly in <code>&lt;program&gt;.vm</code> into TI objects (<code>.obj</code> beside each <code>.s</code>), and the console says <code>$ asm6x N sources</code>. A Shalimar program links its runtime packed beside RTS6x, <code>shmrt6x.lib</code> or <code>shmrt6xd.lib</code> by configuration, ahead of <code>rts6x.lib</code> or <code>rts6xd.lib</code>; with TI's runtime named under Tools its assembly is copied in under <code>shmrt\</code> and assembled with the program instead. <strong>Then it links against RTS6x by default</strong> (5.1): RIDE's own C6747 run-time library, built from its own sources by cpp11 and asm6x and installed in <code>bin\lib\rts6x-tms6747</code> in two builds: <code>rts6x.lib</code> at -O2 for a Release build and <code>rts6xd.lib</code> at -O0 with <code>_DEBUG</code> for a Debug one, each with its <code>printf6x</code> library. RIDE's <code>lnk6x</code> links the objects with the configuration's library into <code>&lt;program&gt;.out</code> - <code>$ lnk6x N objects, rts6x.lib</code>, then <code>[linked &lt;program&gt;.out]</code> - and nothing of Texas Instruments' is on the link line. A CCS project's <code>libc.a</code> or <code>rts6740*</code> library is read as RTS6x's for the configuration; its own <code>.cmd</code> file, heap and stack are kept. To link against TI's runtime instead, name TI's C6000 compiler directory under <strong>Tools &gt; TI compiler for tms6747...</strong> (CCS's <code>ti-cgt-c6000_x.y.z</code>, the one with <code>bin\lnk6x</code>; and, asked for next, a directory holding <code>rts6740_elf_eh.lib</code>, the exception-handling runtime CCS does not ship — <code>ti-build</code> below can make one) and the same build goes on to <code>lnk6x</code>, linking those objects against TI's runtime into <code>&lt;program&gt;.out</code>, the file CCS loads onto a C6747; the console says <code>[linked &lt;program&gt;.out]</code>. A CCS found on the machine and not named leaves RTS6x the runtime. On a command line, <code>--ti dir [--tilib dir]</code> names them for one run. The emulator still runs the assembly, as it always did; the <code>.out</code> is for the board. An assembler that refuses or a link that fails is a failed build: what the emulator runs must be a TI program, or the emulator is proving nothing. <code>settings.json</code> keeps the two directories as <code>&quot;ti&quot;</code> and <code>&quot;tilib&quot;</code>.</p>
+<p><strong>The project's own linkers (4.0).</strong> Two more of the toolchain, written in the same way as the assemblers and built beside the editor since 4.0 - <code>lnk6x.exe</code> (LNK6x) for the C6747, held to TI's <code>lnk6x</code> byte for byte on its probe bed, and <code>link.exe</code> (LINK) for Windows x86-64, held to Microsoft's <code>link.exe</code> the same way. <strong>Tools &gt; Linker for tms6747...</strong> names a linker to use in place of TI's <code>lnk6x</code> for the <code>.out</code> (the runtime and the command file are still TI's), and <strong>Tools &gt; Linker for x86_64-windows...</strong> one in place of Microsoft's for a Windows program; <code>--tilinker path</code> and <code>--linker path</code> name them for one run, <code>-</code> in the console clears them, and <code>settings.json</code> keeps them as <code>&quot;tilinker&quot;</code> and <code>&quot;linker&quot;</code> - and the installed one names both (<code>bin/lnk6x.exe</code>, <code>bin/link.exe</code>): the project's own tools are the tools by default. When one of them fails a build and the compilers found no fault in the source, the editor asks whether to use the vendor's for that build - TI's <code>lnk6x</code> under the directory Tools names, ml64 and link.exe from the Visual Studio it found - and a Yes builds again through them; <code>&quot;askNative&quot;: false</code> never asks and lets the build fail. The question is only put when the vendor's tools are on the machine; otherwise the line says so. It is asked only when one of our own tools itself failed - a program's own link error (an unresolved or duplicate symbol, a library made for another platform) is refused by the vendor's tools the same way, so it does not ask - and never for a <code>cl</code> build. When TI's <code>lnk6x</code> links a CCS project whose <code>.cproject</code> leaves the memory model unsaid, RIDE passes <code>--rom_model</code>, CCS's default: without it TI's linker takes no <code>_c_int00</code> from the runtime and the <code>.out</code> has no entry point. Empty, and the build links as it always did.</p>
+<p><strong>The standalone script.</strong> To produce a <code>.out</code> and Intel <code>.hex</code> for the real chip from one source file, without the editor, RIDE also ships <code>bin\ti\ti-build.cmd</code>. It is <strong>license-safe</strong>: it contains and redistributes <strong>none</strong> of Texas Instruments' tools. It finds a TI Code Generation Tools install already on the machine and uses it.</p>
+<p><strong>Usage:</strong></p>
+<pre><code>bin\ti\ti-build.cmd  path\to\program.c        (or .cpp, or .shl)</code></pre>
+<p><strong>What it does:</strong></p>
+<ol>
+<li><strong>Finds the TI CGT</strong>, in order: the <code>RIDE_TI_CGT</code> environment variable (the CGT folder), <code>cl6x</code> on <code>PATH</code>, or <code>C:\ti\ccs*\tools\compiler\ti-cgt-c6000_*</code>. If none is present it says so and points you to TI's free download — and notes the <code>vm6747</code> emulator still runs tms6747 without any TI install.</li>
+<li><strong>Builds the exception-handling runtime once.</strong> TI ships <code>rts6740_elf.lib</code> (no exceptions) and the means to build the EH variant. On first use, ti-build runs the CGT's own <code>mklib</code> to build <code>rts6740_elf_eh.lib</code> into a user cache (<code>%LOCALAPPDATA%\RIDE\tilib</code>), so nothing is written into the CGT install and nothing of TI's is shipped by us. (mklib needs a POSIX <code>sh</code>, such as Git for Windows provides, on <code>PATH</code>.)</li>
+<li><strong>Compiles with our compiler</strong> (<code>c90</code>/<code>cpp11</code>/<code>shalimar -S -arch tms6747</code>) to get the C6000 assembly.</li>
+<li><strong>Assembles with <code>cl6x</code></strong>, links with <code>lnk6x</code> (against the EH runtime and, for Shalimar, the assembled <code>shmrt-tms6747</code> objects), using a flat-memory linker command file (<code>ti-link.cmd</code>), producing <code>program.out</code>.</li>
+<li><strong>Converts with <code>hex6x</code></strong> to <code>program.hex</code> (Intel hex).</li>
+</ol>
+<p><strong>Tested</strong> across all three languages: C (a recursive <code>fib</code>), C++ (virtual + <code>new</code>/<code>delete</code>), and Shalimar (with its runtime linked) — each produces a valid C674x ELF <code>.out</code> (ELF magic, <code>e_machine</code> 140 = TMS320C6000, 32-bit, little- endian, type EXEC) and a genuine Intel <code>.hex</code>.</p>
+<p><strong>Is the output byte-identical to CCS's own?</strong> <strong>No.</strong> Our compilers and TI's <code>cl6x</code> are different compilers: different instruction selection, register allocation and scheduling. So the objects, <code>.out</code> and <code>.hex</code> differ byte-for-byte from a <code>cl6x</code>-compiled-from-source build (for the <code>fib</code> test: our <code>.out</code> 412,248 bytes vs <code>cl6x</code>'s 413,608; our <code>.hex</code> 103,840 vs 103,009). What <em>is</em> guaranteed — and verified word-for-word — is <strong>ABI / binary compatibility</strong>: our objects link against <code>cl6x</code>'s objects and TI's runtime, calling conventions match, and vtables/typeinfo/exception tables match <code>cl6x</code>'s layout. That is why the TI link succeeds and why a mixed program would interoperate; it is interoperability, not identical machine code.</p>
+<p><strong>When to use which:</strong></p>
+<ul>
+<li><strong>Run and test a tms6747 program</strong> → the <code>vm6747</code> emulator (no TI tools, any host, shows the computed result).</li>
+<li><strong>Produce a real chip <code>.out</code>/<code>.hex</code></strong> → <code>bin\ti\ti-build.cmd</code> (needs a TI CGT on the machine; see <code>bin\ti\TI-BUILD.txt</code>).</li>
+</ul>
+<h1 id="part-vii-reference-keys-the-editor-s-command-line-diagnostics-troubleshooting">Part VII — Reference: keys, the editor's command line, diagnostics, troubleshooting</h1>
+<hr>
+<h2 id="26-keys-and-menus">26. Keys and menus</h2>
+<p><strong>The keys</strong> (the console editor; the Windows window differs on ten — see below):</p>
+<table><thead><tr><th>Key</th><th>Does</th><th>Key</th><th>Does</th></tr></thead><tbody><tr><td><code>F1</code></td><td>the keys</td><td><code>Ctrl-B</code></td><td>compile this file</td></tr><tr><td><code>F10</code></td><td>the menu</td><td><code>F5</code></td><td>run this file - or the project it is one source of</td></tr><tr><td><code>F2</code>/<code>F3</code></td><td>previous / next file</td><td><code>F4</code></td><td>build the project</td></tr><tr><td><code>F9</code></td><td>breakpoint</td><td><code>F8</code></td><td>debug — start / continue</td></tr><tr><td><code>F7</code>/<code>F6</code></td><td>step over / into</td><td><code>Ctrl-D</code></td><td>debug or release</td></tr><tr><td><code>Ctrl-Up</code>/<code>Ctrl-Down</code></td><td>up / down the stack</td><td><code>Ctrl-T</code></td><td>next target</td></tr><tr><td><code>Ctrl-K</code></td><td>next compiler</td><td><code>Ctrl-L</code></td><td>line numbers</td></tr><tr><td><code>Ctrl-W</code></td><td>next pane</td><td><code>Ctrl-P</code></td><td>project pane</td></tr><tr><td><code>Ctrl-E</code></td><td>bottom panel</td><td><code>Tab</code></td><td>lay this line out</td></tr><tr><td><code>Ctrl-A</code></td><td>re-indent selection</td><td><code>Ctrl-F</code></td><td>find</td></tr><tr><td><code>Ctrl-G</code></td><td>find next</td><td><code>Ctrl-R</code></td><td>replace</td></tr><tr><td><code>Ctrl-Z</code>/<code>Ctrl-Y</code></td><td>undo / redo</td><td><code>Ctrl-S</code></td><td>save</td></tr><tr><td><code>Ctrl-C</code>/<code>Ctrl-X</code>/<code>Ctrl-V</code></td><td>copy / cut / paste</td><td><code>Ctrl-Q</code></td><td>leave</td></tr></tbody></table>
+<p>In the project pane, Enter opens. In the bottom panel, left/right change tab and shift+up/down resize it; on Console, Enter jumps to the line the compiler named.</p>
+<p><strong>The Windows window (<code>RIDE.exe</code>) differs deliberately on nine keys</strong>, keeping what a Windows application means by them: <code>Ctrl+PageDown</code>/<code>Ctrl+PageUp</code> move between files (<code>F2</code>/<code>F3</code> are Rename and Find-next there), so <strong><code>F3</code> is Find next and <code>Shift-F3</code> Find previous</strong>; <strong><code>Ctrl-W</code> closes the file</strong> (next pane in the console); <strong><code>Ctrl-A</code> selects all</strong> and <strong><code>Ctrl-L</code> re-indents</strong> (in the console <code>Ctrl-A</code> re-indents and <code>Ctrl-L</code> is line numbers); <strong><code>Ctrl-H</code> is Replace</strong>; <strong><code>Ctrl-N</code> is New File</strong>; the View menu's <code>Ctrl-0</code>…<code>Ctrl-4</code> pick the pane and the tab. Menus are reached with <code>Alt</code>+the underlined letter. In the console a letter typed while the menu is open goes to the next column whose title starts with it - <code>T</code> is Tools, <code>T</code> again Target - and F10 opens on File every time.</p>
+<p><strong>The menus:</strong> File (New / Open / Save / Save as / Close, the recent files, Exit), Edit, Project (New / Open / Recent / Save As / Close, then New File / Add File / Remove / Rename / Delete - the last three act on the file in front, or on the one picked in the project pane, and the project follows the file - then Include Paths / Libraries, the project's own in its <code>.pro</code>; each is offered only while a project is open, and Open takes a CCS project's <code>.project</code> or a file of a CCS workspace as well as a <code>.pro</code>; there is no Save, since every change is written as it is made), Build (Compile / Run / Build project / Run project / Stop / Clean / Debug / Release - Clean removes what a build made and empties the panes; in the console it is the last item), Debug, View (Project pane / Bottom panel / Console / Debug / Assembly / Line numbers / Plain frame), Language (By extension / C / C++ / Shalimar / JSON / Plain text / Convert), Tools (By language / c90 / cpp11 / shalimar / MSVC (cl) / C++ (host), then Header directories, the <em>shared</em> include paths and libraries of the installation, and where vcvars64, the assembler and TI's compiler are), Target (the architectures), Help. The last three — Language, Tools, Target — are one chain: what the file <strong>is</strong>, which <strong>compiler</strong> reads it, which <strong>machine</strong> it runs on.</p>
+<hr>
+<h2 id="27-the-editor-s-own-command-line">27. The editor's own command line</h2>
+<pre><code>RIDE.exe [file] [--project dir]
+    [--toolchain auto|c90|cpp11|msvc|shalimar|c++]
+    [--config debug|release]
+    [--c90 path] [--cpp11 path] [--cl path] [--shalimar path]</code></pre>
+<ul>
+<li>A bare <code>file</code> opens that file; <code>--project dir</code> opens the project in <code>dir</code>.</li>
+<li>With nothing, the editor opens nothing: the last three projects it was in are remembered and named at the end of the Project menu, never opened on their own.</li>
+<li><code>--toolchain</code> and <code>--config</code> preset the Tools and Debug/Release choices.</li>
+<li><code>--c90</code>/<code>--cpp11</code>/<code>--cl</code>/<code>--shalimar</code> name the compilers explicitly; otherwise the editor finds them beside itself (<code>bin\</code>) before <code>PATH</code>. <code>$C90</code>/<code>$CPP11</code>/<code>$CL</code>/ <code>$SHALIMAR</code> do the same through the environment.</li>
+</ul>
+<hr>
+<h2 id="28-reading-a-diagnostic">28. Reading a diagnostic</h2>
+<p>A compiler diagnostic names the file, line and column, the severity, and the message, and the editor turns the top one into the status line and (on a double-click, or Enter on the Console) jumps the caret there. The compilers <strong>diagnose at the point of interception</strong> — the error is reported where the rule was broken, not deferred to a later phase — and they <strong>refuse by name</strong>: an unsupported construct produces a specific message (e.g. cpp11's "…is not supported yet" or "…is C++14, and this compiler is C++11"), not a generic parser stumble. If you see a message you do not expect from a one-line program, that message is the truth of what the compiler did.</p>
+<p>Two diagnostics worth recognising:</p>
+<ul>
+<li><strong><code>c90: &lt;file&gt;.cpp looks like C++ … compile it with cpp11</code></strong> — you handed the C compiler a C++ file. Use <code>cpp11</code> (or let <code>auto</code> route it).</li>
+<li><strong><code>&lt;arch&gt; only reaches -S here — switch to &lt;host&gt; to run it</code></strong> — a foreign target: the assembly is produced, but this host cannot assemble/link it.</li>
+</ul>
+<hr>
+<h2 id="29-troubleshooting-why-a-thing-fails">29. Troubleshooting — why a thing fails</h2>
+<ul>
+<li><strong><code>&#x27;ml64.exe&#x27; is not recognized</code></strong> — the assemble step ran without a Visual Studio environment. The compiler normally sources <code>vcvars64.bat</code> itself; if a hand-run build hits this, run from a Developer Command Prompt or let the compiler find VS. Never a code fault.</li>
+<li><strong>A build "does nothing" / runs an old program</strong> — a stale binary. On Windows, confirm the editor and compilers are the ones you just built (they must sit together in <code>bin\</code>); an editor without its compilers beside it says so in its About box.</li>
+<li><strong><code>c90</code>/<code>cpp11</code> refuses a file by suffix</strong> — the language guard. <code>.c</code> → c90, <code>.cpp</code> → cpp11; use the matching compiler or the Language menu.</li>
+<li><strong>A C++ feature is refused</strong> — check it against Part II chapter 8 and the C++ compiler's <code>docs/EXCLUSIONS.md</code>; cpp11 is C++11 minus a documented list, and it refuses by name.</li>
+<li><strong><code>-g</code> refused for <code>x86_64-windows</code></strong> — the MASM spelling carries no line table; <code>-masm=gnu -g</code> writes CodeView through clang's assembler, which is what the editor's Debug configuration does (Part V chapter 22).</li>
+<li><strong>Shalimar won't share a build with C</strong> — by design; build two programs (Part III chapter 13).</li>
+<li><strong><code>ti-build</code> says "TI CGT not found"</strong> — install TI's free C6000 Code Generation Tools, or set <code>RIDE_TI_CGT</code>; the <code>vm6747</code> emulator runs tms6747 without it.</li>
+<li><strong><code>ti-build</code> first run is slow / "building the runtime"</strong> — it is building the EH runtime once into <code>%LOCALAPPDATA%\RIDE\tilib</code>; needs a POSIX <code>sh</code> (Git for Windows) on <code>PATH</code>. Subsequent runs are fast.</li>
+<li><strong>Total failure of a suite on Windows only</strong> — read it as a line-ending question (MSVC writes CRLF, golden files are LF) before a compiler fault.</li>
+</ul>
+<hr>
+<h2 id="30-glossary">30. Glossary</h2>
+<ul>
+<li><strong>Target</strong> — the machine the code is generated for (<code>x86_64-windows</code>, <code>x86_64-linux</code>, <code>arm64-darwin</code>, <code>tms6747</code>). Distinct from the host.</li>
+<li><strong>Host</strong> — the machine you are compiling on.</li>
+<li><strong>i-line</strong> — <code>c90</code>/<code>cpp11</code>/<code>shalimar</code>, the compilers RIDE drives since 3.5; the same three compilers as 3.0's originals, one target on (tms6747).</li>
+<li><strong><code>-S</code> / <code>-c</code></strong> — stop at assembly / stop at an object. No flag: build a program.</li>
+<li><strong><code>.pro</code></strong> — the project file (JSON): name, toolchain, arch, groups, build.</li>
+<li><strong>Group</strong> — a named list of files in a project; the build selects by group; a group may name its own compiler.</li>
+<li><strong>The runtime (<code>shmrt-*</code>)</strong> — the Shalimar support library, in <code>bin\lib\</code> beside <code>shalimar</code>.</li>
+<li><strong><code>vm6747</code></strong> — the C6000 instruction-set emulator; runs tms6747 assembly with no TI tools.</li>
+<li><strong>CGT</strong> — TI's Code Generation Tools (<code>cl6x</code>/<code>asm6x</code>/<code>lnk6x</code>/<code>hex6x</code>), used by the optional <code>ti-build</code> path, found on the machine, never shipped by us.</li>
+<li><strong>MASM / ml64</strong> — the <code>x86_64-windows</code> assembly dialect of a Release build, and Microsoft's assembler for it; <code>masm.exe</code> beside the editor is the project's own, used in its place since 4.0, and <code>ml64</code> runs only on the vendor fallback (<code>asm6x.exe</code> is the C6000 counterpart). A Debug build is the GNU spelling, assembled by clang with CodeView in it.</li>
+<li><strong>LINK / link.exe</strong> — Microsoft's linker, and the project's own <code>link.exe</code> beside the editor since 4.0, held to Microsoft's byte for byte on its probe bed; Tools &gt; Linker for x86_64-windows... names it, and a build resolves a bare <code>link.exe</code> from the project directory and then <code>PATH</code>, never from <code>bin\</code>, so the two do not get confused.</li>
+<li><strong>LNK6x / lnk6x</strong> — TI's C6000 linker, and the project's own <code>lnk6x.exe</code> beside the editor since 4.0, held to TI's byte for byte on its probe bed; Tools &gt; Linker for tms6747... names it, and TI's is always run by full path under the CGT directory.</li>
+<li><strong>DWARF / CodeView</strong> — the two debug-info formats; DWARF on the GNU targets, CodeView on <code>x86_64-windows</code> from <code>cl</code> and, since 5.1, from c90 and cpp11 in a Debug build.</li>
+<li><strong>vm6747 / sim6747</strong> — the two ways a tms6747 program runs on a host: the emulator reads the assembly text and runs it over a runtime of its own; the simulator runs the linked <code>.out</code> with its real runtime and boot code.</li>
+</ul>
+<hr>
+<p><em>This manual describes RIDE 5.17. RIDE 3.0 is the same editor with three languages and three targets — no tms6747, no emulator, no TI build path, and the frozen original compilers. Where a chapter is target-specific, 3.0 has the first three targets only.</em></p>
+<h1 id="part-viii-the-shalimar-ecosystem-and-the-c2s-converter">Part VIII — The Shalimar ecosystem and the c2s converter</h1>
+<p>Shalimar is more than the <code>shalimar</code> compiler inside RIDE. It is a small family of projects that share one language, and the C↔Shalimar converter (<code>c2s</code>) that RIDE ships is the bridge between the C world and the Shalimar one. This part maps the family, then documents <code>c2s</code> in full — because <code>c2s.exe</code> is in your install and its Language-menu items are one keystroke away.</p>
+<hr>
+<h2 id="31-the-map-what-is-inside-ride-and-what-is-beside-it">31. The map: what is inside RIDE, and what is beside it</h2>
+<p>It is worth being exact about which Shalimar things RIDE <em>is</em>, and which are separate projects that share the language:</p>
+<p><strong>Inside RIDE (what you install):</strong></p>
+<ul>
+<li><strong><code>shalimar</code></strong> — the Shalimar compiler (the i-line of Compiler-S), four targets. This is what F5/F4/Run project use for a <code>.shl</code> file.</li>
+<li><strong><code>shmrt-*</code></strong> — the Shalimar runtime, in <code>bin\lib\</code> beside <code>shalimar</code>.</li>
+<li><strong><code>c2s</code></strong> — the C89↔Shalimar source converter, driven from the Language menu.</li>
+</ul>
+<p><strong>Beside RIDE (separate projects that share the language):</strong></p>
+<ul>
+<li><strong>Compiler-S</strong> — the upstream Shalimar native compiler that <code>shalimar</code> is built from. C++14, three host targets; RIDE's <code>shalimar</code> (since 3.5) adds <code>tms6747</code>.</li>
+<li><strong>The Shalimar app family</strong> — the iOS apps whose Swift interpreter <em>runs</em> Shalimar on a phone. These are not compilers and are not part of RIDE; they are where the language's own specification lives, and RIDE's Shalimar help is a checked copy of it. Three of them:<ul>
+<li><strong>Shalimar</strong> — the original iOS app: a Swift/UIKit editor and interpreter. It is the authority for the language (<code>SHALIMAR_LANGUAGE.md</code>), and it is sealed — RIDE never opens or changes it.</li>
+<li><strong>Shalimar-2</strong> — a newer iOS app that runs <strong>C</strong> on a phone by converting it with <code>c2s</code> to Shalimar and interpreting the result: <code>C source → c2s → Shalimar → the interpreter already in the app</code>. iOS only, no code generation — <code>c2s</code> is the only native code, and it carries its own C front end so it needs neither <code>c90</code> nor <code>shalimar</code>.</li>
+<li><strong>Shalimar-3</strong> — a further iteration of the app line, reviewed and hardened (for example, a character-count output ceiling beside the line ceiling, and not leaking the parse tree on a refused compile).</li>
+</ul></li>
+</ul>
+<p>The relationships that make them look like one project but do not make them one: Compiler-S records its expected output <em>from</em> the app's interpreter (the interpreter is the oracle, the document is the authority); <code>c2s</code> <em>vendors</em> Compiler-S's Shalimar front end so the two agree on what Shalimar accepts; and <code>shalimar</code> is Compiler-S one target on. RIDE ships <code>shalimar</code> and <code>c2s</code>; everything else in this list is upstream or a sibling.</p>
+<hr>
+<h2 id="32-compiler-s-shc-and-shalimar">32. Compiler-S, <code>shc</code> and <code>shalimar</code></h2>
+<p><strong>Compiler-S</strong> is the native Shalimar compiler. It compiles <code>.shm</code>/<code>.shl</code> programs to native assembly for <code>arm64-darwin</code>, <code>x86_64-linux</code> and <code>x86_64-windows</code>; RIDE's <strong><code>shalimar</code></strong> (since 3.5) is the same compiler with <code>tms6747</code> added. It is C++14, held to the same <code>-Wall -Wextra -Werror -pedantic</code> discipline as the C and C++ compilers.</p>
+<p><strong>The runtime.</strong> A Shalimar program is not self-contained: it links against a runtime archive (<code>shmrt-&lt;target&gt;</code>) that owns <code>main</code>, formats numbers, does the console I/O, manages arrays and carries the failure paths. The compiler looks for that runtime in <code>lib/</code> beside its own binary and then in <code>../lib</code> — which is why the install puts <code>shmrt-*</code> in <code>bin\lib\</code>. A <code>shalimar</code> that stands without its runtime compiles and writes correct assembly and then fails at the link, which is why the editor's <code>confirm</code> step checks the runtime is present, not just the compiler.</p>
+<p><strong>The oracle.</strong> Compiler-S records its expected results from the Shalimar app's interpreter and keeps every divergence in its <code>docs/CONFORMANCE.md</code>. The one that exists is small and worth knowing: the language document says <code>t : s</code> copies a string; the app's interpreter aliases it; the compiler copies (matching the document, which is the authority). So a Shalimar program that mutates a string after an assignment can behave differently under the interpreter and the compiler — the document, and the compiler, are the reference.</p>
+<p><strong>Debugging.</strong> Shalimar carries no debug information on any target, by decision. The Debug menu turns a Shalimar file away by name.</p>
+<hr>
+<h2 id="33-the-c2s-converter-what-it-is">33. The <code>c2s</code> converter — what it is</h2>
+<p><code>c2s</code> converts source between <strong>C89 and Shalimar, both directions</strong>:</p>
+<pre><code>C89 source   →  c2s  →  Shalimar source     (CToS)
+Shalimar     →  c2s  →  C89 source          (SToC)</code></pre>
+<p>It is a source-to-source translator, not a compiler: it never generates machine code. It has its <strong>own C front end</strong> (its own lexer, parser, preprocessor and pre-scan — about 1,000 lines, sharing only idiom with <code>c90</code>) and it <strong>vendors Shalimar's front end</strong> from Compiler-S, so it agrees exactly with <code>shalimar</code> about what Shalimar accepts. In the editor, two Language-menu items put <code>c2s</code> over the open file (C→Shalimar, and back). From a shell, <code>c2s.exe</code> takes the file and a direction.</p>
+<p>The two directions have different characters:</p>
+<ul>
+<li>**C → Shalimar is mostly a <em>rejection</em> problem.<strong> C is the larger language; the converter's job is to carry what maps faithfully and to </strong>refuse, by name, anything it cannot** — never to translate something into Shalimar that means something subtly different.</li>
+<li>**Shalimar → C is mostly a <em>runtime</em> problem.** Shalimar's numeric behaviour (its integer-overflow trapping, its printing) has no plain C form, so this direction emits a small <code>c2s_*</code> C preamble that reproduces Shalimar's behaviour, and the converted C carries it.</li>
+</ul>
+<hr>
+<h2 id="34-c2s-features-c-shalimar-in-detail">34. <code>c2s</code> features — C → Shalimar, in detail</h2>
+<p><strong>Control flow it lowers faithfully.</strong> Shalimar has no <code>goto</code> and no labels (the spec says so three times), so C control flow is expressed with what Shalimar has:</p>
+<ul>
+<li><strong><code>switch</code></strong> becomes an <code>if</code>/<code>elseif</code>/<code>else</code> chain when every case breaks.</li>
+<li>A <strong><code>break</code> from the middle of an arm</strong> is carried by wrapping the chain in <code>while 1 { … break }</code>, so C's <code>break</code> binds to a wrapper that holds exactly the switch — leaving the wrapper and leaving the switch are the same jump. (A <code>continue</code> in such an arm would bind to the wrapper too, so that one combination is refused; either alone converts.)</li>
+<li><strong>Real fall-through</strong> becomes an entry-index / done-flag shape that reproduces C's rule exactly, a <code>default</code> in the middle of the list included.</li>
+<li>A <strong>grouped label</strong> (<code>case 4:</code> immediately followed by <code>default:</code>) is one arm and gets no fall-through machinery.</li>
+<li><strong><code>for</code>, <code>while</code>, <code>do-while</code>, <code>if</code>/<code>else</code></strong> all carry; the <strong>counting <code>for i : a to b</code></strong> is preserved wherever the loop counter does not escape — this is what makes the Shalimar output readable, and the converter protects it across all three switch shapes.</li>
+</ul>
+<p><strong><code>printf</code> becomes a generated function per format</strong> — <code>print_1(a1: int)</code> and a call — because Shalimar evaluates a call's arguments before entering, which is C's evaluation order at a <code>printf</code>. Formats are shared when their text and parameter types match. The format specifiers, each verified by running the converter:</p>
+<pre><code>carried:  %d  %i  %s  %c  %f  %.Nf  %%          (N up to 17)
+refused:  %g  %e  %x  %ld  %u  %.3d
+refused:  %4d   %-5d   %8.2f     (a WIDTH or a FLAG)</code></pre>
+<p>A <strong>width</strong> is the specifier that catches people — <code>%4d</code> is how a C table is laid out and looks like nothing special, but Shalimar's <code>?</code> has no field width, so it is refused; the format must carry its own spaces. A <strong>precision</strong> carries only on <code>f</code> (<code>%.Nf</code> is <code>prec(N)</code>); <code>%.3d</code> is zero-padding and <code>%.3s</code> a truncation, neither of which <code>?</code> has.</p>
+<p><strong>The <code>?</code> spacing caveat, said out loud.</strong> Shalimar's <code>?</code> writes a space after every item, so a format whose text runs against a hole gains one space: <code>printf(&quot;value %d.\n&quot;, n)</code> can only become <code>? &quot;value&quot; n &quot;.&quot;</code>, which writes <code>value 5 .</code>. There is no string concatenation and no number-to-text builtin to build the line as one item, so this is carried <strong>with a warning per <code>printf</code> naming the line</strong>, rather than refused — a program that prints one extra space is still the program, but the difference is never left unsaid. (The differential tests for this <em>remove</em> every space from both sides before comparing, because the space is one the C never wrote.)</p>
+<p><strong>Integer overflow is carried across.</strong> Shalimar traps where C89 wraps, so int <code>+ - *</code> go through <code>c2s_add_int</code> and friends, which stop with the runtime's message, on its stream, with the statement's line — rather than silently wrapping as C would.</p>
+<p><strong>Constructs it carries vs refuses</strong> (each measured, not read off the source):</p>
+<pre><code>carried:  double/float (→ real), i++ as a statement,
+          x = i ? 2 : 3 as a whole right-hand side
+refused:  long, short, unsigned, static inside a function, goto,
+          ++/-- inside an expression, ?: inside a larger expression</code></pre>
+<p>So several refusals are about <strong>where</strong>, not what: <code>x = i ? 2 : 3</code> converts but <code>x = 1 + (i ? 2 : 3)</code> is refused; <code>i++;</code> converts but <code>a[i++]</code> is refused.</p>
+<p><strong>Permissions (<code>--pragmatic</code>, three of them).</strong> A <em>permission</em> guards a rewrite that would compile but not mean <em>quite</em> what the C did — so it is off by default and asked for explicitly:</p>
+<ul>
+<li><strong><code>--allow-short-circuit</code></strong> — <code>&amp;&amp;</code>/<code>||</code> become Shalimar's <code>&amp;</code>/<code>|</code>, which ask both sides; on plain variables <code>x = a &amp;&amp; b</code> converts with no flag, but where a side has an effect the flag is required.</li>
+<li><strong><code>--allow-...</code></strong> narrowing — an <code>unsigned</code> narrowed to Shalimar's number loses the range it had.</li>
+<li><strong>char arithmetic</strong> — carried where safe.</li>
+</ul>
+<p><code>--pragmatic</code> turns the set on. A rewrite that reproduces C exactly (the switch lowerings) is <strong>not</strong> a permission — it costs readability, not correctness, and only risks are asked about.</p>
+<p><strong>Header guards and macros.</strong> A guard that holds nothing but a definition — <code>#ifndef M_PI / #define M_PI 3.14 / #endif</code> — is dropped with a comment, because it decides nothing. But in a file with any <code>#include</code>, that same drop is a <strong>warning</strong>, because the included header might define the name to something else (a real <code>&lt;math.h&gt;</code> <code>M_PI</code> is the full pi, not <code>3.14</code>). <code>__LINE__</code> and <code>__FILE__</code> are expanded (they are what <code>c90</code> supplies); other conditionals stop the run, because they ask which program this is and the file does not say.</p>
+<p><strong>Diagnostics and the line map.</strong> A construct it cannot carry is reported as a <code>ConversionError</code> (<strong>code C2100</strong>) with a line and column, so the editor can put it in the margin — not only as a marker in the output. And <code>--lines</code> prints a map of one C line per line of Shalimar written (<code>out: in</code> pairs), so a converted program can be traced back to its source.</p>
+<hr>
+<h2 id="35-c2s-features-shalimar-c">35. <code>c2s</code> features — Shalimar → C</h2>
+<p>This direction emits C89 that a <code>-std=c89 -Wall -Wextra -pedantic -Werror</code> compiler accepts, and it carries a small <code>c2s_*</code> preamble to reproduce Shalimar's runtime behaviour (numeric formatting, overflow trapping). It gates the preamble: a program that prints only integers does not carry the floating-point globals it never reads, so its output does not open with warnings of its own (this direction's output <em>leaves</em> — it goes to somebody else's terminal).</p>
+<p>It straightens the shapes so the C reads well: a Shalimar <code>elseif</code> chain becomes a flat C <code>else if</code> chain (not a staircase), and an <code>else</code> holding a lone <code>if</code> collapses to <code>else if</code> — but an <code>else</code> block with a <em>second</em> statement keeps its braces, because <code>else { if (c) A B }</code> and <code>else if (c) A B</code> are different parses, not different layouts.</p>
+<p><strong>Its own boundary.</strong> Where a Shalimar construct has no faithful C form it is refused with the same C2100 machinery. And one difference is the <em>language's</em>, not the converter's: Shalimar folds <code>-x</code> into <code>0 - x</code> for a non-literal operand, so <code>-0.0</code> comes back <code>+0.0</code> — writing <code>-x</code> by hand in Shalimar does the same. The converter is faithful; the behaviour lives in the language.</p>
+<hr>
+<h2 id="36-using-c2s-from-the-command-line">36. Using <code>c2s</code> from the command line</h2>
+<p><code>c2s.exe</code> is in the install's <code>bin\</code>. It converts the file it is given; the Language menu drives it in the editor, and by hand:</p>
+<pre><code>c2s program.c              C → Shalimar (writes the .shl/.shm form)
+c2s program.shl            Shalimar → C (writes the .c form, with the preamble)
+c2s --pragmatic program.c  allow the meaning-changing rewrites
+c2s --lines program.c      also print the out:in line map on stderr
+c2s --canon program.c      print the parsed C back as C (the lowered form)</code></pre>
+<p>Because <code>c2s</code> only ever <em>runs</em> <code>c90</code>/<code>shalimar</code> for its differential tests and never builds or edits them, it works even while those compilers are otherwise busy, and it is the safe way to move a program between the two languages: it carries what it can prove faithful and refuses — by name, with a line — what it cannot.</p>
+<h1 id="part-ix-worked-examples">Part IX — Worked examples</h1>
+<p>Every example here is a complete program and the exact commands to build and run it, with what comes out. They are ordered from the smallest to the whole lifecycle, and they cover all three languages, the four targets, projects, the converter and the TI build. Run them from the install's <code>bin\</code> on <code>PATH</code>.</p>
+<hr>
+<h2 id="37-c-one-file">37. C, one file</h2>
+<p><strong>hello.c</strong></p>
+<pre><code>#include &lt;stdio.h&gt;
+int main(void)
+{
+    printf(&quot;hello\n&quot;);
+    return 0;
+}</code></pre>
+<p>Build and run on the host:</p>
+<pre><code>c90 hello.c -o hello
+./hello                  →  hello</code></pre>
+<p>Just the assembly, and read it:</p>
+<pre><code>c90 -S hello.c -o hello.s</code></pre>
+<p>The compiler announces itself (<code>©2026 G. R. Akhtar - ISO C 90</code>) unless you pass <code>-nologo</code>. The program's return value is what the editor shows as <code>[program returned 0]</code>.</p>
+<hr>
+<h2 id="38-c-several-files-that-link">38. C, several files that link</h2>
+<p><strong>sum.h</strong></p>
+<pre><code>int add_up(int a, int b);</code></pre>
+<p><strong>sum.c</strong></p>
+<pre><code>#include &quot;sum.h&quot;
+int add_up(int a, int b) { return a + b; }</code></pre>
+<p><strong>main.c</strong></p>
+<pre><code>#include &lt;stdio.h&gt;
+#include &quot;sum.h&quot;
+int main(void)
+{
+    printf(&quot;answer %d\n&quot;, add_up(2, 40));
+    return 0;
+}
+
+c90 main.c sum.c -o prog
+./prog                   →  answer 42</code></pre>
+<p>Several inputs on one command line link into one program. Headers are found next to the file that includes them and by any <code>-I</code> directory.</p>
+<hr>
+<h2 id="39-c-classes-and-virtual-dispatch">39. C++, classes and virtual dispatch</h2>
+<p><strong>shape.cpp</strong></p>
+<pre><code>#include &lt;cstdio&gt;
+struct Shape { virtual int area() const = 0; virtual ~Shape() {} };
+struct Square : Shape { int s; Square(int x) : s(x) {} int area() const { return s * s; } };
+int main()
+{
+    Shape* p = new Square(6);
+    std::printf(&quot;area=%d\n&quot;, p-&gt;area());
+    delete p;
+    return 0;
+}
+
+cpp11 shape.cpp -o shape
+./shape                  →  area=36</code></pre>
+<p>This exercises an abstract base, a pure-virtual override, virtual dispatch through the vtable, <code>new</code>/<code>delete</code> and a virtual destructor — all supported.</p>
+<hr>
+<h2 id="40-c-operator-new-delete-global-class-placement">40. C++, operator new/delete (global, class, placement)</h2>
+<pre><code>#include &lt;cstdio&gt;
+#include &lt;new&gt;
+#include &lt;cstdlib&gt;
+static int g = 0, c = 0;
+void* operator new(std::size_t n) { ++g; return std::malloc(n); }
+void  operator delete(void* p) noexcept { std::free(p); }
+struct Counter {
+    int v; Counter(int x) : v(x) {}
+    static void* operator new(std::size_t n) { ++c; return std::malloc(n); }
+    static void  operator delete(void* p) noexcept { std::free(p); }
+};
+int main() {
+    int* a = new int(5);
+    Counter* k = new Counter(9);
+    char buf[sizeof(Counter)];
+    Counter* p = new (buf) Counter(42);   /* placement: no allocation */
+    std::printf(&quot;%d %d %d  g=%d c=%d\n&quot;, *a, k-&gt;v, p-&gt;v, g, c);
+    delete a; delete k;
+    return 0;
+}
+
+cpp11 newdel.cpp -o newdel
+./newdel                 →  5 9 42  g=1 c=1</code></pre>
+<p>The global <code>operator new</code> fires for <code>int</code>, the class one for <code>Counter</code>, placement allocates nothing, and each <code>delete</code> routes to the matching operator.</p>
+<hr>
+<h2 id="41-shalimar-one-file">41. Shalimar, one file</h2>
+<p><strong>gcd.shl</strong></p>
+<pre><code>fun &lt;&gt; = main() {
+  a : 48
+  b : 18
+  while b != 0 {
+    r : a % b
+    a : b
+    b : r
+  }
+  ? &quot;gcd&quot; a
+}
+
+shalimar gcd.shl -o gcd
+./gcd                    →  gcd 6</code></pre>
+<p>Assignment is <code>name : value</code>; <code>?</code> prints (a space after each item); <code>while</code> controls flow. <code>shalimar</code> links the Shalimar runtime from <code>bin\lib\</code> for you.</p>
+<hr>
+<h2 id="42-the-same-programs-on-the-four-targets">42. The same programs on the four targets</h2>
+<p>Assembly for any target, on any host:</p>
+<pre><code>c90 -S -arch x86_64-linux   hello.c -o hello-linux.s
+c90 -S -arch arm64-darwin   hello.c -o hello-mac.s
+c90 -S -arch x86_64-windows hello.c -o hello-win.asm     (MASM spelling)
+c90 -S -arch x86_64-windows -masm=gnu hello.c -o hello-win-gnu.s</code></pre>
+<p>Run on the host target (build a program):</p>
+<pre><code>c90 -arch x86_64-windows hello.c -o hello.exe     (on the Windows box)</code></pre>
+<p>Run on the C6000 through the emulator (any host):</p>
+<pre><code>c90 -S -arch tms6747 hello.c -o hello.s
+vm6747 hello.s          →  hello   [program returned 0]</code></pre>
+<p>A foreign target from the editor: pressing F5 on <code>arm64-darwin</code> on the Windows box shows <code>x86_64-linux only reaches -S here — switch to x86_64-windows to run it</code> for the wrong host, and the Assembly tab shows the generated code.</p>
+<hr>
+<h2 id="43-a-mixed-c-and-c-project">43. A mixed C-and-C++ project</h2>
+<p>A project whose <code>Sources</code> group holds both languages builds each with its own compiler and links the objects. <code>four.pro</code>:</p>
+<pre><code>{
+  &quot;name&quot;: &quot;four&quot;, &quot;toolchain&quot;: &quot;auto&quot;, &quot;arch&quot;: &quot;x86_64-windows&quot;,
+  &quot;groups&quot;: { &quot;Sources&quot;: [&quot;main.c&quot;, &quot;sum.c&quot;, &quot;shape.cpp&quot;] },
+  &quot;build&quot;: { &quot;target&quot;: &quot;four&quot;, &quot;groups&quot;: [&quot;Sources&quot;] }
+}</code></pre>
+<p>with <code>main.c</code> calling both a C function (<code>add_up</code>) and a C++ one (<code>area</code>). In the editor, F4 builds it; the console shows two <code>Assembling</code> lines from <code>c90</code> (the C part), then <code>cpp11</code> compiling <code>shape.cpp</code>, then the link, and Run project prints <code>answer 42, area 12</code>. By hand it is the same steps: <code>c90 -c main.c sum.c</code>, <code>cpp11 -c shape.cpp</code>, then link the three objects with the C++ driver.</p>
+<hr>
+<h2 id="44-the-whole-project-lifecycle-in-the-editor">44. The whole project lifecycle in the editor</h2>
+<ol>
+<li><strong>Project ▸ New…</strong> — pick a folder, name it <code>demo</code>; <code>demo.pro</code> is written.</li>
+<li><strong>Project ▸ New File</strong> (Ctrl-N) — <code>greet.c</code>; it is created empty and added.</li>
+<li>Type into it: <code>int greet(void) { return 7; }</code>; save.</li>
+<li><strong>New File</strong> <code>main.c</code>: <code>#include &lt;stdio.h&gt;</code> / <code>int greet(void);</code> / <code>int main(void){ printf(&quot;greet is %d\n&quot;, greet()); return 0; }</code>. The <code>.pro</code> now lists both under <code>Sources</code>.</li>
+<li><strong>F4</strong> builds <code>demo</code>; <strong>Run project</strong> prints <code>greet is 7</code>.</li>
+<li><strong>Open</strong> an existing <code>extra.c</code> (<code>int extra(void){return 35;}</code>), <strong>Project ▸ Add File</strong> → <code>Sources</code>; change <code>main.c</code> to call <code>extra()</code>; Run project → <code>greet 42, extra 35</code>. The <code>.pro</code>'s <code>Sources</code> now lists <code>extra.c</code>.</li>
+<li><strong>Project ▸ Remove File</strong> on <code>extra.c</code> (it leaves the file on disk); change <code>main.c</code> back; Run project → <code>greet is 7</code>. The <code>.pro</code> no longer lists it.</li>
+</ol>
+<p>Every add and remove is reflected in the <code>.pro</code> immediately. This is exactly the <code>projects/c-demo</code> project shipped with the install.</p>
+<hr>
+<h2 id="45-converting-between-c-and-shalimar">45. Converting between C and Shalimar</h2>
+<p>C to Shalimar, and compile the result:</p>
+<pre><code>c2s primes.c            →  primes.shl
+shalimar primes.shl -o primes &amp;&amp; ./primes</code></pre>
+<p>Shalimar to C, and compile the result with the host compiler:</p>
+<pre><code>c2s primes.shl          →  primes.c (with the c2s_* preamble)
+c90 primes.c -o primes2 &amp;&amp; ./primes2</code></pre>
+<p>Ask for the line map and the pragmatic rewrites:</p>
+<pre><code>c2s --lines --pragmatic app.c</code></pre>
+<p>When <code>c2s</code> refuses a construct it names it with a line (code C2100) — e.g. a <code>%4d</code> width, a <code>?:</code> inside a larger expression, or a <code>long</code>. The message says what to write instead.</p>
+<hr>
+<h2 id="46-a-real-c674x-binary-out-hex">46. A real C674x binary (.out / .hex)</h2>
+<p>The emulator runs the program; the TI build path makes a real chip binary:</p>
+<pre><code>bin\ti\ti-build.cmd  fib.c</code></pre>
+<p>produces <code>fib.out</code> (a C674x ELF: <code>e_machine</code> 140, 32-bit, little-endian, EXEC) and <code>fib.hex</code> (Intel hex). It finds a TI CGT on the machine, builds the EH runtime once into <code>%LOCALAPPDATA%\RIDE\tilib</code>, then drives <code>cl6x</code>/<code>asm6x</code>/<code>lnk6x</code>/<code>hex6x</code>. The same works for <code>.cpp</code> and <code>.shl</code>. To run and test the program instead, the emulator needs no TI install:</p>
+<pre><code>c90 -S -arch tms6747 fib.c -o fib.s &amp;&amp; vm6747 fib.s</code></pre>
+<h1 id="part-x-c-11-in-cpp11-feature-by-feature">Part X — C++11 in cpp11, feature by feature</h1>
+<p><code>cpp11</code> accepts C++11 minus a documented list (Part II chapter 8). This part goes through the language a feature at a time, each with a one-line probe you can compile, and says <strong>accepted</strong> or <strong>refused</strong> — and for a refusal, what to do instead. The authoritative, source-derived inventory is the C++ compiler's own <code>docs/EXCLUSIONS.md</code>; this is the readable companion. When in doubt about a single construct, compile the probe: a refusal reads more broadly than it fires.</p>
+<hr>
+<h2 id="47-types-declarations-expressions">47. Types, declarations, expressions</h2>
+<ul>
+<li><strong><code>auto</code> for a variable</strong> — accepted. <code>auto x = 3; auto y = f();</code></li>
+<li><strong><code>decltype</code></strong> — accepted in the ordinary forms.</li>
+<li><strong><code>nullptr</code> and <code>std::nullptr_t</code></strong> — accepted.</li>
+<li><strong><code>enum class</code> and an enum base</strong> — accepted. <code>enum class C : unsigned { A };</code></li>
+<li><strong><code>alignas</code> / <code>alignof</code></strong> — accepted, on a class, a member and an object.</li>
+<li><strong><code>static_assert</code></strong> — accepted. <code>static_assert(sizeof(int) == 4, &quot;&quot;);</code></li>
+<li><strong><code>constexpr</code></strong> — accepted in the C++11 forms the compiler implements; the C++14 relaxations are refused <em>naming the version</em>.</li>
+<li><strong>A trailing return type</strong> <code>auto f(int) -&gt; int</code> — <strong>refused</strong> (documented exclusion); write the ordinary <code>int f(int)</code>.</li>
+<li><strong><code>volatile</code></strong> — parsed and then <strong>dropped</strong>: it does not change codegen. Do not use it for memory-mapped I/O.</li>
+</ul>
+<hr>
+<h2 id="48-classes-inheritance-special-members">48. Classes, inheritance, special members</h2>
+<ul>
+<li><strong>Data and function members, access control, <code>this</code>, nested classes, <code>friend</code></strong> — accepted.</li>
+<li><strong>Constructors</strong> (default, parameterised, copy; move where the shape is simple), <strong>member initialiser lists</strong>, <strong>destructors</strong> — accepted.</li>
+<li><strong>Single and multiple inheritance; virtual functions; pure-virtual and abstract classes</strong> — accepted. Dispatch is through the vtable.</li>
+<li><strong>Virtual (shared) base classes</strong> — accepted on the three Itanium targets, with the real Itanium machinery (secondary vtables, the VTT, <code>_ZTv</code> virtual thunks, construction vtables, C2/D2 constructors taking a VTT). On <code>x86_64-windows</code> a polymorphic virtual base is refused <strong>by name</strong> (<code>.notarget</code>).</li>
+<li><strong><code>= default</code> / <code>= delete</code></strong> — accepted in the forms the compiler implements; where a defaulted/deleted member would link-but-never-be-callable it is refused at the declaration, by name.</li>
+</ul>
+<hr>
+<h2 id="49-templates">49. Templates</h2>
+<ul>
+<li><strong>Class and function templates</strong> — accepted.</li>
+<li><strong>Explicit specialisation</strong> — accepted: <code>template &lt;&gt; struct Box&lt;int&gt; {…};</code></li>
+<li><strong>Partial specialisation</strong> — accepted.</li>
+<li><strong>Non-type template parameters</strong> — accepted.</li>
+<li>**A member <em>function</em> template** — accepted.</li>
+<li>**A member <em>class</em> template<strong> — </strong>refused**; lift it to a namespace-scope template.</li>
+<li><strong><code>template &lt;&gt;</code> where a template parameter list is expected</strong> — refused (but an explicit specialisation <code>template &lt;&gt; struct …</code> compiles; the refusal is narrower than it reads).</li>
+</ul>
+<hr>
+<h2 id="50-exceptions">50. Exceptions</h2>
+<ul>
+<li><strong><code>throw</code> / <code>try</code> / <code>catch</code></strong> — accepted; unwinding runs destructors.</li>
+<li><strong>catch by value</strong> (copying from <code>__cxa_begin_catch</code>), <strong>by reference</strong>, a <strong>thrown pointer</strong>, <strong>rethrow</strong> — accepted, on the three Itanium targets.</li>
+<li><strong><code>noexcept</code> / <code>throw()</code></strong> — accepted; an exception escaping one calls <code>std::terminate</code>.</li>
+<li><strong>A destructor that throws while an exception unwinds</strong> — terminates, as the standard requires, on the Itanium targets.</li>
+<li>Some exception shapes are refused on <code>x86_64-windows</code> (the Microsoft ABI path is narrower); they are refused by name with a <code>.notarget</code>.</li>
+</ul>
+<hr>
+<h2 id="51-rtti">51. RTTI</h2>
+<ul>
+<li><strong><code>typeid</code>, static and dynamic; <code>type_info</code></strong> — accepted.</li>
+<li><strong><code>dynamic_cast</code> to a pointer</strong> along a single-base chain, including <strong><code>dynamic_cast&lt;void*&gt;</code></strong> (the most-derived-object form) — accepted, and it answers null on a failed cast.</li>
+<li><strong><code>dynamic_cast</code> to a reference</strong> — <strong>refused</strong> (it has no null to return); use the pointer form and test for null.</li>
+<li><strong><code>dynamic_cast</code> naming a class with more than one base</strong> — <strong>refused</strong> (it needs <code>__vmi_class_type_info</code>, not emitted).</li>
+</ul>
+<hr>
+<h2 id="52-new-delete-lambdas-and-the-library">52. new / delete, lambdas, and the library</h2>
+<ul>
+<li><strong><code>operator new</code> / <code>operator delete</code></strong> — the replaceable global forms, class-specific forms, and placement new — all accepted and dispatched correctly (Part IX chapter 40).</li>
+<li><strong><code>new[]</code> / <code>delete[]</code></strong> with an array cookie — accepted; arrays of a class with a destructor (local, <code>new[]</code>/<code>delete[]</code>, static storage) run their destructors.</li>
+<li><strong>Lambdas</strong> — accepted.</li>
+<li><strong>The library</strong> in <code>include/</code>: <code>&lt;cstddef&gt;</code>, <code>&lt;cstdlib&gt;</code>, <code>&lt;cstring&gt;</code>, <code>&lt;cmath&gt;</code>, <code>&lt;cctype&gt;</code> (C headers wrapped into <code>std</code>); <code>&lt;string&gt;</code> (a class); <code>&lt;utility&gt;</code>, <code>&lt;vector&gt;</code>, <code>&lt;map&gt;</code>, <code>&lt;set&gt;</code>, <code>&lt;algorithm&gt;</code> (a vector is a growing array, a map a sorted vector of pairs, a set a sorted vector, iterators are pointers); and the streams <code>&lt;iostream&gt;</code>/<code>&lt;ostream&gt;</code>/<code>&lt;istream&gt;</code>/<code>&lt;sstream&gt;</code>/ <code>&lt;fstream&gt;</code>/<code>&lt;ios&gt;</code>/<code>&lt;cstdio&gt;</code> with <code>std::cout</code>/<code>cin</code>/<code>cerr</code> as file-scope objects. It is a working subset, not a fully conforming standard library.</li>
+</ul>
+<hr>
+<h2 id="53-the-exclusions-gathered">53. The exclusions, gathered</h2>
+<p>If a program fails, check it against this and the compiler's <code>docs/EXCLUSIONS.md</code>; every refusal is by name:</p>
+<ul>
+<li>a trailing return type; a member class template;</li>
+<li><code>dynamic_cast</code> to a reference, or naming a class with more than one base;</li>
+<li>objects that would run code before <code>main</code> in the dynamic-initialisation forms the compiler does not do;</li>
+<li>C++14 and C++17 syntax (refused <em>naming the version</em>);</li>
+<li>eight keywords the parser has no rule for yet (refused as "not supported yet");</li>
+<li><code>volatile</code> semantics (accepted then dropped);</li>
+<li>a small set of <code>x86_64-windows</code>-only refusals (polymorphic virtual base, some exception shapes).</li>
+</ul>
+<p>The working rule: <strong>cpp11 is a large, usable C++11 subset; it never miscompiles a construct it does not support — it refuses it, by name, with a line.</strong> A program that compiles has stepped on none of the above.</p>
+<h1 id="part-xi-the-abis-how-each-target-passes-arguments-and-lays-out-types">Part XI — The ABIs: how each target passes arguments and lays out types</h1>
+<p>An ABI is the contract between compiled pieces: which registers carry arguments, how a result comes back, how wide each type is, how names are decorated. RIDE's compilers implement each target's real ABI so their output links against the platform's own tools and libraries. This part is that contract, target by target — useful when a program crosses a boundary (a call into a system library, or a mixed link) and you need to know exactly what travels where.</p>
+<hr>
+<h2 id="54-why-the-abi-is-per-target-and-the-instructions-are-mostly-shared">54. Why the ABI is per-target and the instructions are (mostly) shared</h2>
+<p>The backends share one statement walk and differ where the target genuinely does (Part I chapter 4). Expressions, and <strong>calls most of all</strong>, are per-target, because that is where ABIs part. Two consequences follow:</p>
+<ul>
+<li>The two x86-64 targets share <strong>one instruction stream</strong>; only the spelling differs (GNU vs MASM). So <code>x86_64-linux</code> and <code>x86_64-windows</code> compute identically and differ in argument registers and type widths, not in the code that does the arithmetic.</li>
+<li><code>arm64-darwin</code> and <code>tms6747</code> each have their own instruction set and their own ABI, so both the code and the contract differ.</li>
+</ul>
+<p>A difference between targets therefore lives in a small, visible place — the call lowering and the <code>Target</code>/<code>Abi</code>/<code>Spelling</code> triple — not smeared through the generator.</p>
+<hr>
+<h2 id="55-type-widths-across-the-four-targets">55. Type widths across the four targets</h2>
+<table><thead><tr><th>Type</th><th>x86_64-linux</th><th>x86_64-windows</th><th>arm64-darwin</th><th>tms6747</th></tr></thead><tbody><tr><td><code>char</code></td><td>1 (signed)</td><td>1 (signed)</td><td>1 (signed)</td><td>1</td></tr><tr><td><code>short</code></td><td>2</td><td>2</td><td>2</td><td>2</td></tr><tr><td><code>int</code></td><td>4</td><td>4</td><td>4</td><td>4</td></tr><tr><td><code>long</code></td><td><strong>8</strong></td><td><strong>4</strong> (LLP64)</td><td>8</td><td><strong>4</strong></td></tr><tr><td><code>long long</code></td><td>8</td><td>8</td><td>8</td><td>8</td></tr><tr><td>pointer</td><td>8</td><td>8</td><td>8</td><td>4</td></tr><tr><td><code>wchar_t</code></td><td>4</td><td>2</td><td>4</td><td><strong>2, unsigned</strong></td></tr><tr><td><code>long double</code></td><td>16/8*</td><td>8</td><td>8</td><td>8</td></tr><tr><td><code>bool</code></td><td>1</td><td>1</td><td>1</td><td>1</td></tr><tr><td><code>size_t</code></td><td>8</td><td>8</td><td>8</td><td>4 (<code>unsigned int</code>)</td></tr></tbody></table>
+<p>The two that catch people: <strong><code>long</code> is 32-bit on Windows</strong> (LLP64) and on the C6000, but 64-bit on Linux/macOS; and <strong><code>wchar_t</code> is 16-bit</strong> on Windows and the C6000. <code>wchar_t</code> is always mangled <code>w</code> regardless of its width — the width and the mangling are separate facts. (*<code>long double</code> breadth on Linux depends on the build; the compiler follows the platform.)</p>
+<hr>
+<h2 id="56-x86-64-system-v-linux-and-microsoft-windows">56. x86-64 — System V (Linux) and Microsoft (Windows)</h2>
+<p><strong>x86_64-linux (System V AMD64).</strong> Integer/pointer arguments in <code>rdi, rsi, rdx, rcx, r8, r9</code>, then the stack; integer results in <code>rax</code> (<code>rdx:rax</code> for a 128-bit pair). Floating arguments in <code>xmm0..7</code>. Callee-saved: <code>rbx, rbp, r12–r15</code>. Assembled by the GNU assembler, linked by the host driver; DWARF debug info.</p>
+<p><strong>x86_64-windows (Microsoft x64).</strong> Integer/pointer arguments in <code>rcx, rdx, r8, r9</code>, then the stack, with a 32-byte <strong>shadow space</strong> the caller reserves; results in <code>rax</code>. Floating arguments in <code>xmm0..3</code>. Callee-saved includes <code>rsi, rdi</code> (unlike System V). <code>long</code> is 32-bit (LLP64). Two spellings: MASM for RIDE's <code>masm</code> and <code>link</code> in a Release build, with <strong>no line table</strong>, and the GNU spelling for clang's assembler and <code>link.exe /DEBUG</code> in a Debug build, with CodeView (Part V chapter 22). A <code>static</code> function is kept out of the object's external symbols with <code>OPTION PROC:PRIVATE</code>, and a name colliding with a MASM reserved word is handled with <code>OPTION NOKEYWORD</code> — decisions made at the emission site.</p>
+<p>The same instruction stream underlies both; the argument registers, the shadow space, the callee-saved set and <code>long</code>'s width are the whole of the difference.</p>
+<hr>
+<h2 id="57-arm64-darwin-aarch64-apple">57. arm64-darwin (AArch64, Apple)</h2>
+<p>Integer/pointer arguments in <code>x0..x7</code>, results in <code>x0</code> (<code>x1:x0</code> for a pair); floating in <code>v0..v7</code>. Callee-saved <code>x19..x28</code>, the frame in <code>x29</code>/<code>x30</code>. The Apple variations from the generic AArch64 ABI (argument passing on the stack, <code>char</code> signedness) are followed. Assembled and linked through <code>clang</code>; DWARF gathered into a <code>.dSYM</code> on a real link (the driver runs <code>dsymutil</code> when it compiled the sources itself; a link of objects alone has the debug map asked for before the objects are removed). This is the native target on an Apple-silicon Mac.</p>
+<hr>
+<h2 id="58-tms6747-the-c6000-eabi">58. tms6747 — the C6000 EABI</h2>
+<p>The C674x is a VLIW DSP with two register files (A and B). The compiler implements TI's EABI, matched to <code>cl6x</code> and verified word-for-word:</p>
+<ul>
+<li><strong>Arguments</strong> in <code>A4, B4, A6, B6, A8, B8, A10, B10, A12, B12</code>, then the stack from <code>B15 + 4</code>; a 64-bit value in an even:odd pair.</li>
+<li><strong>Small-struct return</strong> (≤ 8 bytes) in <code>A5:A4</code>; a larger struct through a hidden pointer in <strong>A4, as the first parameter, before <code>this</code></strong>. A small struct is also <strong>passed</strong> by value in a register or pair.</li>
+<li><strong>Near data</strong>: scalars reached DP-relative through <code>B14</code>, in TI's near sections.</li>
+<li><strong>Callee-saved</strong>: <code>A10/B10/A12/B12</code> (and the frame registers) are preserved by a function that uses them across a call — which <code>shalimar</code> also now does, so a TI-compiled caller of a Shalimar comparator is safe.</li>
+<li><strong>Exceptions</strong>: TI's tables — <code>.c6xabi.extab</code>/<code>-style scope descriptors, an index entry per function, </code>__cxa_end_cleanup` at a cleanup pad — so a C++ exception thrown through our frames behaves as TI's runtime expects.</li>
+<li><strong>C++ layout</strong> (vtables, VTT, typeinfo, virtual thunks) matches <code>cl6x</code>'s tables exactly, so our objects interoperate with TI-built ones.</li>
+<li><strong>Assembly</strong> in TI's syntax: <code>$</code> for the dots in names, <code>.ref</code> for undefined symbols, <code>EXTU</code>/<code>CLR</code> where an <code>AND</code> immediate has no room, <code>||</code> parallelism and unit specifiers.</li>
+</ul>
+<p>Because the ABI matches <code>cl6x</code>, our <code>.s</code> assembles under <code>cl6x</code>/<code>asm6x</code> and links under <code>lnk6x</code> against TI's runtime — which is what the TI build path (Part VI) relies on. It is ABI compatibility, not byte-identical code (Part VI chapter 25).</p>
+<hr>
+<h2 id="59-name-decoration-mangling">59. Name decoration (mangling)</h2>
+<ul>
+<li><strong>C</strong> names are undecorated (a leading underscore on some platforms, per the platform convention).</li>
+<li><strong>C++</strong> names use the <strong>Itanium</strong> scheme on the three Itanium targets (<code>_Z...</code>), and the <strong>Microsoft</strong> scheme on <code>x86_64-windows</code> (<code>?...</code>), so a symbol table dumped from our object matches what the platform's linker expects — this is checked against <code>cl</code> on Windows with a symbol-table oracle, not only against clang's emulation.</li>
+<li><strong>Shalimar</strong> exports the same three startup symbols from every unit, with the runtime owning <code>main</code> — which is why two Shalimar objects do not link together (Part II chapter 9).</li>
+</ul>
+<p>When a program crosses a boundary, the mangling is what lets the linker match the call to the definition; it is the visible half of the ABI, and it is verified against the platform's own tools rather than assumed.</p>
+<h1 id="part-xii-building-ride-and-its-compilers-from-source">Part XII — Building RIDE and its compilers from source</h1>
+<p>You do not need this to <em>use</em> RIDE — the installer gives you built binaries. This part is for building the editor and the compilers yourself, understanding the workspace, and the verification discipline the project holds itself to.</p>
+<hr>
+<h2 id="60-the-pieces-and-where-they-live">60. The pieces and where they live</h2>
+<p>RIDE is one repository; the compilers are their own repositories beside it:</p>
+<pre><code>RIDE            the editor, the workspace build, the packaging
+Compiler-C  (cc1)  the C compiler        (i-line: Compiler-Ci → c90)
+C++         (cpp11) the C++ compiler      (i-line: C++Optimize → cpp11)
+Compiler-S  (shc)  the Shalimar compiler (i-line: Compiler-Si → shalimar)
+Converter-C2S (c2s) the converter
+VM6747      (vm6747) the C6000 emulator (i-line only)</code></pre>
+<p>The <em>i-line</em> (the <code>…i</code> binaries) is what RIDE drives since 3.5 — the same compilers with the fourth target (tms6747) added, built beside the originals so the originals stay sealed. RIDE 3.0 drove the originals.</p>
+<hr>
+<h2 id="61-one-command-per-platform">61. One command per platform</h2>
+<p>Each platform opens one thing and builds all of it, editor and compilers together, into one directory (<code>bin/</code>):</p>
+<ul>
+<li><strong>macOS</strong> — <code>RIDE.xcworkspace</code> (opens the editor and every compiler at once), or <code>make -f workspace.mk</code>.</li>
+<li><strong>Windows</strong> — <code>RIDE.sln</code>, or <code>build.bat solution</code>.</li>
+<li><strong>Linux</strong> — <code>make -f workspace.mk</code>.</li>
+</ul>
+<p>The reason they build together is the reason for a workspace at all: a change to a compiler and the change to the editor that goes with it are one build and one issue list. The output lands in <code>bin/</code> so the editor finds the compilers it drives beside itself.</p>
+<p><strong><code>make -f workspace.mk</code></strong> builds <code>c90</code>, <code>cpp11</code>, <code>shalimar</code>, <code>vm6747</code>, <code>c2s</code> and the editor into <code>bin/</code>, builds the Shalimar host runtime and (via <code>cpp11</code>) the C6000 runtime, and finishes with a <code>confirm</code> step that checks everything the editor drives is actually present — because "built" and "usable" are different states, and a compiler without its runtime beside it passes a build and fails at the first link.</p>
+<p><strong><code>build.bat</code></strong> on Windows: <code>build.bat</code> alone builds the console editor; <code>build.bat solution</code> builds the whole <code>RIDE.sln</code> (into <code>bin\</code> via <code>/p:OutDir</code>); <code>build.bat gui</code> builds just the window; <code>build.bat check</code> runs the suites; <code>build.bat product</code> lays down the install tree.</p>
+<hr>
+<h2 id="62-the-relay-scripts">62. The relay scripts</h2>
+<p>Development happens on more than one machine. Two scripts relay a Mac checkout to the other boxes and build there:</p>
+<ul>
+<li><strong><code>tools/to-windows.sh</code></strong> — tars the editor and the i-line, copies them to the Windows box as siblings, and builds <code>RIDE.sln</code> and runs the suites. The box has no <code>make</code>; the solution is the build.</li>
+<li><strong><code>tools/to-linux.sh</code></strong> — relays to the Linux box and runs <code>make -f workspace.mk</code>.</li>
+</ul>
+<p>They exist because a relayed tree is not a checked-out one: a file copied wrong is a stale build with a green suite in front of it, so the scripts are careful about what travels and re-run the suites on the far side.</p>
+<hr>
+<h2 id="63-the-generated-project-files">63. The generated project files</h2>
+<p>The IDE project files are <strong>generated</strong>, not hand-kept, by <code>RIDE/tools/make-projects.py</code> from each compiler's Makefile:</p>
+<pre><code>python3 tools/make-projects.py            write them
+python3 tools/make-projects.py --check    say whether they are current</code></pre>
+<p>A hand-kept project drifts — someone adds a source to the Makefile, forgets the project, and the IDE quietly builds a smaller program with no error. <code>--check</code> rebuilds every project in memory and compares, catching exactly that. Two projects are kept by hand and only checked (the window's <code>RIDEGui.vcxproj</code>, which compiles one file managed and the rest native, and <code>cc1.vcxproj</code>, which belongs to another repository); their <em>source lists</em> are still checked against the Makefiles.</p>
+<p>The generator also writes shalimar's runtime build into <code>shc.vcxproj</code>'s post-build step and Xcode phase — including the C6000 runtime, which <code>cpp11</code> emits — so the Shalimar runtime is built beside <code>shalimar</code> wherever the solution or workspace builds.</p>
+<hr>
+<h2 id="64-verification-three-boxes-and-proving-the-artefact">64. Verification — three boxes, and proving the artefact</h2>
+<p>The discipline the project holds to, worth adopting if you build on it:</p>
+<ul>
+<li><strong>Three boxes before a release.</strong> Mac, Linux and Windows each build and run the suites; while iterating, the Linux leg alone is the quick check. A change is not done until all three are green, because each catches what the others cannot — the Mac's library hides non-standard C++ that only real g++ refuses; the box is the only place the MSVC ABI and <code>ml64</code> are exercised; the emulator is host-independent but the strict-C++14 judgement is the Linux box's.</li>
+<li><strong>Prove the artefact, not the exit status.</strong> A green suite proves nothing until you know what it ran against: <code>make</code> with nothing to rebuild, a relay that silently failed, or a binary older than its sources all report success. Check the binary is newer than its sources; grep the emitted assembly for a token the change introduces; and the fingerprint suites compare every byte of every target's assembly against recorded digests, which is what says a change that should alter nothing did.</li>
+<li><strong>The fourth sandbox.</strong> For tms6747, TI's own tools on the Windows box assemble and link our output (<code>Emulator/tests/ti.sh</code>), proving binary compatibility with the real toolchain — a check no emulator can make of itself.</li>
+</ul>
+<p>None of this is needed to use the installers; it is why the installers can be trusted.</p>
+<h1 id="part-xiii-diagnostics-exit-codes-and-how-the-tools-report">Part XIII — Diagnostics, exit codes, and how the tools report</h1>
+<p>Every tool here says what it did on its standard streams and leaves with a status you can test. This part is how to read those reports and what the exit codes mean — useful when scripting the compilers, and when a build in the editor stops.</p>
+<hr>
+<h2 id="65-the-shape-of-a-diagnostic">65. The shape of a diagnostic</h2>
+<p>A compiler diagnostic names the <strong>file, line and column</strong>, the <strong>severity</strong>, and a <strong>message</strong>:</p>
+<pre><code>shape.cpp:4:5: error: expected a type
+        virtual ~Shape() {}
+        ^</code></pre>
+<p>The caret points at the column. The editor turns the top diagnostic into the status line and, on a double-click or Enter on the Console, jumps the caret there. Two principles govern every message:</p>
+<ul>
+<li><strong>Diagnosed at the point of interception.</strong> The error is reported where the rule was broken, not deferred to a later phase, so the line and column are the real site.</li>
+<li><strong>Refused by name.</strong> An unsupported construct produces a <em>specific</em> message, not a generic parser stumble. A program that compiles stepped on nothing; a program that fails names the reason.</li>
+</ul>
+<hr>
+<h2 id="66-messages-you-will-actually-meet">66. Messages you will actually meet</h2>
+<ul>
+<li><strong><code>c90: &lt;file&gt;.cpp looks like C++ (.cpp), and c90 compiles C, not C++ — compile it with cpp11</code></strong> — the C compiler was handed a C++ file. Use <code>cpp11</code>, or let <code>auto</code> route it.</li>
+<li><strong><code>cpp11: &lt;file&gt;.c looks like C (.c), and cpp11 compiles C++, not C — compile it with c90</code></strong> — the mirror.</li>
+<li><strong><code>&lt;arch&gt; only reaches -S here — switch to &lt;host&gt; to run it</code></strong> — a foreign target: assembly is produced, this host cannot assemble/link it.</li>
+<li><strong><code>… has no &lt;arch&gt; target — it is c90&#x27;s, cpp11&#x27;s and shalimar&#x27;s</code></strong> — you asked a compiler for a target it does not have (e.g. the host compiler for tms6747).</li>
+<li><strong><code>-g asks where each line went, and this compiler writes no such thing for x86_64-windows in the MASM spelling …</code></strong> — <code>-g</code> on the MASM path; use <code>-masm=gnu</code> or build the C++ with <code>cl</code>.</li>
+<li><strong>cpp11 "… is not supported yet" / "… is C++14, and this compiler is C++11"</strong> — a documented exclusion (Part X).</li>
+<li><strong>c2s <code>C2100</code> with a marker</strong> — a construct the converter cannot carry faithfully; the message names what to write instead.</li>
+<li><strong><code>&#x27;ml64.exe&#x27; is not recognized</code></strong> — the assemble step ran without a Visual Studio environment (Part V chapter 22); normally the compiler sources vcvars itself.</li>
+<li><strong><code>RIDE is in &lt;bin&gt; without what it drives</code></strong> — the editor's <code>confirm</code>: the editor is present but a compiler or the runtime is missing beside it.</li>
+</ul>
+<hr>
+<h2 id="67-exit-codes">67. Exit codes</h2>
+<p>The rule the compilers follow: <strong>a question answered is not a failure.</strong></p>
+<table><thead><tr><th>Code</th><th>Meaning</th></tr></thead><tbody><tr><td>0</td><td>success — or a question answered (<code>--version</code>, <code>--help</code>) leaves with 0.</td></tr><tr><td>1</td><td>a compile/build error (a diagnostic was issued), or a bad argument for c90/cpp11.</td></tr><tr><td>2</td><td>shalimar's bad-argument code; also a suite/tool "an oracle is missing" exit (it exits 2 rather than passing when a required binary is absent).</td></tr><tr><td>3</td><td>ti-build: TI CGT not found, or the EH runtime could not be built.</td></tr></tbody></table>
+<p>Two scripting traps worth stating:</p>
+<ul>
+<li><strong>Take the status from the compiler, not the end of a pipeline.</strong> <code>x=$(bin … | tr -d &#x27;\r&#x27;); st=$?</code> is <code>tr</code>'s status (always 0). Redirect to a file, take <code>$?</code>, then filter the file — otherwise an <code>err_</code> case that must exit 1 reads as a pass.</li>
+<li><strong><code>--version</code> and <code>--help</code> exit 0</strong> on purpose, so a script asking three compilers their versions does not stop at the first.</li>
+</ul>
+<hr>
+<h2 id="68-reading-a-build-in-the-editor-s-console">68. Reading a build in the editor's console</h2>
+<p>A file build (<code>Ctrl-B</code>) shows the one command and its output. A project build (<code>F4</code>/Run project) shows a header naming the compilers and the sources, then, per part, the compiler's own output — for a mixed target, <code>Sources (c90)</code> and its assembling lines, then <code>Sources (cpp11)</code> and its banner, then <code>linking with …</code>, then <code>[built &lt;program&gt;]</code> or the first error. Each compiler prints its banner at the start of a compile (unless <code>-nologo</code>), so the console names the compiler that produced each object — which is how you tell, at a glance, that <code>main.c</code> went to <code>c90</code> and <code>shape.cpp</code> to <code>cpp11</code>.</p>
+<p>The bottom panel has three tabs: <strong>Console</strong> (the build and the program's output), <strong>Debug</strong> (the debugger, where the target supports it), and <strong>Assembly</strong> (the compiler's <code>-S</code> output for the current target, coloured). <code>Ctrl-1</code>/<code>2</code>/<code>3</code> switch them; on Console, Enter on a diagnostic line jumps to it.</p>
+<hr>
+<h2 id="69-when-a-whole-suite-fails-on-one-machine">69. When a whole suite fails on one machine</h2>
+<p>A pattern worth recognising before you suspect the compiler: <strong>a total failure on Windows only is usually a line-ending question.</strong> MSVC writes CRLF on stdout; golden files are LF; a naive comparison then reports every case failed while the compiler is entirely correct. Normalise with <code>tr -d &#x27;\r&#x27;</code> before comparing. The same shape — "everything fails on one host" — is nearly always the host's tools or conventions, not the code that was the same on the other two.</p>
+<h1 id="part-xiv-the-libraries-that-ship-lib-c-and-include-c">Part XIV — The libraries that ship: <code>lib/</code> (C) and <code>include/</code> (C++)</h1>
+<p>The compilers are only as useful as the headers they can <code>#include</code>. This part is what ships, where, and what is real versus simplified — so you know before you write <code>#include</code> whether it will resolve, and to what.</p>
+<hr>
+<h2 id="70-lib-the-c-standard-headers">70. <code>lib/</code> — the C standard headers</h2>
+<p><code>lib/</code> holds the C90 headers, searched by <code>c90</code> (its only system directory) and by <code>cpp11</code> after <code>include/</code>. What is there:</p>
+<pre><code>assert.h   ctype.h    errno.h    float.h    limits.h   locale.h
+math.h     setjmp.h   signal.h   stdarg.h   stddef.h   stdint.h
+stdio.h    stdlib.h   string.h   time.h     (and the platform&#x27;s io/fcntl)</code></pre>
+<p>These are the real C90 interfaces: <code>printf</code>/<code>scanf</code> and the <code>FILE</code> I/O; <code>malloc</code>/ <code>free</code>/<code>qsort</code>/<code>bsearch</code>/<code>abs</code>/<code>atoi</code>/<code>strtol</code>; the <code>str*</code>/<code>mem*</code> family; <code>&lt;math.h&gt;</code>'s <code>sin</code>/<code>cos</code>/<code>sqrt</code>/<code>pow</code>/<code>floor</code> and friends; <code>&lt;ctype.h&gt;</code>'s character classification; <code>&lt;setjmp.h&gt;</code>; <code>&lt;stdarg.h&gt;</code>'s <code>va_*</code>; <code>&lt;time.h&gt;</code>. The runtime behind them is the platform's C runtime (linked by the native linker), except on tms6747, where the emulator supplies the runtime it needs (Part VI).</p>
+<p><code>&lt;stddef.h&gt;</code> is the file <code>cpp11</code> probes for when it decides whether a directory is a real C header directory — which is why the Shalimar <code>bin\lib\</code> (only <code>.lib</code>/<code>.s</code>) is never mistaken for the C <code>lib\</code>.</p>
+<hr>
+<h2 id="71-include-the-c-headers">71. <code>include/</code> — the C++ headers</h2>
+<p><code>include/</code> holds the C++ headers, searched by <code>cpp11</code> first. Two kinds:</p>
+<p><strong>The C headers wrapped into <code>std</code></strong> — <code>&lt;cstddef&gt;</code>, <code>&lt;cstdlib&gt;</code>, <code>&lt;cstring&gt;</code>, <code>&lt;cmath&gt;</code>, <code>&lt;cctype&gt;</code> — each includes its <code>lib/</code> C header and pulls every name it declares into namespace <code>std</code> with using-declarations. So <code>std::printf</code>, <code>std::size_t</code>, <code>std::strlen</code>, <code>std::sqrt</code> work, and the underlying <code>&lt;stdio.h&gt;</code> etc. are resolved in <code>lib/</code>.</p>
+<p><strong>The C++ containers and utilities</strong>, deliberately simplified but usable:</p>
+<ul>
+<li><strong><code>&lt;string&gt;</code></strong> — a <code>string</code> class.</li>
+<li><strong><code>&lt;vector&gt;</code></strong> — a growing array.</li>
+<li><strong><code>&lt;map&gt;</code></strong> — a sorted vector of pairs.</li>
+<li><strong><code>&lt;set&gt;</code></strong> — a sorted vector.</li>
+<li><strong><code>&lt;utility&gt;</code></strong>, <strong><code>&lt;algorithm&gt;</code></strong> — the pieces the containers need.</li>
+<li>In all of them, <strong>an iterator is a pointer</strong>. This is the simplification to keep in mind: iterator arithmetic and range loops work because iterators are pointers, but the containers are not the full standard-library implementations — they are a working subset with the same shapes.</li>
+</ul>
+<p><strong>The streams</strong> — <code>&lt;iostream&gt;</code>, <code>&lt;ostream&gt;</code>, <code>&lt;istream&gt;</code>, <code>&lt;sstream&gt;</code>, <code>&lt;fstream&gt;</code>, <code>&lt;ios&gt;</code>, <code>&lt;cstdio&gt;</code> — with <code>std::cout</code>, <code>std::cin</code>, <code>std::cerr</code> as file-scope objects (aggregates with constant initialisers, whose <code>FILE*</code> is resolved at the point of use, so no code runs before <code>main</code> to construct them). <code>std::cout &lt;&lt; x</code>, <code>std::cin &gt;&gt; v</code>, string streams and file streams work in the ordinary way. <code>if (stream &gt;&gt; v)</code> — the conversion of a stream to a testable value — works.</p>
+<p><strong><code>&lt;new&gt;</code></strong> and <strong><code>&lt;typeinfo&gt;</code></strong> — for placement <code>new</code>/<code>operator new</code> declarations and for <code>typeid</code>/<code>type_info</code> (Part X).</p>
+<hr>
+<h2 id="72-what-is-not-in-the-library">72. What is not in the library</h2>
+<p>The library is a working subset, not a conforming standard library. Do not expect:</p>
+<ul>
+<li>The full <code>&lt;algorithm&gt;</code> (only the pieces the containers use), the full iterator hierarchy (iterators are pointers), or the full <code>&lt;functional&gt;</code>/<code>&lt;memory&gt;</code> smart-pointer machinery.</li>
+<li><code>&lt;thread&gt;</code>, <code>&lt;mutex&gt;</code>, <code>&lt;atomic&gt;</code>, <code>&lt;chrono&gt;</code>, <code>&lt;regex&gt;</code>, <code>&lt;random&gt;</code>, <code>&lt;filesystem&gt;</code> — the large C++11-and-later library components are not shipped.</li>
+<li>Locale/facet machinery beyond the C <code>&lt;locale.h&gt;</code>.</li>
+<li>Full exception-class hierarchies from <code>&lt;stdexcept&gt;</code> beyond what the shipped headers declare.</li>
+</ul>
+<p>A program that includes a header not in <code>include/</code> fails at the include, by name — the preprocessor cannot find the file — rather than miscompiling. When you need a component that is not here, that is the boundary of the shipped library, not a bug.</p>
+<hr>
+<h2 id="73-the-shalimar-runtime-as-a-library">73. The Shalimar runtime as a "library"</h2>
+<p>Shalimar's equivalent of the C/C++ standard library is its <strong>runtime</strong> (<code>shmrt-&lt;target&gt;</code> in <code>bin\lib\</code>): it provides <code>main</code>, the numeric formatting behind <code>?</code>, the console I/O, the array operations and the trapping arithmetic. A Shalimar program does not <code>#include</code> — it has no preprocessor — but it <em>borrows</em> runtime functions with <code>uses</code>, and the runtime is what those names resolve to. On tms6747 the runtime is the directory of <code>.s</code> the emulator assembles with the program; on the host targets it is the <code>.lib</code>/<code>.a</code> the linker pulls in. The debug runtime (<code>-debug</code>) is the same code plus a session that is dormant until the environment arms it; what the compiler emits does not differ between the two by a byte.</p>
+<h1 id="part-xv-faq-why-does-it">Part XV — FAQ: "why does it…"</h1>
+<p>Short answers to the questions the design provokes, each pointing at the part with the full story.</p>
+<p><strong>Why are there three compilers instead of one?</strong> Because they are three languages with genuinely different front ends and, for C vs C++, different rules about the same syntax. One binary pretending to be all three would have to guess a language it should be told; instead the suffix (or the Language menu) chooses, and each compiler refuses a language that is not its own — by name (Parts II, IV).</p>
+<p><strong>Why does the compiler need Visual Studio / vcvars on Windows?</strong> A Release build needs nothing of Visual Studio's: RIDE's own <code>masm</code> and <code>link</code> assemble and link it. A Debug build does — clang's assembler and <code>link.exe /DEBUG</code>, which are what carry CodeView to cdb — and so does a <code>cl</code> build or the vendor fallback; those are on <code>PATH</code> only inside a Developer Command Prompt, so the compiler finds Visual Studio and sources <code>vcvars64.bat</code> for them and works from an ordinary shell too (Part V chapter 22). If yours is somewhere it does not look, name the file once with <em>Tools ▸ Locate vcvars64.bat...</em>.</p>
+<p><strong>Why can't I step through a Release build on Windows?</strong> Its MASM spelling carries no line table and <code>ml64</code> cannot relocate CodeView. A Debug build is the GNU spelling with CodeView in it, and cdb steps it — C and C++ alike, since 5.1 (Part V chapter 22).</p>
+<p><strong>Why does <code>long</code> change size between platforms?</strong> LLP64 on Windows (and the C6000) makes <code>long</code> 32-bit; Linux/macOS make it 64-bit. The compiler follows each platform's ABI (Part XI chapter 55). Use fixed-width types when the size matters.</p>
+<p><strong>Why is <code>volatile</code> accepted but ignored in cpp11?</strong> It is parsed and dropped; it does not change codegen. Do not rely on it for memory-mapped I/O (Parts II, X).</p>
+<p><strong>Why does my C++ program using <code>&lt;thread&gt;</code> fail at the include?</strong> The shipped library is a working subset; the large C++11 library components are not there (Part XIV chapter 72). The failure is at the include, by name, not a miscompile.</p>
+<p><strong>Why won't two Shalimar files link into one program?</strong> Every Shalimar unit exports the same three startup symbols and the runtime owns <code>main</code>, and the language has no cross-file declarations to check a call against. Shalimar beside C is two programs (Parts II, III).</p>
+<p><strong>Why does the tms6747 program not produce an <code>.exe</code> or <code>.hex</code> when I run it?</strong> Because "run" on tms6747 uses the <code>vm6747</code> emulator, which assembles and executes the <code>.s</code> in memory — there is no linked binary. For a real <code>.out</code>/<code>.hex</code>, use the TI build path (<code>bin\ti\ti-build.cmd</code>), which uses a TI CGT on the machine (Part VI).</p>
+<p><strong>Is the tms6747 output the same as TI's own compiler's?</strong> No — different compilers, different codegen; the bytes differ. It is <em>ABI-compatible</em> with <code>cl6x</code> (links against TI's objects and runtime, tables match), not byte-identical (Part VI chapter 25).</p>
+<p><strong>Why does <code>?</code> in a converted <code>printf</code> add a space?</strong> Shalimar's <code>?</code> writes a space after every item and there is no concatenation or number-to-text builtin, so a format whose text abuts a hole gains one space. <code>c2s</code> carries it with a warning per <code>printf</code> rather than refusing over one space (Part VIII chapter 34).</p>
+<p><strong>Why did the editor open an old program / "do nothing"?</strong> A stale binary. On Windows, confirm the editor and its compilers are the ones you just built and are together in <code>bin\</code> (Parts I, XIII).</p>
+<p><strong>Where are the binaries? / Where does output go?</strong> The editor and compilers are in <code>bin\</code>; the Shalimar runtime in <code>bin\lib\</code>; the C++ headers in <code>include\</code>, the C headers in <code>lib\</code>, one level above <code>bin\</code>; <code>-S</code>/<code>-c</code> output lands beside the source unless <code>-o</code> says otherwise; a project's program lands beside its <code>.pro</code> (Part I chapter 6).</p>
+<p><strong>Why is there a "3.0" installer as well as "3.5"?</strong> 3.5 is three languages and four targets (with the C6000 emulator and the TI build path); 3.0 is the previous release — three languages, three targets, the frozen original compilers. Both are provided so a 3.0 project builds against the compilers it was written for.</p>
+<p><strong>Can I use the compilers without the editor?</strong> Yes — that is the point of the separation. They are ordinary command-line tools; Part IV is the reference and Part IX the worked examples.</p>
+<hr>
+<h2 id="index-of-the-parts">Index of the parts</h2>
+<ul>
+<li>I — the compilation model (input, output, pipeline, native tools, output routing)</li>
+<li>II — the three languages: what each supports and does not</li>
+<li>III — projects: the <code>.pro</code>, making and updating, groups, mixed C/C++</li>
+<li>IV — choosing a compiler, the command-line reference, building by hand</li>
+<li>V — the four targets, their native tools, and the ml64/CodeView story</li>
+<li>VI — the C6000 target, the vm6747 emulator, the TI build path</li>
+<li>VII — keys, the editor's CLI, diagnostics, troubleshooting, glossary</li>
+<li>VIII — the Shalimar ecosystem and the c2s converter</li>
+<li>IX — worked examples</li>
+<li>X — C++11 in cpp11, feature by feature</li>
+<li>XI — the ABIs and calling conventions per target</li>
+<li>XII — building from source, the workspace, three-box verification</li>
+<li>XIII — diagnostics, exit codes, and how the tools report</li>
+<li>XIV — the shipped libraries (<code>lib/</code> C, <code>include/</code> C++)</li>
+<li>XV — FAQ and this index</li>
+</ul>
+<p>The full Shalimar language specification is Appendix A (<code>help/appendix-a-shalimar-language.md</code>).</p></div></body></html>

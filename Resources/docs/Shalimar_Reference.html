@@ -1,0 +1,654 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>The Shalimar Language</title><style>
+:root{--bg:#fff;--fg:#1a1a1a;--muted:#5a5a5a;--rule:#e2e2e2;--accent:#6a4a2a;
+--codebg:#f5f3ef;--codefg:#3a2a1a;--tableh:#f0ece6;--link:#8a5a2a}
+@media (prefers-color-scheme:dark){:root{--bg:#1b1b1b;--fg:#e6e6e6;--muted:#a5a5a5;
+--rule:#333;--accent:#d8b48a;--codebg:#242220;--codefg:#e6d8c8;--tableh:#2a2724;--link:#e0b487}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:52rem;margin:0 auto;padding:2.5rem 1.25rem 6rem}
+h1,h2,h3,h4,h5,h6{line-height:1.25;font-weight:650;scroll-margin-top:1rem}
+h1{font-size:2rem;margin:2.2rem 0 .6rem;padding-bottom:.3rem;border-bottom:2px solid var(--rule)}
+h2{font-size:1.5rem;margin:2rem 0 .5rem;color:var(--accent)}
+h3{font-size:1.2rem;margin:1.5rem 0 .4rem}
+h4{font-size:1.02rem;margin:1.2rem 0 .3rem}
+p{margin:.6rem 0}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+code{background:var(--codebg);color:var(--codefg);padding:.1rem .3rem;border-radius:4px;
+font:0.85em ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+pre{background:var(--codebg);color:var(--codefg);padding:1rem;border-radius:8px;
+overflow-x:auto;border:1px solid var(--rule)}
+pre code{background:none;padding:0;font-size:.82rem;line-height:1.45}
+blockquote{margin:.8rem 0;padding:.3rem 1rem;border-left:3px solid var(--accent);color:var(--muted)}
+hr{border:none;border-top:1px solid var(--rule);margin:2rem 0}
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--rule);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--tableh);font-weight:650}
+ul,ol{margin:.5rem 0;padding-left:1.5rem}li{margin:.25rem 0}
+.masthead{margin:0 0 1rem}.masthead .sub{color:var(--muted);font-size:.95rem}
+nav.toc{background:var(--codebg);border:1px solid var(--rule);border-radius:8px;
+padding:1rem 1.25rem;margin:1.5rem 0 2.5rem}
+nav.toc .t{font-weight:650;margin-bottom:.4rem}
+nav.toc ul{list-style:none;margin:0;padding:0}
+nav.toc li{margin:.15rem 0}
+nav.toc .l2{padding-left:1rem}nav.toc .l3{padding-left:2rem;font-size:.9rem}
+nav.toc a{color:var(--fg)}
+@media print{body{font-size:11pt}.wrap{max-width:none;padding:0}
+nav.toc{break-after:page}h1,h2{break-after:avoid}pre,table,blockquote{break-inside:avoid}
+a{color:inherit;text-decoration:none}}
+</style></head><body><div class="wrap"><div class="masthead"><h1 style="border:none;margin-top:0">The Shalimar Language</h1><div class="sub">Appendix A of the RIDE 5.17 manual</div></div><nav class="toc"><div class="t">Contents</div><ul>
+<li class="l1"><a href="#appendix-a-the-shalimar-language">Appendix A — The Shalimar Language</a></li>
+<li class="l1"><a href="#the-shalimar-language">The Shalimar Language</a></li>
+<li class="l2"><a href="#1-overview">1. Overview</a></li>
+<li class="l3"><a href="#1-1-a-complete-example">1.1 A complete example</a></li>
+<li class="l2"><a href="#2-lexical-structure">2. Lexical structure</a></li>
+<li class="l3"><a href="#2-1-comments">2.1 Comments</a></li>
+<li class="l3"><a href="#2-2-identifiers">2.2 Identifiers</a></li>
+<li class="l3"><a href="#2-3-numbers">2.3 Numbers</a></li>
+<li class="l3"><a href="#2-4-string-literals">2.4 String literals</a></li>
+<li class="l3"><a href="#2-5-operators-and-punctuation">2.5 Operators and punctuation</a></li>
+<li class="l2"><a href="#3-grammar-ebnf">3. Grammar (EBNF)</a></li>
+<li class="l2"><a href="#4-operator-precedence">4. Operator precedence</a></li>
+<li class="l3"><a href="#4-1-unary-minus-vs-a-real-gotcha">4.1 Unary minus vs. <code>^</code> — a real gotcha</a></li>
+<li class="l2"><a href="#5-types">5. Types</a></li>
+<li class="l3"><a href="#5-1-where-each-is-written">5.1 Where each is written</a></li>
+<li class="l3"><a href="#5-2-widening-and-narrowing">5.2 Widening and narrowing</a></li>
+<li class="l3"><a href="#5-3-what-does-not-convert">5.3 What does not convert</a></li>
+<li class="l3"><a href="#5-4-value-representation">5.4 Value representation</a></li>
+<li class="l3"><a href="#5-5-truthiness">5.5 Truthiness</a></li>
+<li class="l2"><a href="#6-declarations">6. Declarations</a></li>
+<li class="l2"><a href="#7-statements">7. Statements</a></li>
+<li class="l3"><a href="#7-1-assignment">7.1 Assignment</a></li>
+<li class="l3"><a href="#7-1-1-omitted-entries">7.1.1 Omitted entries</a></li>
+<li class="l3"><a href="#7-2-compound-assignment">7.2 Compound assignment</a></li>
+<li class="l3"><a href="#7-3-multi-assign">7.3 Multi-assign</a></li>
+<li class="l3"><a href="#7-4-return">7.4 Return</a></li>
+<li class="l3"><a href="#7-5-if-else">7.5 <code>if</code> / <code>else</code></a></li>
+<li class="l2"><a href="#7-5-1-uses-borrowing-a-library-function">7.5.1 <code>uses</code> — borrowing a library function</a></li>
+<li class="l3"><a href="#7-6-while">7.6 <code>while</code></a></li>
+<li class="l3"><a href="#7-7-for">7.7 <code>for</code></a></li>
+<li class="l3"><a href="#7-7-1-break-and-continue">7.7.1 <code>break</code> and <code>continue</code></a></li>
+<li class="l3"><a href="#7-8-print">7.8 Print</a></li>
+<li class="l2"><a href="#8-functions">8. Functions</a></li>
+<li class="l3"><a href="#8-1-definitions">8.1 Definitions</a></li>
+<li class="l3"><a href="#8-2-arguments">8.2 Arguments</a></li>
+<li class="l3"><a href="#8-3-recursion-depth-limits">8.3 Recursion depth limits</a></li>
+<li class="l2"><a href="#9-arrays">9. Arrays</a></li>
+<li class="l3"><a href="#9-1-dimensions">9.1 Dimensions</a></li>
+<li class="l2"><a href="#10-strings">10. Strings</a></li>
+<li class="l3"><a href="#10-1-characters">10.1 Characters</a></li>
+<li class="l3"><a href="#10-2-what-is-not-provided">10.2 What is not provided</a></li>
+<li class="l2"><a href="#11-statement-boundaries-why-there-are-no-semicolons">11. Statement boundaries — why there are no semicolons</a></li>
+<li class="l2"><a href="#12-library-functions-and-constants">12. Library functions and constants</a></li>
+<li class="l3"><a href="#12-1-conversions">12.1 Conversions</a></li>
+<li class="l2"><a href="#13-diagnostics">13. Diagnostics</a></li>
+<li class="l3"><a href="#13-1-lex-errors">13.1 Lex errors</a></li>
+<li class="l3"><a href="#13-2-parse-errors">13.2 Parse errors</a></li>
+<li class="l3"><a href="#13-3-check-errors-and-warnings">13.3 Check errors and warnings</a></li>
+<li class="l3"><a href="#13-4-runtime-errors">13.4 Runtime errors</a></li>
+<li class="l2"><a href="#14-limits">14. Limits</a></li>
+<li class="l2"><a href="#15-known-limitations-maintainer-notes">15. Known limitations &amp; maintainer notes</a></li>
+<li class="l2"><a href="#16-architecture-map">16. Architecture map</a></li>
+<li class="l3"><a href="#16-1-running-the-tests">16.1 Running the tests</a></li>
+</ul></nav><p>&lt;!-- Everything below the rule is a verbatim copy. Do not edit it here. --&gt;</p>
+<h1 id="appendix-a-the-shalimar-language">Appendix A — The Shalimar Language</h1>
+<p><strong>This is a copy, not the original.</strong> The specification lives in the Shalimar app's own repository as <code>SHALIMAR_LANGUAGE.md</code>, and that copy is the one that wins: where this page and that one disagree, that one is right and this one is stale.</p>
+<p>It is carried here because RIDE is a separate repository. A reader of this manual has no <code>../Shalimar</code> to follow, and a language reference you cannot reach is not a reference.</p>
+<table><thead><tr><th></th><th></th></tr></thead><tbody><tr><td>taken from</td><td><code>Shalimar/SHALIMAR_LANGUAGE.md</code></td></tr><tr><td>at commit</td><td><code>ebe4f17</code>, 2026-08-27 — the one that last touched it</td></tr><tr><td>checked by</td><td><code>tools/check-help.sh</code>, which diffs this against the original</td></tr></tbody></table>
+<p><strong>Run <code>tools/check-help.sh</code> after touching either.</strong> It is the whole reason copying this was acceptable: without it, two specifications exist and nothing says which one somebody read. The house bug in these projects is documentation that outlived the fact, and a duplicated spec is that bug with a head start.</p>
+<p>Everything the <em>compiler</em> does differently from the app's interpreter is not here — it is in <code>Compiler-S/docs/CONFORMANCE.md</code>, and the document below is what both are measured against.</p>
+<hr>
+<h1 id="the-shalimar-language">The Shalimar Language</h1>
+<p>A developer reference for <strong>Shalimar</strong>, the small numeric language interpreted by <code>TokenKind.swift</code> / <code>Node.swift</code> / <code>Parse.swift</code> / <code>Check.swift</code> / <code>Interpreter.swift</code> in this project (Xcode project <code>Shalimar</code>, target <code>Shalimar</code>). This document is the authoritative specification: when the interpreter and this document disagree, that is a conformance bug in the interpreter, not a documentation error — fix the code, or deliberately renegotiate and update this file, but don't let them silently drift.</p>
+<p>This file both teaches the language to someone writing <code>.shm</code> programs, and documents the interpreter's actual internals for whoever maintains it. Sections marked <strong>Implementation note</strong> are for the latter audience and describe real, verified behavior of the current code — including a few sharp edges worth knowing before you rely on them.</p>
+<p><strong>This is the 3.0 language.</strong> 2.x had one runtime type (<code>Double</code>), untyped parameters, output <em>names</em> in the <code>&lt;&gt;</code> list, no arrays, and strings that degraded to <code>0.0</code>. All of that is gone. Where a rule below replaced a 2.x one and the difference is likely to bite someone porting a program, it says so.</p>
+<p>The same material, written for the person using the app rather than maintaining it, is in <code>HelpViewController.swift</code> and reachable from the <code>?</code> in the editor's nav bar. When a rule changes, both files change.</p>
+<hr>
+<h2 id="1-overview">1. Overview</h2>
+<ul>
+<li>A program is a sequence of function definitions and global declarations; execution begins at <code>main()</code>, which takes no inputs. Definitions may be written in any order, but a global is visible only below the line that declares it (<a href="#6-declarations">§6</a>).</li>
+<li>Four types: <code>int</code>, <code>real</code>, <code>char</code>, and arrays of them. Text is <code>char[]</code>. See <a href="#5-types">§5</a>.</li>
+<li>Variables are declared with a type. A <em>scalar</em> may also be created by assigning to it; an array may not, unless the right-hand side is a literal (<a href="#7-1-assignment">§7.1</a>).</li>
+<li>Control flow: <code>if</code>/<code>else if</code>/<code>else</code>, <code>while</code>, two <code>for</code> forms, and <code>break</code>/<code>continue</code> inside a loop.</li>
+<li>Functions may return <strong>several</strong> values; the caller captures them with <code>&lt;a,b&gt; : f(...)</code>. An array cannot be returned — it is passed in and filled, because an array argument is a reference (<a href="#8-2-arguments">§8.2</a>).</li>
+<li>Output goes through <code>?</code> (print with newline) or <code>??</code> (print without). Each must be the first thing on its line, so there is at most one print command per line. See <a href="#7-8-print">§7.8</a>.</li>
+<li>Statements have no terminator. The parser uses targeted lookahead to know where one ends and the next begins (<a href="#11-statement-boundaries-why-there-are-no-semicolons">§11</a>). Newlines are insignificant <em>everywhere except</em> the print rule, which is the one place layout carries meaning.</li>
+<li>There are three stages: lex, parse, and a <strong>checker</strong> that types the whole program before anything runs. The checker does not stop at the first problem (<a href="#13-diagnostics">§13</a>).</li>
+</ul>
+<h3 id="1-1-a-complete-example">1.1 A complete example</h3>
+<pre><code>uses abs
+
+fun &lt;real&gt; = invert(a[][]: real) {
+  real tol : 1e-30
+  real det : 1.0
+  real r : 0.0
+
+  for i &lt; a.row {
+    det : det * a[i][i]
+    if abs(det) &lt; tol { return det }
+
+    r : 1.0 / a[i][i]
+    a[i][i] : 1.0
+    for j &lt; a.col {
+      a[i][j] : r * a[i][j]
+    }
+
+    for k &lt; a.row {
+      if k != i &amp; a[k][i] != 0.0 {
+        r : a[k][i]
+        a[k][i] : 0.0
+        for j &lt; a.col {
+          a[k][j] -: r * a[i][j]
+        }
+      }
+    }
+  }
+  return det
+}
+
+fun &lt;&gt; = main() {
+  real m[3][3] : {{4.0, 7.0, 2.0},
+                  {3.0, 6.0, 1.0},
+                  {2.0, 5.0, 3.0}}
+  ? &quot;inverse, det&quot; invert(m)
+  ? m
+}</code></pre>
+<hr>
+<h2 id="2-lexical-structure">2. Lexical structure</h2>
+<p>Source is read left to right; whitespace (including newlines) is skipped and otherwise insignificant. The lexer does count newlines as it discards them and stamps each token with the line it started on, because one rule needs it: a print command must be the first token on its line (<a href="#7-8-print">§7.8</a>). Nothing else in the language consults layout.</p>
+<h3 id="2-1-comments">2.1 Comments</h3>
+<pre><code>Comment ::= &quot;//&quot; { Character } (newline | EOF)</code></pre>
+<p><code>//</code> may appear at the start of a line or after code on the same line; everything from <code>//</code> to the end of that line is discarded.</p>
+<p><strong>Implementation note:</strong> there is <strong>no block-comment (<code>/* ... */</code>) support in the lexer</strong>, despite <code>ComputeViewController.swift</code>'s re-indenting helpers containing logic that recognizes <code>/* ... */</code> when laying out scanned or pasted source. That logic is purely cosmetic and independent of the grammar. In a real program <code>/* comment */</code> is not a comment — <code>/</code> lexes as divide, <code>*</code> as multiply, and the words inside as identifiers, producing an error. Don't let the editor's tolerance of <code>/* */</code> fool you.</p>
+<h3 id="2-2-identifiers">2.2 Identifiers</h3>
+<pre><code>Identifier ::= (Letter | &quot;_&quot;) { Letter | Digit | &quot;_&quot; }
+Letter     ::= &quot;a&quot;..&quot;z&quot; | &quot;A&quot;..&quot;Z&quot;
+Digit      ::= &quot;0&quot;..&quot;9&quot;</code></pre>
+<p>Case-sensitive. Keywords are recognized case-insensitively at the lexer level (the matched run is <code>lowercased()</code> before the switch) and can never be used as identifiers:</p>
+<pre><code>if  else  while  for  to  step  fun  return  break  continue  int  real  char  uses</code></pre>
+<p><code>int</code>, <code>real</code> and <code>char</code> are keywords but are also the names of the three conversions, which is resolved by position — see <a href="#12-1-conversions">§12.1</a>.</p>
+<p>Three further words are <strong>contextual</strong>: they mean something only in one position and remain ordinary identifiers everywhere else.</p>
+<table><thead><tr><th>Word</th><th>Special only</th><th>Ordinary elsewhere</th></tr></thead><tbody><tr><td><code>row</code> <code>col</code> <code>dim</code></td><td>immediately after <code>.</code></td><td><code>row : 9</code> declares a variable called <code>row</code></td></tr><tr><td><code>prec</code></td><td>at the head of a print item, followed by <code>(</code></td><td><code>prec : 9</code> declares a variable called <code>prec</code></td></tr></tbody></table>
+<p>The one clash contextual matching cannot resolve is a <em>function</em> named <code>prec</code>, which the checker refuses outright rather than leave silently unreachable.</p>
+<p><strong><code>Letter</code> and <code>Digit</code> are ASCII only — this is deliberate.</strong> Swift's <code>isLetter</code> is true for <em>every</em> Unicode letter, and letting those through is actively dangerous rather than merely permissive: Cyrillic <code>х</code> (U+0445) and Latin <code>x</code> (U+0078) are the same glyph on screen but different identifiers, so <code>хn : y - 4</code> assigns to a variable no <code>xn</code> in the program will ever read. That is not hypothetical — it is exactly how a camera-scanned program failed, surfacing as a baffling undefined variable pointing at a line where the variable was plainly defined. The same trap exists for Greek <code>Α</code>/<code>Ο</code>/<code>Ρ</code> and for non-ASCII digits.</p>
+<p>A non-ASCII character therefore produces a lex error <strong>naming its code point</strong> (<a href="#13-1-lex-errors">§13.1</a>), which is the only way to make the difference visible. It is important that this is an error and not a silent skip: dropping the character would quietly turn <code>хn</code> into the identifier <code>n</code> and simply relocate the bug.</p>
+<p>The editor also normalizes confusable characters to ASCII on the way in (<code>asciiConfusables</code> / <code>normalizedToASCII</code> in <code>ComputeViewController.swift</code>) for text that is typed, pasted, or scanned, so in practice the lexer's check is the backstop rather than the first line of defence — but it is the authoritative one, since a <code>.shm</code> file loaded from disk bypasses the editor entirely. The table includes the full-stop lookalikes, because since <code>.row</code>/<code>.col</code>/<code>.dim(n)</code> a dot carries syntax outside numerals too.</p>
+<h3 id="2-3-numbers">2.3 Numbers</h3>
+<pre><code>Number   ::= Digit { Digit } [ &quot;.&quot; { Digit } ] [ Exponent ]
+Exponent ::= (&quot;e&quot; | &quot;E&quot;) [ &quot;+&quot; | &quot;-&quot; ] Digit { Digit }</code></pre>
+<p><strong>A numeral containing a point or an exponent is a <code>real</code>; anything else is an <code>int</code>.</strong> <code>42</code> is an int, <code>42.</code> and <code>1e10</code> and <code>1.5e-3</code> are reals. <code>Digit</code> is ASCII <code>0</code>–<code>9</code> only, for the reasons in <a href="#2-2-identifiers">§2.2</a>.</p>
+<p>An int literal that does not fit <code>Int32</code> is a lex error naming the limit and suggesting a real. A trailing dot is fine: <code>1.</code> is <code>1.0</code>.</p>
+<blockquote><strong>2.x note.</strong> Exponent notation did not exist; <code>1e10</code> lexed as <code>1</code> followed by the identifier <code>e10</code>. The constant <code>e</code> was withheld for a time on the reasoning that the letter now belongs to the exponent when it follows a digit; it is back (<a href="#12-library-functions-and-constants">§12</a>), because the lexer separates the two cleanly — <code>2e5</code> is one number, <code>? 2 e</code> is two items, and a name like <code>e5</code> is untouched. The objection was readability, not ambiguity.</blockquote>
+<p><strong>Implementation note — the scan is looser than the grammar.</strong> The lexer consumes any run of digits and dots, and an exponent whose digits may be <em>absent</em> (<code>[0-9]*</code>, not <code>[0-9]+</code>). So <code>1.2.3</code>, <code>1e</code> and <code>1e-</code> all arrive whole at the conversion step, where <code>Double</code> refuses them and they are reported as <code>Malformed number &#x27;...&#x27;</code>. Scanning strictly would leave <code>1e</code> to split into the number <code>1</code> and an identifier <code>e</code>, desyncing every token after it and surfacing as a parse error pointing somewhere else. <code>Double</code> is what actually arbitrates; the grammar above is the intent.</p>
+<h3 id="2-4-string-literals">2.4 String literals</h3>
+<pre><code>StringLiteral ::= &#x27;&quot;&#x27; { Character except &#x27;&quot;&#x27; or newline } &#x27;&quot;&#x27;</code></pre>
+<p>A string literal is a <code>char[]</code> holding the text plus a terminating <code>char(0)</code>. There are no escapes — the lexer's pattern is <code>&quot;[^&quot;\n]*&quot;</code>, so the first closing quote always ends it, and a literal cannot contain a <code>&quot;</code>. Non-ASCII <em>inside</em> a literal is allowed: the ASCII rule of <a href="#2-2-identifiers">§2.2</a> governs identifiers, not text.</p>
+<p><strong>A literal must be closed on the line it opens</strong>, or it is <code>Unclosed string - add &#x27;&quot;&#x27;</code> (<a href="#13-1-lex-errors">§13.1</a>), reported on that line. Both halves of that pattern earn their place, and both were once missing: with the closing quote optional a single stray quote swallowed the rest of the file, and with the body able to match a newline the opening quote reached forward to the next quote anywhere below it - turning a program into a string and reporting the failure on a line that was not wrong.</p>
+<h3 id="2-5-operators-and-punctuation">2.5 Operators and punctuation</h3>
+<table><thead><tr><th>Token(s)</th><th>Meaning</th></tr></thead><tbody><tr><td><code>+</code> <code>-</code> <code>*</code> <code>/</code> <code>%</code> <code>^</code></td><td>arithmetic: add, subtract, multiply, divide, modulus, power</td></tr><tr><td><code>:</code></td><td>assignment (<code>x : expr</code>) / separator (<code>for i : 0 to 10</code>, parameter types, multi-assign)</td></tr><tr><td><code>=</code></td><td><strong>overloaded</strong>, see below</td></tr><tr><td><code>!=</code></td><td>not-equal</td></tr><tr><td><code>&lt;=</code> <code>&gt;=</code></td><td>less-or-equal, greater-or-equal</td></tr><tr><td><code>&lt;</code> <code>&gt;</code></td><td><strong>overloaded</strong>, see below</td></tr><tr><td><code>&amp;</code> `\</td><td>`</td><td>logical and / or (operate on truthiness, <a href="#5-5-truthiness">§5.5</a>)</td></tr><tr><td><code>+:</code> <code>-:</code></td><td>compound assign (<code>x +: 1</code> ⇔ <code>x : x + 1</code>); <code>+:</code> also appends to a string</td></tr><tr><td><code>(</code> <code>)</code></td><td>grouping / argument list / <code>.dim(n)</code> axis / <code>prec(n)</code></td></tr><tr><td><code>{</code> <code>}</code></td><td>block delimiters / array literal</td></tr><tr><td><code>[</code> <code>]</code></td><td>array size in a declaration, index in an expression, rank in a parameter</td></tr><tr><td><code>,</code></td><td>list separator</td></tr><tr><td><code>.</code></td><td>array dimensions: <code>.row</code> <code>.col</code> <code>.dim(n)</code></td></tr><tr><td><code>?</code></td><td>print with trailing newline (only when <em>not</em> immediately followed by a second <code>?</code>)</td></tr><tr><td><code>??</code></td><td>print with no trailing newline</td></tr><tr><td><code>!</code></td><td><strong>not a token on its own</strong> — only the first half of <code>!=</code>; a bare <code>!</code> is a lex error</td></tr><tr><td><code>&quot;</code></td><td>string literal delimiter</td></tr></tbody></table>
+<p><strong>Implementation note — the dot rule sits below the number rule.</strong> Token patterns are tried in order, and <code>[0-9][0-9.]*...</code> is tried first, so the dot in <code>1.5</code> is eaten as part of the numeral and only a dot that cannot start a number reaches the <code>.</code> rule. That is exactly the dot of <code>A.row</code>. Moving the dot rule above the number rule would break every real literal in the language.</p>
+<p><strong>Implementation note — <code>EndOfInput</code> is never emitted.</strong> <code>TokenKind</code> has the case, but <code>tokenize()</code> never appends one: the array contains only real tokens. End of input is represented <em>virtually</em>, by <code>peekCurrentToken()</code> manufacturing one once <code>index</code> runs past the end. This is what lets <code>consume</code>/<code>match</code> report cleanly at end of input instead of indexing out of bounds. Loops that detect end of input via <code>index &lt; tokens.count</code> (<code>parseBody</code> among them) depend on there being no terminator token.</p>
+<p><strong><code>=</code> is overloaded three ways</strong>, disambiguated purely by grammatical position:</p>
+<ol>
+<li>Inside an expression, the <strong>equality comparison</strong> (<code>if d = 0 { ... }</code>).</li>
+<li>At the start of a statement, <code>identifier = expr</code> is a <strong>fallback assignment</strong>, behaving exactly like <code>identifier : expr</code>. It is accepted silently.</li>
+<li>In a function header, <code>fun &lt;outputs&gt; = name(inputs) { ... }</code>, the separator between the output list and the name.</li>
+</ol>
+<p><strong><code>&lt;</code> / <code>&gt;</code> are overloaded three ways</strong>:</p>
+<ol>
+<li>Inside an expression, less-than / greater-than.</li>
+<li>As angle brackets around a list: multi-assign's <code>&lt;a,b&gt; : f(...)</code> and a definition's output list.</li>
+<li>Immediately after a <code>for</code> loop's name, <code>for i &lt; n</code>, the count-loop form (<a href="#7-7-for">§7.7</a>).</li>
+</ol>
+<p>The parser disambiguates <code>&lt;</code> by lookahead (<code>looksLikeMultiAssignHeader</code>): wherever it could start a statement or continue an expression, it peeks for the exact shape <code>Identifier {&quot;,&quot; Identifier} &quot;&gt;&quot; &quot;:&quot;</code> before committing. The <code>for</code> case needs no lookahead — a <code>&lt;</code> in that position was a parse error in every earlier version, so nothing legal changed meaning.</p>
+<p><strong><code>&gt;=</code> and the function header.</strong> Because the lexer is context-free and matches the longest operator first, <code>fun &lt;&gt;= main()</code> — the closing <code>&gt;</code> of the output list written hard against the separator <code>=</code> — arrives as a single <code>&gt;=</code> token. That spelling parsed before <code>&gt;=</code> was an operator, so <code>parseDefinition</code> accepts a <code>&gt;=</code> there and reads it as the <code>&gt;</code> plus the <code>=</code>. The alternative was to require the space and silently break programs over an operator they do not use. Note that this is a symptom, not a design: the real cause is <code>=</code> doing duty as a separator at all (<a href="#2-5-operators-and-punctuation">§2.5</a>, overload 3), and it would not arise if the header used <code>:</code> like every other separator in the language.</p>
+<hr>
+<h2 id="3-grammar-ebnf">3. Grammar (EBNF)</h2>
+<pre><code>Program        ::= { Declaration | FunctionDef }
+
+Uses           ::= &quot;uses&quot; Identifier { &quot;,&quot; Identifier }
+Declaration    ::= Type Identifier { &quot;[&quot; Expression &quot;]&quot; } [ &quot;:&quot; Initializer ]
+Type           ::= &quot;int&quot; | &quot;real&quot; | &quot;char&quot;
+Initializer    ::= ArrayLiteral | Expression
+ArrayLiteral   ::= &quot;{&quot; [ Slot { &quot;,&quot; Slot } ] &quot;}&quot;
+Slot           ::= Initializer | (* empty - an omitted entry, see 7.1.1 *)
+
+FunctionDef    ::= &quot;fun&quot; OutputList &quot;=&quot; Identifier &quot;(&quot; [ ParamList ] &quot;)&quot; Block
+OutputList     ::= &quot;&lt;&quot; [ Type { &quot;,&quot; Type } ] &quot;&gt;&quot;
+ParamList      ::= Parameter { &quot;,&quot; Parameter }
+Parameter      ::= [ &quot;&amp;&quot; ] Identifier { &quot;[&quot; &quot;]&quot; } &quot;:&quot; Type
+
+Block          ::= &quot;{&quot; { Statement } &quot;}&quot;
+
+Statement      ::= Declaration
+                 | Assignment
+                 | CompoundAssign
+                 | MultiAssign
+                 | ReturnStmt
+                 | FunctionCall
+                 | IfStmt
+                 | WhileStmt
+                 | ForStmt
+                 | PrintStmt
+                 | &quot;break&quot;                (* only inside a loop *)
+                 | &quot;continue&quot;             (* only inside a loop *)
+
+LValue         ::= Identifier { &quot;[&quot; Expression &quot;]&quot; }
+Assignment     ::= LValue (&quot;:&quot; | &quot;=&quot;) Initializer
+CompoundAssign ::= LValue (&quot;+:&quot; | &quot;-:&quot;) Expression
+MultiAssign    ::= &quot;&lt;&quot; Identifier { &quot;,&quot; Identifier } &quot;&gt;&quot; &quot;:&quot; FunctionCall
+
+ReturnStmt     ::= &quot;return&quot; [ Expression | &quot;(&quot; Expression { &quot;,&quot; Expression } &quot;)&quot; ]
+
+IfStmt         ::= &quot;if&quot; Expression Block { &quot;else&quot; &quot;if&quot; Expression Block } [ &quot;else&quot; Block ]
+WhileStmt      ::= &quot;while&quot; Expression Block
+ForStmt        ::= &quot;for&quot; Identifier &quot;:&quot; Expression &quot;to&quot; Expression [ &quot;step&quot; Expression ] Block
+                 | &quot;for&quot; Identifier &quot;&lt;&quot; Expression [ &quot;step&quot; Expression ] Block
+
+PrintStmt      ::= (&quot;?&quot; | &quot;??&quot;) { PrintItem }      (* must be first token on its line *)
+PrintItem      ::= &quot;prec&quot; &quot;(&quot; Expression &quot;)&quot; | Expression
+
+Expression     ::= OrExpr
+OrExpr         ::= AndExpr { &quot;|&quot; AndExpr }
+AndExpr        ::= CompareExpr { &quot;&amp;&quot; CompareExpr }
+CompareExpr    ::= AddExpr { (&quot;=&quot; | &quot;!=&quot; | &quot;&lt;&quot; | &quot;&gt;&quot; | &quot;&lt;=&quot; | &quot;&gt;=&quot;) AddExpr }
+AddExpr        ::= MulExpr { (&quot;+&quot; | &quot;-&quot;) MulExpr }
+MulExpr        ::= PowExpr { (&quot;*&quot; | &quot;/&quot; | &quot;%&quot;) PowExpr }
+PowExpr        ::= Postfix [ &quot;^&quot; PowExpr ]
+Postfix        ::= Primary { &quot;[&quot; Expression &quot;]&quot; | &quot;.&quot; Attribute }
+Attribute      ::= &quot;row&quot; | &quot;col&quot; | &quot;dim&quot; &quot;(&quot; Expression &quot;)&quot;
+Primary        ::= Number | StringLiteral | FunctionCall | Identifier
+                 | Conversion | &quot;-&quot; Primary | &quot;(&quot; Expression &quot;)&quot;
+Conversion     ::= Type &quot;(&quot; Expression &quot;)&quot;
+FunctionCall   ::= Identifier &quot;(&quot; [ Expression { &quot;,&quot; Expression } ] &quot;)&quot;</code></pre>
+<p><code>{ &quot;[&quot; ... }</code> and <code>{ &quot;.&quot; Attribute }</code> share one postfix loop, so they chain in any order: <code>M[k].row</code>, <code>A.dim(i)</code>.</p>
+<hr>
+<h2 id="4-operator-precedence">4. Operator precedence</h2>
+<p>Loosest-binding to tightest:</p>
+<table><thead><tr><th>Tier</th><th>Operators</th><th>Associativity</th></tr></thead><tbody><tr><td>1 (loosest)</td><td>`\</td><td>`</td><td>left</td></tr><tr><td>2</td><td><code>&amp;</code></td><td>left</td></tr><tr><td>3</td><td><code>=</code> <code>!=</code> <code>&lt;</code> <code>&gt;</code> <code>&lt;=</code> <code>&gt;=</code></td><td>left</td></tr><tr><td>4</td><td><code>+</code> <code>-</code></td><td>left</td></tr><tr><td>5</td><td><code>*</code> <code>/</code> <code>%</code></td><td>left</td></tr><tr><td>6</td><td><code>^</code></td><td><strong>right</strong></td></tr><tr><td>7 (tightest)</td><td>postfix <code>[...]</code> and <code>.row</code>/<code>.col</code>/<code>.dim(n)</code>, unary <code>-</code>, literals, calls, <code>(...)</code></td><td>—</td></tr></tbody></table>
+<p><code>^</code> is right-associative: <code>2^3^2</code> is <code>2^(3^2) = 512</code>, not <code>(2^3)^2 = 64</code>.</p>
+<h3 id="4-1-unary-minus-vs-a-real-gotcha">4.1 Unary minus vs. <code>^</code> — a real gotcha</h3>
+<p>Unary minus folds the negation into its operand immediately and returns it as a single term, before the caller can see a following <code>^</code>. So <strong>when a negated expression is the base of <code>^</code>, the negation applies first</strong>:</p>
+<pre><code>-2^2   evaluates as (-2)^2  =  4      (not -4, unlike Python&#x27;s -2**2 == -4)
+-a^2   evaluates as (-a)^2</code></pre>
+<p>On the exponent side it behaves as ordinary maths notation, since the parser recurses right-associatively there:</p>
+<pre><code>2^-2   evaluates as 2^(-2)  =  0.25</code></pre>
+<p>For <code>-(a^2)</code>, write the parentheses.</p>
+<hr>
+<h2 id="5-types">5. Types</h2>
+<pre><code>int     32-bit signed whole number         (-2147483648 .. 2147483647)
+real    64-bit floating point
+char    one byte, 0..255
+T[]     array of T, any rank</code></pre>
+<p><code>char[]</code> is text (<a href="#10-strings">§10</a>). There are no other types, no booleans, no closures, and no array of strings — <code>char</code> is one-dimensional by rule, so <code>char g[2][4]</code> is refused.</p>
+<h3 id="5-1-where-each-is-written">5.1 Where each is written</h3>
+<p>A type appears in exactly three places: a declaration (<a href="#6-declarations">§6</a>), a parameter, and a function's output list. Nowhere else — there is no cast syntax, only the conversion functions of <a href="#12-1-conversions">§12.1</a>.</p>
+<h3 id="5-2-widening-and-narrowing">5.2 Widening and narrowing</h3>
+<p><code>int</code> → <code>real</code> is <strong>automatic</strong> wherever a real is required: assignment to a declared real, an argument to a real parameter, an operand beside a real, an element of an array literal being fitted into a real array.</p>
+<p><code>real</code> → <code>int</code> is <strong>automatic at a declared destination and silent</strong>:</p>
+<pre><code>real x : 2.7
+int  k : x        // k is 2 - the fraction is dropped, with no diagnostic</code></pre>
+<p>The truncation is toward zero, so <code>-2.7</code> gives <code>-2</code>, never <code>-3</code>. Both directions go through the same <code>ConvertNode</code> the checker inserts.</p>
+<blockquote><strong>This silence is the language's sharpest edge.</strong> It is why a quadratic solver written with int coefficients returns plausible wrong roots: <code>d : b^2-4*a*c</code> makes <code>d</code> an int, <code>d : sqrt(d)</code> narrows the real result back into it, and <code>/</code> on two ints is integer division. See item 3 in <a href="#15-known-limitations-maintainer-notes">§15</a>.</blockquote>
+<p>Mixing an operand of each in an expression widens to <code>real</code>. Two ints give an int — <strong>including division</strong>: <code>7/2</code> is <code>3</code>, and <code>7./2.</code> is <code>3.5</code>.</p>
+<h3 id="5-3-what-does-not-convert">5.3 What does not convert</h3>
+<p><code>char</code> never joins arithmetic. It compares and orders against other chars, and converts on request via <code>int(c)</code> / <code>char(n)</code>, but <code>s[0] + 1</code> is an error. That wall is what keeps <code>? c</code> printing a letter rather than a number.</p>
+<p>Arrays never convert. A reference argument must match its parameter's type exactly.</p>
+<h3 id="5-4-value-representation">5.4 Value representation</h3>
+<p><strong>Implementation note.</strong> A runtime value is a Swift enum with cases <code>int(Int32)</code>, <code>real(Double)</code>, <code>char(UInt8)</code> and <code>array(ArrayRef)</code>. A tagged union is sized by its largest case, so <strong>a <code>char</code> occupies the same 16 bytes as a <code>real</code></strong> — <code>char[1000]</code> and <code>int[1000]</code> cost exactly the same. <code>char</code> is the element of text, not a small integer; using it to save memory saves nothing. A packed byte array would be a representation change in <code>ArrayRef</code>, not a typing decision.</p>
+<p><code>ArrayRef</code> is a class, which is what makes an array a reference (<a href="#8-2-arguments">§8.2</a>).</p>
+<h3 id="5-5-truthiness">5.5 Truthiness</h3>
+<p>A condition may be any scalar. Zero is false; anything else is true. An array is not a scalar and is refused as a condition — including a string, so <code>if &quot;a&quot;</code> is an error rather than silently true.</p>
+<hr>
+<h2 id="6-declarations">6. Declarations</h2>
+<pre><code>int   n
+int   n : 5
+real  x : 1.5
+char  c
+char  name[20] : &quot;Akhtar&quot;
+real  v[10]
+real  m[3][3] : {{1.,2.},{3.,4.}}
+int   cube[2][3][5]</code></pre>
+<p><strong>A declaration may appear wherever a statement may.</strong> Inside an <code>if</code>, <code>while</code> or <code>for</code> body is fine, and so is halfway down a function after the work has started — the shape a C program has, so a program converted from one does not have to be rearranged to be read.</p>
+<p><strong>What did not change is the lifetime.</strong> A declared local is still the whole call's: one name, one variable, one type, from the top of the call to the bottom, which is what lets the checker type a function in one pass. Two consequences follow, and they are the whole of the rule:</p>
+<ul>
+<li><strong>The name is visible only to the end of its block</strong> — exactly the rule a name made by a first assignment has always followed (<a href="#7-1-assignment">§7.1</a>). <code>int t</code> inside an <code>if</code> cannot be read after that <code>if</code> closes; it reports <code>Undefined variable &#x27;t&#x27;</code>. Visibility ending with the block is what keeps this stage and the run in step, because the interpreter's box ends with the block too, and a checker that allowed the read would pass a program the run then failed.</li>
+<li><strong>Two sibling blocks may not each declare <code>t</code>.</strong> The second reports <code>Variable &#x27;t&#x27; already defined</code>. A block-scoped language would make those two different variables; this one does not, because one call has one <code>t</code>. A declaration inside a block a surrounding one already declared is refused for the same reason.</li>
+</ul>
+<p>A name made by first assignment is unaffected and still belongs to its block alone.</p>
+<p>Only declarations and <code>fun</code> definitions may appear at global scope; a statement there is an error.</p>
+<p><strong>A global is visible below the line that declares it, and nowhere above it.</strong> Functions are not ordered this way — they are collected in one pass before any body is checked, so <code>main()</code> may call something written after it — but a global cannot be, because the interpreter creates the globals in file order as well. While the checker treated them as an unordered set and the interpreter as a sequence, a program the checker had passed could still fail at run time on a name it accepted:</p>
+<pre><code>int a : f()                       // runs before b exists
+fun &lt;int&gt; = f() { return b }
+int b : 5</code></pre>
+<p>That is now <code>&#x27;b&#x27; is a global declared later, on line 3</code>, reported before anything runs. A name that is not in the file at all still reports as <code>Undefined variable</code>; the other message is only for one that is present, spelled correctly, and further down. One case is still left to the run: a global whose own initializer calls a function that reads <em>that</em> global — a cycle, not an ordering — reports <code>Undefined variable</code> at run time, because the box does not exist until the initializer finishes.</p>
+<p>An extent must be an <code>int</code> and at least <code>1</code>. A size the checker can fold is refused before the program runs; a size that genuinely depends on a variable is checked at run time and reports the value it computed, which the static message can afford to omit but the runtime one cannot — the number is nowhere in the source.</p>
+<p>An initializer that is shorter than the declared array fills what it covers and leaves the rest zero. For a <code>char</code> array the last slot is reserved for the terminator, so <code>char s[4]</code> holds three characters and <code>&quot;abcdefg&quot;</code> truncates to <code>abc</code>.</p>
+<hr>
+<h2 id="7-statements">7. Statements</h2>
+<h3 id="7-1-assignment">7.1 Assignment</h3>
+<p><code>x : expr</code> evaluates <code>expr</code> and stores it. <code>x = expr</code> is a fallback spelling accepted silently.</p>
+<p>A <strong>scalar</strong> may be created by assigning to it; its type is inferred from the expression.</p>
+<p>An <strong>array</strong> may be created by assignment only when the right-hand side is a <em>literal</em>. The rule against creation-by-assignment exists because extents cannot be known from an arbitrary expression — but a literal carries its own shape, so there is nothing left to infer:</p>
+<pre><code>B : {{1.,2.,3.},{4.,5.,6.}}   // creates a 2x3 real array
+C : A                          // Error - &quot;Declare the array &#x27;C&#x27; first&quot;</code></pre>
+<p><strong><code>char[]</code> is the exception</strong>, and deliberately so: a string carries its own length wherever it comes from, so there is nothing to infer in any of these cases.</p>
+<pre><code>s : &quot;hello&quot;        // creates a char[6]
+t : s              // creates a copy of s
+u : s + &quot; there&quot;   // sized to the result</code></pre>
+<p>Without this the <code>+</code> of <a href="#10-strings">§10</a> would be close to unusable - every joined string would need a declaration carrying a capacity guessed before the join.</p>
+<p>Assigning an array into a variable that already holds one <strong>copies into the storage already there</strong> rather than rebinding. Extents are fixed at declaration, and an array may be shared by reference with a caller — swapping the storage would resize it underneath them. So a short literal fills part of a larger array rather than shrinking it, and this works:</p>
+<pre><code>fun &lt;&gt; = fill(M[][]: real) {
+  M : {{9.,9.},{9.,9.}}       // fills the caller&#x27;s array
+}</code></pre>
+<p><strong>The literal becomes the array's whole new value: every cell the literal does not reach is set to zero</strong>, not left holding what was there before.</p>
+<pre><code>real M[3][3] : {{5.,5.,5.},{5.,5.,5.},{5.,5.,5.}}
+M : {{9.,9.},{9.,9.}}         // 9 9 0 / 9 9 0 / 0 0 0, not 9 9 5 / 9 9 5 / 5 5 5</code></pre>
+<p>Only the <em>contents</em> are reset — the storage and extents are untouched, which is what keeps the by-reference fill above working. Clearing is not rebinding.</p>
+<p><em>Element</em> assignment is different and deliberately so: <code>A[0] : {1.,2.}</code> <strong>replaces</strong> the row. That is what makes an array's dimensions measured rather than declared (<a href="#9-arrays">§9</a>).</p>
+<h3 id="7-1-1-omitted-entries">7.1.1 Omitted entries</h3>
+<p>A slot left empty inside a literal is an <strong>omitted entry</strong>, and stands for the zero of the element type. The commas alone fix the shape, so nothing is lost by leaving a value out:</p>
+<pre><code>M : {{1.0,,},{,1.0,},{,,1.0}}    // the 3x3 identity
+K : {{,,},{,,},{1.,1.,1.}}       // only the last row set, the rest zero</code></pre>
+<p>This is what makes a sparse matrix writable in one line on a phone keyboard, without spelling out every <code>0.</code> — the motivating case being the rotation matrices in <code>Examples/rotations.shm</code>, where the zeros outnumber the values and sit in a different place in each of ROX/ROY/ROZ.</p>
+<p>Three consequences worth being explicit about:</p>
+<ul>
+<li><strong>Absence means zero however it arises.</strong> A gap inside the literal and a literal that stops short of the extents do the same thing. That is the point of the zero-fill rule above: without it, <code>{{9.,9.},{9.,9.}}</code> and <code>{{9.,9.,},{9.,9.,},{,,}}</code> would differ on an array that already held data, and nothing on the page would say which you had written.</li>
+<li><strong>A blank carries no type.</strong> The element type is read from the first slot that holds something, so a leading gap does not make <code>{,1.5,}</code> an int literal. A literal that is blank all the way down has a shape but no type, so it cannot <em>create</em> an array — <code>Z : {{,,},{,,}}</code> is <code>An all-blank literal cannot create &#x27;Z&#x27;</code>. It is perfectly legal once the array is declared, where the declaration supplies the type: <code>real Z[2][2] : {{,},{,}}</code> is a 2x2 of zeros.</li>
+<li><strong>A trailing comma is now a slot, not an error.</strong> <code>{1.,2.,}</code> is three entries, the last one zero. This follows from counting slots by commas and cannot be special-cased away without also breaking <code>{1.0,,}</code>, which needs its trailing gap to mean a third entry.</li>
+</ul>
+<h3 id="7-2-compound-assignment">7.2 Compound assignment</h3>
+<p><code>x +: expr</code> ⇔ <code>x : x + expr</code>; <code>x -: expr</code> likewise. Both need a scalar target, with one exception: <code>+:</code> on a <code>char[]</code> <strong>appends</strong> (<a href="#10-strings">§10</a>). <code>-:</code> on a string is an error.</p>
+<h3 id="7-3-multi-assign">7.3 Multi-assign</h3>
+<pre><code>&lt;a,b&gt; : f(...)</code></pre>
+<p>The only way to consume more than one returned value. The count must match the function's output list exactly; a mismatch is a check error. Targets that do not exist are created with the declared output types.</p>
+<p>This works for a borrowed function too — <code>&lt;s&gt; : sqrt(16.)</code>, in a file that says <code>uses sqrt</code> — which returns exactly one value.</p>
+<blockquote><strong>2.x note.</strong> Arity here was a warning and the program ran on, silently discarding surplus values and leaving surplus variables untouched. It is an error now.</blockquote>
+<h3 id="7-4-return">7.4 Return</h3>
+<pre><code>return                         // from a function with no outputs
+return expr                    // one output
+return (expr, expr, ...)       // two or more - the parentheses are required</code></pre>
+<p>A function that declares outputs must return them on every path; falling off the end is a check error. The number returned must match the output list.</p>
+<h3 id="7-5-if-else">7.5 <code>if</code> / <code>else</code></h3>
+<pre><code>if cond { ... } else if cond { ... } else { ... }</code></pre>
+<p>Any number of <code>else if</code> branches, at most one <code>else</code>. The condition must be a scalar.</p>
+<p>A further branch is <code>else</code> followed by <code>if</code>. There is nothing new to learn there: both words are already keywords and they mean what they mean, which is why neither the keyword list nor the grammar has a third name for the pair.</p>
+<p>There was once a one-word <code>elseif</code>. It is gone completely - not a keyword, and not a reserved name either, so a program may use <code>elseif</code> for a variable if it wants one. The language says a thing one way and keeps no seat warm for the way it used to say it.</p>
+<h2 id="7-5-1-uses-borrowing-a-library-function">7.5.1 <code>uses</code> — borrowing a library function</h2>
+<pre><code>uses sin, cos, tan</code></pre>
+<p>Shalimar has no maths functions of its own. <code>sin</code>, <code>sqrt</code>, <code>abs</code> and the rest are the C library's, and a file may call one <strong>only if it says so</strong>. Global space, several names to a line, several lines to a file.</p>
+<p><strong>Why ask.</strong> Thirteen words are reserved and no more. Making forty library functions available by default would take forty names from every program that never wanted one; <code>uses</code> takes none. <code>fmod</code> is an ordinary identifier — usable for a variable — in every file that does not borrow it.</p>
+<p><strong>It is per file.</strong> A file borrows for itself, and a file pulled into another program by the search in <code>CROSSFILE.md</code> brings its borrows with it, exactly as it brings the globals it reads. The caller neither knows nor says what the file it calls into reaches for.</p>
+<p><strong>It grants access, not a signature.</strong> The compiler knows each borrowable function's arity and types, and checks a call against them as strictly as a call to one of your own functions:</p>
+<pre><code>uses atan2
+...
+atan2(y)      -&gt;  Error: &#x27;atan2&#x27; takes 2, got 1</code></pre>
+<p><strong>A name that is not borrowable is refused where it is asked for</strong>, with the reason, rather than at the call or at the link:</p>
+<pre><code>uses memset   -&gt;  Error: &#x27;memset&#x27; takes a pointer, which Shalimar has no type for
+uses printf   -&gt;  Error: &#x27;printf&#x27; takes a variable number of arguments, which
+                         Shalimar has no form for</code></pre>
+<p>That boundary is not a list somebody maintains. A function is borrowable when its C signature can be written in Shalimar's types, and Shalimar's types are <code>int</code>, <code>real</code>, <code>char</code> and arrays of them. Every pointer-taking function in the C library falls outside it for the same reason.</p>
+<p><strong>A borrowed name may not also be a variable.</strong> In a file that says <code>uses fmod</code>, <code>fmod</code> is the library function and nothing else — it cannot be declared, assigned, taken as a parameter, used as a loop counter, or made a multi-assign target:</p>
+<pre><code>uses fmod
+real fmod : 2.5   -&gt;  Error: &#x27;fmod&#x27; is borrowed on line 1 - drop the borrow or use
+                             another name</code></pre>
+<p>The cure is at one line or the other, which is why the message names both. This is stricter than a constant — <code>pi</code> may be had by declaring it — because a borrow has already claimed the name for the whole file. And it is per file: a file that does not borrow <code>fmod</code> may use the name however it likes, including one that calls into a file that does.</p>
+<p><strong>Borrowing something and never calling it is not an error.</strong> It emits nothing.</p>
+<p><strong>Your own function wins.</strong> A file that defines <code>fun &lt;real&gt; = sin(x: real)</code> calls its own, borrowed or not.</p>
+<h3 id="7-6-while">7.6 <code>while</code></h3>
+<pre><code>while cond { ... }</code></pre>
+<h3 id="7-7-for">7.7 <code>for</code></h3>
+<p>Two forms:</p>
+<pre><code>for i : start to end [ step s ] { ... }     // inclusive of end
+for i &lt; n [ step s ] { ... }                // 0 to n-1</code></pre>
+<p>The second is <strong>sugar for the first</strong> — it expands to exactly <code>for i : 0 to n - 1</code>, which is why <code>step</code> rides along unchanged and why nothing downstream knows the difference. It is the loop that walks an array:</p>
+<pre><code>for i &lt; A.row { ... }</code></pre>
+<p><code>step</code> defaults to <code>1</code>. A step of <code>0</code> is an error. The counter belongs to the loop: it is created in a fresh scope and is gone afterwards, so it never collides with an outer variable of the same name.</p>
+<p>If every bound is <code>int</code> the loop runs in ints; a <code>real</code> anywhere widens the counter and the loop runs in reals. Because the short form expands before that decision, <code>for i &lt; 2.9</code> runs <code>0 to 1.9</code> and stops at <code>1.0</code>.</p>
+<p>A real bound that no <code>Int32</code> can represent — <code>nan</code>, <code>±inf</code>, or too large — is an error naming which bound and its value. This matters because such bounds arrive from ordinary arithmetic: <code>for i : 1. to sqrt(0.-1.)</code>, <code>to 1./0.</code>, <code>to pow(10.,400.)</code>.</p>
+<p><strong>Implementation note:</strong> the conversion is <code>Int32(exactly: value.rounded(.towardZero))</code>, never a bare <code>Int32(value)</code>. The bare form <em>traps</em> on those cases, and a Swift trap is not a catchable <code>Error</code> — it bypasses <code>run</code>'s <code>do</code>/<code>catch</code> and takes the app down with an empty console.</p>
+<h3 id="7-7-1-break-and-continue">7.7.1 <code>break</code> and <code>continue</code></h3>
+<pre><code>break       // leave the innermost enclosing loop
+continue    // abandon this pass and take the next</code></pre>
+<p>Both bind to the <strong>innermost</strong> enclosing loop and there are no labels, so neither can leave two loops at once. An <code>if</code> is not a loop: <code>break</code> inside an <code>if</code> inside a <code>for</code> leaves the <code>for</code>, and <code>break</code> inside an <code>if</code> that is not inside any loop is a parse error (<a href="#13-2-parse-errors">§13.2</a>).</p>
+<p>In a <code>for</code>, <code>continue</code> still advances the counter - the step belongs to the loop, not to the body, so it skips the rest of the pass rather than the pass itself:</p>
+<pre><code>for i &lt; 5 {
+  if i % 2 = 0 { continue }
+  ? i                          // 1 3
+}</code></pre>
+<p><strong>Implementation note.</strong> <code>Interpreter.Flow</code> carries <code>.broke</code> and <code>.continued</code> beside <code>.returned</code>. Anything but <code>.normal</code> stops the enclosing statement list and travels outward until something claims it - a loop claims the first two, a call claims the third. Because the parser refuses <code>break</code> and <code>continue</code> outside a loop, neither can reach a call boundary unclaimed, which is why <code>call</code> needs no case for them.</p>
+<blockquote><strong>2.x and early 3.0 note.</strong> Neither word existed, and the absence shaped the programs written against it: a search scanned its whole range behind a guard that kept the first hit, rather than stopping when it found one. <code>Examples/prime.shm</code> and <code>Examples/strsplit.shm</code> both carried that shape and no longer do.</blockquote>
+<h3 id="7-8-print">7.8 Print</h3>
+<pre><code>? expr expr ...      // with trailing newline
+?? expr expr ...     // no trailing newline</code></pre>
+<p><strong>A print command must be the first token on its line.</strong> Indentation doesn't count — the lexer has already dropped it — so an indented <code>? x</code> inside a block is fine. What is rejected is any other token before it on the same line:</p>
+<pre><code>? x                               // fine, and indented
+fun &lt;&gt; = main() { x : 1 ? x }     // Error: &#x27;?&#x27; must start its line
+? x ?? y                          // Error: &#x27;??&#x27; must start its line</code></pre>
+<p>The rule's real purpose is <strong>at most one print command per line</strong>, since a second one necessarily has the first's items before it.</p>
+<p>Each item is printed followed by a single space, then the newline is appended once at the end. So <code>?</code> always leaves a trailing space before its newline.</p>
+<p>A numeric <strong>array prints as a grid</strong>, right-aligned in columns, so a program needs no display function of its own. A <code>char[]</code> is not a grid — it prints as text, inline. A multi-row grid starts on its own line so a label before it does not push the first row out of column.</p>
+<h4 id="precision">Precision</h4>
+<p>A <code>real</code> prints to a fixed number of decimal places: <strong>7 for a scalar, 6 inside a grid</strong>. Fixed, not Swift's shortest round-trip description, because a column is read down its digits and <code>1.0</code> beside <code>0.3333333333333333</code> cannot be. The grid gets one place fewer because a matrix row has to fit the editor's line, which holds about 47 characters — at 6 places a 4-column matrix fits and at 7 it does not.</p>
+<p>Past <code>1e15</code> a <code>Double</code> has no significant digits left to land after the point, so values at or beyond it — and the non-finite ones — keep the compact spelling instead. Without that, <code>1e300</code> would print as 309 characters.</p>
+<p><code>prec(n)</code> overrides both. It is a <strong>print-list directive, not a value</strong>: it prints nothing itself and applies from that point on, including the rest of its own line.</p>
+<pre><code>? prec(12) 1./3.      0.333333333333
+? prec(3)  1./3.      0.333
+? prec(-1) 1./3.      0.3333333   (the default restored)</code></pre>
+<p>The argument runs <code>-1</code> through <code>24</code> and <strong>clamps to that range at both ends</strong>, so nothing is ever refused: <code>prec(500)</code> gives 24, <code>prec(-5)</code> restores the default. 24 is past the ~17 significant digits a <code>Double</code> carries, while still leaving room to read a <code>1e-20</code> tolerance.</p>
+<p>Display <em>rounds</em> — <code>prec(0)</code> on <code>2.7</code> prints <code>3</code>. That is deliberately unlike <code>int(2.7)</code>, which truncates to <code>2</code>. Display and conversion are separate rules.</p>
+<p><strong>Implementation note.</strong> The precision lives in static storage on <code>Value</code>, because <code>text</code> and <code>cell</code> are context-free computed properties reached from everywhere. <code>Interpreter.run</code> resets it on entry so one program's setting cannot leak into the next run in the same process.</p>
+<h4 id="interaction-with-camera-scanning">Interaction with camera scanning</h4>
+<p>Line breaks carry meaning, so the scanner must reproduce them faithfully. Vision returns text regions with bounding boxes and does not promise one region per printed line in either direction, so <code>ScanLayout.lines(from:)</code> reconstructs lines from geometry rather than trusting the order or count of observations:</p>
+<ul>
+<li><strong>Splits are repaired.</strong> A wide gap in a printed line can come back as two regions. Regions whose vertical centres are within half a line height are grouped and ordered left to right. This is the case that matters most: emitting them as two lines would turn a program the scanner should <em>reject</em> into one that quietly runs.</li>
+<li><strong>Merges are reported, not repaired.</strong> Two printed lines read as one region cannot be undone by grouping, and splitting on an interior <code>?</code> is not an option — <code>? x ? y</code> typed deliberately has to stay the error this section makes it. <code>ScanLayout.linesWithLateCommand(in:)</code> finds lines whose <code>?</code>/<code>??</code> isn't first (ignoring string contents and comments) and the post-scan alert names the first one.</li>
+</ul>
+<p><strong>Implementation note — why this needs <code>Token.line</code>.</strong> Newlines are whitespace to the lexer, so <code>? x ?? y</code> and the same two commands on two lines produce <em>identical</em> token streams. Nothing in the sequence distinguishes them. Enforcing the rule required tokens to remember their source line — <code>Token.line</code>, read only by <code>Parser.startsLine(at:)</code>. It is the sole piece of layout the language preserves.</p>
+<p><strong>Implementation note — where the item list stops.</strong> <code>parsePrintItems</code> keeps consuming while the next token could begin a term (<code>startsTerm</code>) and doesn't look like a new statement. That makes <code>startsTerm</code> load-bearing rather than a convenience: a token missing from it doesn't produce an error, it silently ends the list. It takes a <em>position</em> rather than a kind because one case needs lookahead — <code>int</code> opens a term when it is <code>int(x)</code> and does not when it is <code>int k : 5</code>. If you extend the expression grammar with a new prefix token, add it here too, or printing it will quietly produce nothing.</p>
+<hr>
+<h2 id="8-functions">8. Functions</h2>
+<h3 id="8-1-definitions">8.1 Definitions</h3>
+<pre><code>fun &lt;outputs&gt; = name(inputs) { body }</code></pre>
+<p><strong>The output list holds types, not names</strong>:</p>
+<pre><code>fun &lt;int&gt;      = square(n: int)            { return n * n }
+fun &lt;int,int&gt;  = divide(a: int, b: int)    { return (a / b, a % b) }
+fun &lt;&gt;         = show(M[][]: real)         { ? M }</code></pre>
+<blockquote><strong>2.x note.</strong> <code>&lt;r&gt;</code> named a <em>variable</em>; the function could fall off its end and whatever that variable held was returned. Both are gone: <code>&lt;r&gt;</code> is now a parse error (<code>r</code> is not a type), and a declared output must be returned.</blockquote>
+<p>A parameter is <code>name: type</code>, with <code>[]</code> pairs for rank: <code>M[][]: real</code> is a two-dimensional real array. A function may take the name of a built-in, and then that name is the program's throughout; <code>prec</code> it may not take, being read by the parser inside a print list before any function could resolve. <code>main()</code> must take no inputs.</p>
+<p>A function defined and never called produces a warning, not an error.</p>
+<h3 id="8-2-arguments">8.2 Arguments</h3>
+<p>A <strong>scalar</strong> is passed by value. Assigning to the parameter inside the function does not affect the caller.</p>
+<p>An <strong>array is always passed by reference</strong> — the function works on the caller's storage. This is how a function hands an array back, since an array cannot appear in the output list:</p>
+<pre><code>fun &lt;&gt; = fill(v[]: real) {
+  for i &lt; v.row { v[i] : 1.0 }
+}</code></pre>
+<p>A <strong>scalar</strong> may be passed by reference too, by marking the parameter <code>&amp;</code>:</p>
+<pre><code>fun &lt;&gt; = bump(&amp;n: int) { n : n + 1 }
+
+fun &lt;&gt; = main() {
+  x : 5
+  bump(x)
+  ? x            // 6
+}</code></pre>
+<p>Unlike an array, this is a copy-in/copy-back: the callee works on its own box and the value is written back to the caller's variable — or element, since <code>bump(v[1])</code> writes back to <code>v[1]</code> — when the call returns.</p>
+<p>A reference argument of either kind must be addressable (a variable or an element, not a computed value: <code>bump(1+2)</code> is refused) and must match the parameter's type <strong>exactly</strong> — a reference is never converted, because a converted copy would silently stop being the caller's.</p>
+<p>Argument count is checked exactly. Too few and too many are both errors.</p>
+<blockquote><strong>2.x note.</strong> Surplus arguments were evaluated and dropped with a warning, so a call with its arguments in the wrong order still ran and returned a wrong number.</blockquote>
+<h3 id="8-3-recursion-depth-limits">8.3 Recursion depth limits</h3>
+<p>Unbounded recursion exhausts the native stack as a <code>SIGSEGV</code>, which is uncatchable and killed the app outright. Two ceilings prevent it:</p>
+<ul>
+<li><strong>Per function:</strong> <code>256 / (inputs + 1)</code> frames — 256 for a no-argument function, 128 for one argument, 64 for three.</li>
+<li><strong>Overall:</strong> 1024 frames, which catches mutual recursion where no single function approaches its own cap.</li>
+</ul>
+<p>Both are deliberate under-approximations of what the stack could take: <code>fact(150)</code> is rejected despite being runnable. Both are one-line changes in <code>Interpreter.swift</code>.</p>
+<p>The per-function counter is decremented on the throwing path too. It is a per-frame depth, not a lifetime tally — otherwise one caught-and-reported failure would poison every later call.</p>
+<hr>
+<h2 id="9-arrays">9. Arrays</h2>
+<p>An array is declared with its extents and indexed from <code>0</code>. Indices must be <code>int</code>; an out-of-range index is a runtime error naming the range.</p>
+<h3 id="9-1-dimensions">9.1 Dimensions</h3>
+<pre><code>A.row       size of dimension 0
+A.col       size of dimension 1
+A.dim(n)    size of dimension n
+len(A)      same as A.row</code></pre>
+<p><code>.row</code> and <code>.col</code> are just the two axes a matrix uses often enough to deserve names; they work at any rank. <strong>An axis the array does not have answers <code>-1</code></strong> rather than failing, so asking a vector for its columns is a legal question with a recognizable answer:</p>
+<pre><code>real v[10]
+? v.row v.col        // 10 -1</code></pre>
+<p>The same holds for <code>.dim(n)</code> past the rank, and for a negative axis, so the three spellings never disagree. Asking a <em>scalar</em> is an error, because that is a type confusion rather than a rank one.</p>
+<p>The axis may be any int expression, so <code>.dim</code> covers ranks above two. The result is always <code>int</code>.</p>
+<p><strong>The dimensions are measured, not declared.</strong> They are read from the value at run time, which is what lets a function measure an array it was given, and what makes a row replaced at run time report its real length:</p>
+<pre><code>real A[2][5]
+A[0] : {1.,2.}
+? A[0].row           // 2</code></pre>
+<p>These are read-only; assigning to one is a parse error.</p>
+<hr>
+<h2 id="10-strings">10. Strings</h2>
+<p>Text is <code>char[]</code>. The declared size is capacity; the text inside may be shorter, terminated by <code>char(0)</code>.</p>
+<pre><code>char a[20] : &quot;alice&quot;
+char b[128] : &quot;bob&quot;</code></pre>
+<p>Seven operators work on two strings:</p>
+<table><thead><tr><th></th><th></th></tr></thead><tbody><tr><td><code>=</code> <code>!=</code></td><td>content equality</td></tr><tr><td><code>&lt;</code> <code>&gt;</code> <code>&lt;=</code> <code>&gt;=</code></td><td>lexicographic order</td></tr><tr><td><code>+</code></td><td>join, producing a new string sized to the result</td></tr></tbody></table>
+<p>and <code>+:</code> appends, which is how one is built in a loop.</p>
+<p><strong>Comparison reads the text up to the terminator, never the declared capacity</strong>, so the same name in a <code>char[20]</code> and a <code>char[128]</code> is equal. Without that, buffer size would leak into meaning.</p>
+<p><strong>Ordering is by character code</strong>, so every capital sorts before every lower-case letter: <code>&quot;Zoe&quot;</code> is before <code>&quot;adam&quot;</code>. That is the conventional rule and the reason a name list wants folding to one case before sorting.</p>
+<p>Joining into a fixed array fits that array; anything past the end is dropped.</p>
+<p>No other operator applies, and none of them mix a string with a number.</p>
+<h3 id="10-1-characters">10.1 Characters</h3>
+<p>Indexing text gives one <code>char</code>, which is a genuine scalar: it can be declared, held, compared, ordered, passed, and <strong>returned</strong> — unlike an array.</p>
+<p>There is no character literal. The only ways to obtain a <code>char</code> are to index a string or to call <code>char(n)</code>; <code>char(0)</code> names the terminator, which is how the length of the text inside is found.</p>
+<p>Because <code>char</code> has no arithmetic, anything character-specific goes through the conversions:</p>
+<pre><code>char s[8] : &quot;abc&quot;
+? int(s[0])              // 97
+? char(int(s[0]) - 32)   // A</code></pre>
+<h3 id="10-2-what-is-not-provided">10.2 What is not provided</h3>
+<p>There are no string built-ins — no length-of-contents, no search, no split, no case folding. They are writable in Shalimar itself and are left to the programmer, in the same way <code>rad()</code> in <code>Examples/rotmat.shm</code> is. One thing still shapes how they come out: there is no array of strings, so a list of names cannot be held or sorted. <code>Examples/strsplit.shm</code> is the worked example.</p>
+<hr>
+<h2 id="11-statement-boundaries-why-there-are-no-semicolons">11. Statement boundaries — why there are no semicolons</h2>
+<p>Statements have no terminator. The parser decides where one ends by <em>what it is looking at</em>, not by punctuation, and two helpers carry that weight:</p>
+<ul>
+<li><code>looksLikeNewStatement(at:)</code> recognizes the shapes that can only begin a statement — an identifier followed by <code>:</code>, <code>+:</code>, <code>-:</code> or <code>=</code>, and a multi-assign header. A print/return item list stops when it sees one.</li>
+<li><code>startsLine(at:)</code> compares a token's line with its predecessor's, used only for the print rule (<a href="#7-8-print">§7.8</a>).</li>
+</ul>
+<p>The known gap: <code>looksLikeNewStatement</code> does not recognize <code>identifier(</code> as the start of a statement, so a bare call on the line after a print would be read as another item. The <em>line</em> check is what saves it — the item list also stops at a line boundary — which is why both halves of the print rule exist.</p>
+<hr>
+<h2 id="12-library-functions-and-constants">12. Library functions and constants</h2>
+<p><strong>Every library function in this table must be borrowed before it can be called</strong> — <code>uses sqrt</code> and so on, per file, as 7.5.1 describes. None of them is available by being known. The exception is the last row: <code>int</code>, <code>real</code> and <code>char</code> are conversions rather than calls, they are spelt with type keywords, and <code>uses int</code> cannot even be written — <code>uses</code> takes an identifier and <code>int</code> is not one. The two constants, <code>pi</code> and <code>e</code>, are not borrowed either: they are values rather than calls, and reserved outright (see the 2.x note below).</p>
+<table><thead><tr><th>Function</th><th>Args</th><th>Notes</th></tr></thead><tbody><tr><td><code>abs(x)</code></td><td>1</td><td>int in, int out; otherwise real</td></tr><tr><td><code>sqrt(x)</code></td><td>1</td><td><code>nan</code> for negative <code>x</code>, not an error</td></tr><tr><td><code>log(x)</code></td><td>1</td><td>natural log</td></tr><tr><td><code>exp(x)</code></td><td>1</td><td>inverse of <code>log</code>; <code>exp(1.)</code> is <code>e</code></td></tr><tr><td><code>hypot(x,y)</code></td><td>2</td><td><code>sqrt(x*x + y*y)</code> without the overflow</td></tr><tr><td><code>sin(x)</code> <code>cos(x)</code> <code>tan(x)</code></td><td>1</td><td>radians</td></tr><tr><td><code>asin(x)</code> <code>acos(x)</code> <code>atan(x)</code></td><td>1</td><td>radians</td></tr><tr><td><code>atan2(y,x)</code></td><td>2</td><td></td></tr><tr><td><code>pow(x,y)</code></td><td>2</td><td>same as <code>x^y</code></td></tr><tr><td><code>round(x)</code></td><td>1</td><td>half away from zero</td></tr><tr><td><code>ceil(x)</code> <code>floor(x)</code></td><td>1</td><td></td></tr><tr><td><code>trunc(x)</code></td><td>1</td><td>toward zero, but stays <code>real</code> — see below</td></tr><tr><td><code>log10(x)</code> <code>log2(x)</code></td><td>1</td><td></td></tr><tr><td><code>cbrt(x)</code></td><td>1</td><td>cube root; unlike <code>pow(x, 1./3.)</code> it takes negative <code>x</code></td></tr><tr><td><code>sinh(x)</code> <code>cosh(x)</code> <code>tanh(x)</code></td><td>1</td><td></td></tr><tr><td><code>fmod(x,y)</code></td><td>2</td><td>same as <code>x % y</code> on reals; the sign follows <code>x</code></td></tr><tr><td><code>max(a,b)</code> <code>min(a,b)</code></td><td>2</td><td>int in, int out; otherwise real</td></tr><tr><td><code>len(A)</code></td><td>1</td><td>element count of the first dimension; capacity for a string</td></tr><tr><td><code>int(x)</code> <code>real(x)</code> <code>char(x)</code></td><td>1</td><td>conversions, see below</td></tr></tbody></table>
+<p>Argument counts are enforced exactly, for built-ins as for user functions.</p>
+<p><strong>This table is the whole of what exists</strong>, and a name outside it is refused where it is asked for. The boundary it sits inside is wider: about sixty C functions have signatures writable in <code>int</code>, <code>real</code>, <code>char</code> and arrays of them, and <code>Compiler-S/docs/FOREIGN.md</code> lists the thirty-three measured candidates with the traps among them. That list is a record of what <em>could</em> be added, not of what a program may call — <code>uses asinh</code> is an error today.</p>
+<p><strong>A user function may take a built-in's name, and wins.</strong> <code>fun &lt;real&gt; = sqrt(x: real)</code> makes <code>sqrt</code> the program's for the whole file and the built-in is simply not there — the rule C gets from headers, where <code>sin</code> is <code>&lt;math.h&gt;</code>'s until a file declares its own, said here without headers to say it. A program that claims nothing gets all twenty. The one exception is <code>prec</code>, above.</p>
+<p><code>len</code> on a string is <strong>capacity</strong>, not content length, so it is never <code>0</code> for a declared array and <code>real w[len(s)]</code> is always legal.</p>
+<table><thead><tr><th>Constant</th><th>Value</th></tr></thead><tbody><tr><td><code>pi</code></td><td>3.141592653589793</td></tr><tr><td><code>e</code></td><td>2.718281828459045</td></tr></tbody></table>
+<p><code>pi</code> and <code>e</code> are what those names mean <strong>when the program has not claimed them</strong>. A program that wants its own says so with a declaration or a parameter — <code>real pi</code> — and from then on the name is the program's for that whole body.</p>
+<p>What is refused is claiming one <em>by assignment</em>. Shalimar makes a name on first write, so a bare <code>pi : 3</code> would leave <code>? pi</code> meaning 3.14159 above that line and 3 below it: one name with two meanings in one function. Declaring it first says the shadowing was meant.</p>
+<p><strong><code>trunc</code> is not <code>int</code>.</strong> Both truncate toward zero, but <code>int()</code> returns an <code>int</code> and fails outside its range, while <code>trunc</code> stays <code>real</code> and so handles any magnitude:</p>
+<pre><code>? int(2.7) int(-2.7)      // 2 -2
+? trunc(2.7) trunc(-2.7)  // 2.0000000 -2.0000000
+? trunc(3000000000.7)     // 3000000000.0000000
+? int(3000000000.)        // Error - Cannot convert 3000000000.0 to int</code></pre>
+<p><code>fmod</code> and <code>%</code> are the same operation on reals, with C's sign-follows-the-dividend rule; <code>%</code> needs no borrow and <code>fmod</code> does, so the operator is the shorter way to say it and the function is there for a program that would rather name it. There is no <code>modf</code> — a borrowed function returns exactly one value, and with <code>trunc</code> present it is two lines: <code>i : trunc(x)</code> then <code>f : x - i</code>.</p>
+<blockquote><strong>2.x note.</strong> Constants were resolved <em>last</em>, behind locals and globals, so a variable of the same name shadowed them. That was then made an outright reservation — neither could be declared, assigned, taken as a parameter, or used as a counter — because a checker which defines a variable on first assignment would let <code>pi : 3</code> quietly overwrite the constant rather than shadow it.  The reservation was too wide. It cost every program the single letter <code>e</code>, which is the ordinary name for an error, an element, an edge or an exponent. What was right in it was the specific hazard, not the breadth: creation by assignment is refused and declaration is not, which keeps one name to one meaning inside any one body while letting a program have the name at all.</blockquote>
+<h3 id="12-1-conversions">12.1 Conversions</h3>
+<pre><code>int(x)      drop the fraction, toward zero
+real(x)     exact
+char(x)     the character with that code</code></pre>
+<p>Each takes <strong>any scalar</strong> and produces the type it is named for. <code>int(2.7)</code> is <code>2</code> and <code>int(-2.7)</code> is <code>-2</code>; it never rounds. <code>char</code> is one byte, so a value outside <code>0..255</code> is an error rather than being wrapped — a wrapped code point is a wrong character that looks like a right one.</p>
+<p><strong>Implementation note — two traps in one feature.</strong> These were implemented on both sides and <em>unreachable</em>: the lexer makes <code>int</code> a keyword before the parser can read <code>int(</code> as a call. Making them parse then exposed a second bug — each declares an input type, so <code>real(2.7)</code> was coerced through <code>int</code> on the way in and came back <code>2.0</code>, truncating the value the call exists to preserve. They now take their argument untouched and carry their own target. If you add a fourth conversion, both hazards apply to it.</p>
+<hr>
+<h2 id="13-diagnostics">13. Diagnostics</h2>
+<p>Every message names its line and takes one of two forms:</p>
+<pre><code>Error: line 3: ...          the program does not run
+Warning: line 3: ...        the program runs anyway</code></pre>
+<p>There is deliberately <strong>no stage name</strong> in the message — no "Lex error", "Parse error" or "Runtime error". Which stage caught a problem is an implementation detail, and the vocabulary of a compiler's internals has no place in a diagnostic aimed at someone writing a program. For the same reason no message quotes a token kind, an AST node type, or a byte width.</p>
+<p>Messages are kept short on purpose. The console line holds about 47 characters, so a long message wraps two or three times and pushes the program's own output off screen; the detail lives in this document and in the in-app reference instead.</p>
+<p>The console colours by severity: output near-black, warnings amber, errors red. The interpreter has a separate diagnostic channel from its output callback, so a runtime failure can be told from a program's own printing without inspecting the text.</p>
+<h3 id="13-1-lex-errors">13.1 Lex errors</h3>
+<p>Tokenizing stops at the offending character, so the token stream is truncated and nothing downstream is trustworthy — the lexer's error is reported alone.</p>
+<ul>
+<li><code>Malformed number &#x27;1.2.3&#x27;</code> — also <code>&#x27;1e&#x27;</code>, <code>&#x27;1e-&#x27;</code> (<a href="#2-3-numbers">§2.3</a>).</li>
+<li><code>&#x27;99999999999&#x27; is too big for int - add &#x27;.&#x27;</code></li>
+<li><code>&#x27;!&#x27; is not a command - use &#x27;??&#x27; or &#x27;!=&#x27;</code></li>
+<li><code>Unclosed string - add &#x27;&quot;&#x27;</code> — on the line the quote opens (<a href="#2-4-string-literals">§2.4</a>).</li>
+<li><code>Unexpected character &#x27;х&#x27; (U+0445)</code> — the code point is not internals; it is the only way to tell a Cyrillic <code>х</code> from a Latin <code>x</code> on screen (<a href="#2-2-identifiers">§2.2</a>).</li>
+</ul>
+<h3 id="13-2-parse-errors">13.2 Parse errors</h3>
+<p>Reported one at a time; parsing stops at the first.</p>
+<ul>
+<li><code>Unexpected &#x27;*&#x27;</code></li>
+<li><code>Program ends unfinished</code> — running off the end has no spelling to quote, so it gets a sentence.</li>
+<li><code>Missing &#x27;{&#x27; to start block</code> / <code>Missing &#x27;}&#x27; to close block</code></li>
+<li><code>&#x27;?&#x27; must start its line</code></li>
+<li><code>&#x27;return&#x27; outside a function</code></li>
+<li><code>&#x27;break&#x27; outside a loop</code> / <code>&#x27;continue&#x27; outside a loop</code></li>
+<li><code>&#x27;?&#x27; must be inside a function</code></li>
+<li><code>No &#x27;.size&#x27; - use .row, .col or .dim(n)</code> / <code>&#x27;.row&#x27; is read-only</code> / <code>&#x27;.dim&#x27; needs an axis, as .dim(0)</code></li>
+</ul>
+<h3 id="13-3-check-errors-and-warnings">13.3 Check errors and warnings</h3>
+<p><strong>The checker does not stop at the first problem.</strong> It types the whole program and reports everything it finds, then refuses to run if any of them is an error. This is why several diagnostics can appear at once, and why warnings appear for programs that still run.</p>
+<p>Errors here cover undefined names, type mismatches, arity, array extents that can be folded, reserved names, returns that do not match the output list, arithmetic on a <code>char</code> (<code>&#x27;+&#x27; does not apply to char</code>, <a href="#5-3-what-does-not-convert">§5.3</a>), and the two ways an array cannot be created by assignment — <code>Declare the array &#x27;C&#x27; first</code> for a non-literal right-hand side, and <code>An all-blank literal cannot create &#x27;Z&#x27;</code> for a literal with no entry to take a type from (<a href="#7-1-1-omitted-entries">§7.1.1</a>).</p>
+<p>The three warnings:</p>
+<ul>
+<li><code>Function &#x27;f&#x27; is defined but never called</code></li>
+<li><code>&#x27;x&#x27; hides a global</code></li>
+<li><code>Loop never runs: &#x27;i&#x27; starts at 10 and step 1 moves away from 1</code></li>
+</ul>
+<p>The last is reported only where the start, the end and the step all fold to numbers, which is where the direction is written into the source and nothing else could have been meant. A loop with a computed bound is left alone: an empty pass may be exactly what that run intends, and <code>for j &lt; v.col</code> over a vector — which expands to <code>0 to -2</code> — is the language's own example of one.</p>
+<h3 id="13-4-runtime-errors">13.4 Runtime errors</h3>
+<p>Anything that cannot be known statically: division by zero, <code>int</code> overflow, an out-of-range index or conversion, a non-finite loop bound, a computed array extent below 1, and the recursion ceilings.</p>
+<p>Output already printed survives — the error follows it rather than replacing it.</p>
+<p><strong>The class to watch when extending the interpreter</strong> is the Swift <em>trap</em>: an uncatchable failure that bypasses <code>run</code>'s <code>do</code>/<code>catch</code> and kills the app with an empty console. Force-unwraps, raw array subscripts, <code>Int32(someDouble)</code> and unchecked arithmetic are all in it. Every conversion in the interpreter uses the <code>exactly:</code> or <code>...ReportingOverflow</code> form for this reason.</p>
+<hr>
+<h2 id="14-limits">14. Limits</h2>
+<table><thead><tr><th></th><th></th></tr></thead><tbody><tr><td><code>int</code> range</td><td>-2147483648 .. 2147483647</td></tr><tr><td>Array extent</td><td>1 or more; fixed at declaration</td></tr><tr><td><code>char</code></td><td>0..255</td></tr><tr><td>Recursion, per function</td><td><code>256 / (inputs + 1)</code> frames</td></tr><tr><td>Recursion, overall</td><td>1024 frames</td></tr><tr><td><code>prec(n)</code></td><td>-1 .. 24, clamped</td></tr><tr><td>Real printing</td><td>fixed places; compact past 1e15 and for non-finite</td></tr></tbody></table>
+<p>Passing an <code>int</code> limit is always an error, never a wrapped value that looks right.</p>
+<hr>
+<h2 id="15-known-limitations-maintainer-notes">15. Known limitations &amp; maintainer notes</h2>
+<p>Real, verified behavior of the current interpreter, worth knowing before extending it.</p>
+<ol>
+<li><strong>An array cannot be returned in <code>&lt;&gt;</code>.</strong> Outputs are scalars by construction — the output list is parsed with <code>parseScalarType()</code>, which has no bracket loop. Pass one in and fill it (<a href="#8-2-arguments">§8.2</a>). Adding it is mechanically cheap (<code>ArrayRef</code> is a class, so returning one costs nothing) but turns on an unsettled question: whether <code>&lt;M&gt; : build()</code> <strong>rebinds</strong> M to the callee's array — introducing aliasing that nothing at the call site announces — or <strong>copies</strong> into M's existing storage, keeping one owner but letting M's declared size silently truncate.</li>
+<li><strong>There is no array of strings.</strong> <code>char</code> is one-dimensional by rule, so a list of names cannot be held or sorted, even though two names compare and swap correctly. Lifting it means deciding what <code>? names</code> should print for a <code>char[3][20]</code>: three lines of text, or a character grid.</li>
+<li><strong><code>real</code> → <code>int</code> narrowing is silent</strong> (<a href="#5-2-widening-and-narrowing">§5.2</a>). Now that <code>int()</code> is callable, requiring the narrowing to be written explicitly is a viable third option; it would want measuring as a warning first, since the blast radius across existing programs is unknown.</li>
+<li><strong>A loop cannot be left from more than one level at once.</strong> <code>break</code> and <code>continue</code> bind to the innermost loop and there are no labels, so escaping two loops needs a flag or a <code>return</code> (<a href="#7-7-1-break-and-continue">§7.7.1</a>).</li>
+<li><strong>There is no input.</strong> A program only prints.</li>
+<li><strong>A print/return item list can swallow a following bare call</strong> — <code>looksLikeNewStatement</code> doesn't recognize <code>identifier(</code>. The line check is what covers it in practice (<a href="#11-statement-boundaries-why-there-are-no-semicolons">§11</a>).</li>
+<li><strong>Unary minus binds tighter than <code>^</code> on the base side</strong> — <code>-2^2 == 4</code> (<a href="#4-1-unary-minus-vs-a-real-gotcha">§4.1</a>).</li>
+<li><strong>Recursion is capped well below what the stack could take</strong> (<a href="#8-3-recursion-depth-limits">§8.3</a>).</li>
+<li><strong>Runtime lines are per statement, not per expression.</strong> Only statement nodes carry a line, so an error inside a long expression names the statement containing it. <code>Interpreter.currentLine</code> is a single running value, not a call stack: it names the innermost statement executing, which is the useful answer, but there is no traceback.</li>
+<li><strong>Precision is static, mutable state.</strong> <code>Value.scalarPlaces</code>/<code>gridPlaces</code> are statics because <code>text</code> and <code>cell</code> are context-free computed properties. <code>run()</code> resets them on entry, which is what keeps one program's <code>prec(n)</code> out of the next.</li>
+<li><strong><code>.col</code> returning -1 meets <code>for i &lt; n</code> quietly.</strong> <code>for j &lt; v.col</code> on a vector becomes <code>for j : 0 to -2</code> and runs zero times with no diagnostic. That is the intended reading — iterating the columns of something with no columns is a no-op — but it does mean a rank mistake does nothing rather than complaining.</li>
+<li><strong>The editor's re-indenting logic assumes <code>/* */</code> block comments exist</strong>, for indentation only, even though the lexer doesn't recognize them (<a href="#2-1-comments">§2.1</a>). If block comments are ever added, that file needs revisiting too.</li>
+<li><strong>A scanned line that Vision merges with its neighbour can only be reported, not recovered</strong> (<a href="#7-8-print">§7.8</a>). Automatic splitting is deliberately not attempted — it would silently rewrite a program whose one-line print command is a real error.</li>
+<li><strong>The keyboard's full stop is undone after the fact, not refused.</strong> iOS turns two spaces in a row into <code>&quot;. &quot;</code>, closing what it takes to be a sentence. In prose that is right; here the period lands against whatever name precedes it and the lexer reads <code>name.</code> as the head of an attribute (<a href="#9-1-dimensions">§9.1</a>), so a line being typed correctly stops parsing. It is a keyboard setting rather than an autocorrection one, so the <code>UITextInputTraits</code> set in <code>viewDidLoad</code> — which do switch off smart quotes, smart dashes and spell checking — leave it on.</li>
+</ol>
+<pre><code>It also cannot be intercepted. An instrumented build logged every route into the text and the
+substitution came through none of them: `textView(_:shouldChangeTextIn:replacementText:)` saw the
+second space as an ordinary space, and a `UITextView` subclass overriding `insertText`, `replace`,
+`deleteBackward` and the marked-text pair saw only the ordinary keystrokes. The character before
+the caret turned into a period that nothing was told about.
+
+So the editor repairs it instead. The second space *is* reported, so `shouldChangeTextIn` notes
+the index of the space it is about to land beside (`Indent.spaceAtRiskOfPeriod`) and
+`textViewDidChange` reads that character back: if it has become a period, it goes back to being a
+space. Being armed by the keystroke rather than by hunting the text for periods is what makes it
+exact — a period the typist wrote is never touched, so `1.5` and `A.row` type normally.
+
+**The assumption to watch** is that the substitution lands in the same run-loop turn as the change
+notification. It does today, which is the only reason the repair sees a period rather than a
+space; if a future iOS deferred it by a turn, the repair would quietly stop firing and the periods
+would come back. Nothing in `Tests/regression.sh` would notice — the suite compiles no UIKit, and
+the shortcut cannot be triggered by injected text at all, only by a thumb on a space bar. This is
+the one behaviour in the project whose only test is a person typing.
+
+Only the editor is affected. A program arriving from a file or the scanner never passes through
+the keyboard.</code></pre>
+<hr>
+<h2 id="16-architecture-map">16. Architecture map</h2>
+<table><thead><tr><th>Stage</th><th>File</th><th>Responsibility</th></tr></thead><tbody><tr><td>Lex</td><td><code>TokenKind.swift</code></td><td>source <code>String</code> → <code>[Token]</code>, each stamped with its source line; owns the token patterns and their <strong>order</strong></td></tr><tr><td>AST</td><td><code>Node.swift</code></td><td>node type definitions and <code>ShalimarType</code></td></tr><tr><td>Parse</td><td><code>Parse.swift</code></td><td><code>[Token]</code> → <code>[Node]</code>; no type knowledge</td></tr><tr><td>Check</td><td><code>Check.swift</code></td><td>types the whole program, inserts conversions, reports every problem it finds rather than the first</td></tr><tr><td>Evaluate</td><td><code>Interpreter.swift</code></td><td>walks the checked AST, maintains per-call scopes, resolves built-ins vs. user functions, drives all program <code>output</code></td></tr><tr><td>UI wiring</td><td><code>ComputeViewController.swift</code></td><td>owns the program/console text views, runs lex → parse → check → interpret, colours the console by severity, plus save/load and OCR scan</td></tr><tr><td>Reference</td><td><code>HelpViewController.swift</code></td><td>the in-app language reference; every code line in it runs as written</td></tr><tr><td>Scan layout</td><td><code>ScanLayout.swift</code></td><td>OCR regions → source lines; no UIKit/Vision dependency, so it is testable from the command line</td></tr><tr><td>Editor layout</td><td><code>Indent.swift</code></td><td>where a line sits by brace depth, what a typed newline or <code>}</code> becomes, how an arriving paste is laid out, and where the keyboard's full stop is about to strike (<a href="#15-known-limitations-maintainer-notes">§15</a>, note 14); kept clear of UIKit for the same reason as <code>ScanLayout</code></td></tr><tr><td>Test harness</td><td><code>Tests/harness/main.swift</code></td><td>command-line driver; mirrors the app's order exactly, so the suite tests what the app does</td></tr><tr><td>Regression suite</td><td><code>Tests/regression.sh</code></td><td>~445 cases, including every program in <code>Examples/</code> end to end</td></tr><tr><td>Scan-layout tests</td><td><code>Tests/scanlayout/main.swift</code></td><td>16 cases over <code>ScanLayout</code>, folded into the suite's counts</td></tr><tr><td>Editor-layout tests</td><td><code>Tests/indent/main.swift</code></td><td>51 cases over <code>Indent</code>, written as the editor sees them — a document with a caret, an edit, and the document that should come back</td></tr></tbody></table>
+<p>The checker is the stage 3.0 added, and it behaves unlike the other two: it does not stop at the first problem, so every diagnostic is printed and only an error prevents the run.</p>
+<h3 id="16-1-running-the-tests">16.1 Running the tests</h3>
+<p>The language core is pure Foundation with no UIKit dependency, so it compiles and runs outside the app — no simulator and no Xcode test target required:</p>
+<pre><code>./Tests/regression.sh</code></pre>
+<p>Every case traces to a claim in this document. <strong>When a case and this document disagree, the document wins</strong> and the interpreter is what gets fixed — same rule as the preamble.</p>
+<p>A pre-commit hook in <code>.githooks/pre-commit</code> runs the suite against the <em>staged</em> tree, so an unstaged local fix cannot mask a commit that is broken on its own. Enable it once per clone:</p>
+<pre><code>git config core.hooksPath .githooks</code></pre>
+<p><code>Interpreter.output: (String) -&gt; Void</code> defaults to a plain <code>print(...)</code>, but the app replaces it with a closure that appends to the console. <code>Interpreter.diagnostic</code> is the separate channel for the interpreter's own failures, so the console can colour them without inspecting the text. Anything written through either reaches the screen; a bare Swift <code>print(...)</code> elsewhere in the core does not — and there are none.</p></div></body></html>

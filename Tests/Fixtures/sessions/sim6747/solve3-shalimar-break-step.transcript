@@ -1,0 +1,660 @@
+> set confirm off
+> set pagination off
+> set width unlimited
+> set breakpoint pending on
+> echo <<gride-done>>\n
+<<gride-done>>
+> delete
+> echo <<gride-done>>\n
+<<gride-done>>
+> break solve3.shl:22
+> echo <<gride-done>>\n
+Breakpoint 1 at 0xc01065b8: file solve3.shl, line 22.
+<<gride-done>>
+> run
+> echo <<gride-done>>\n
+Starting program: /work/showcase/solve3-shalimar/out/Debug/C6747/solve3-shalimar.out
+
+Breakpoint 1, shm_user_main () at /work/showcase/solve3-shalimar/solve3.shl:22
+22	  if gauss(A, b, x) = 0 {
+<<gride-done>>
+> backtrace
+> echo <<gride-done>>\n
+#0  shm_user_main () at /work/showcase/solve3-shalimar/solve3.shl:22
+#1  0xc013ce7a in main ()
+#2  0xc01401d2 in _ZN5rts6x7Startup3runEv () at src/boot/Startup.cpp:43
+#3  0xc014022e in __rts6x_start () at src/boot/Startup.cpp:50
+<<gride-done>>
+> info args
+> echo <<gride-done>>\n
+No arguments.
+<<gride-done>>
+> info locals
+> echo <<gride-done>>\n
+A = {{1, 1, 1}, {2, -1, 1}, {1, 2, -1}}
+b = {25, 16, 6}
+x = {0, 0, 0}
+r = {0, 0, 0}
+<<gride-done>>
+> print &(A)
+> echo <<gride-done>>\n
+$1 = (real[][] *) 0xc0149bd0
+<<gride-done>>
+> whatis A
+> echo <<gride-done>>\n
+type = real[][]
+<<gride-done>>
+> print &(b)
+> echo <<gride-done>>\n
+$2 = (real[] *) 0xc0149be0
+<<gride-done>>
+> whatis b
+> echo <<gride-done>>\n
+type = real[]
+<<gride-done>>
+> print &(x)
+> echo <<gride-done>>\n
+$3 = (real[] *) 0xc0149bf0
+<<gride-done>>
+> whatis x
+> echo <<gride-done>>\n
+type = real[]
+<<gride-done>>
+> print &(r)
+> echo <<gride-done>>\n
+$4 = (real[] *) 0xc0149c00
+<<gride-done>>
+> whatis r
+> echo <<gride-done>>\n
+type = real[]
+<<gride-done>>
+> print x
+> echo <<gride-done>>\n
+$5 = {0, 0, 0}
+<<gride-done>>
+> print &(x)
+> echo <<gride-done>>\n
+$6 = (real[] *) 0xc0149bf0
+<<gride-done>>
+> whatis x
+> echo <<gride-done>>\n
+type = real[]
+<<gride-done>>
+> info registers
+> echo <<gride-done>>\n
+A0             0x0                 0
+A1             0x0                 0
+A2             0x2                 2
+A3             0xc0149c00          -1072391168
+A4             0xc0000260          -1073741216
+A5             0xc0000288          -1073741176
+A6             0xc0000268          -1073741208
+A7             0x40                64
+A8             0xc0000290          -1073741168
+A9             0xc0000280          -1073741184
+A10            0x0                 0
+A11            0x0                 0
+A12            0x0                 0
+A13            0x0                 0
+A14            0x0                 0
+A15            0xc0149c50          -1072391088
+A16            0x0                 0
+A17            0x0                 0
+A18            0x0                 0
+A19            0x0                 0
+A20            0x0                 0
+A21            0x0                 0
+A22            0x0                 0
+A23            0x0                 0
+A24            0x0                 0
+A25            0x0                 0
+A26            0x0                 0
+A27            0x0                 0
+A28            0x0                 0
+A29            0x0                 0
+A30            0x0                 0
+A31            0x0                 0
+B0             0x0                 0
+B1             0xffffffff          -1
+B2             0x0                 0
+B3             0xc01065a8          -1072667224
+B4             0x0                 0
+B5             0x0                 0
+B6             0x0                 0
+B7             0x40                64
+B8             0xc0000288          -1073741176
+B9             0x0                 0
+B10            0x0                 0
+B11            0x0                 0
+B12            0x0                 0
+B13            0x0                 0
+B14            0xc0149d00          -1072390912
+B15            0xc0149bb8          -1072391240
+B16            0x0                 0
+B17            0x0                 0
+B18            0x0                 0
+B19            0x0                 0
+B20            0x0                 0
+B21            0x0                 0
+B22            0x0                 0
+B23            0x0                 0
+B24            0x0                 0
+B25            0x0                 0
+B26            0x0                 0
+B27            0x0                 0
+B28            0x0                 0
+B29            0x0                 0
+B30            0x0                 0
+B31            0x0                 0
+pc             0xc01065b8          0xc01065b8
+<<gride-done>>
+> info args
+> echo <<gride-done>>\n
+No arguments.
+<<gride-done>>
+> info locals
+> echo <<gride-done>>\n
+A = {{1, 1, 1}, {2, -1, 1}, {1, 2, -1}}
+b = {25, 16, 6}
+x = {0, 0, 0}
+r = {0, 0, 0}
+<<gride-done>>
+> print &(A)
+> echo <<gride-done>>\n
+$7 = (real[][] *) 0xc0149bd0
+<<gride-done>>
+> whatis A
+> echo <<gride-done>>\n
+type = real[][]
+<<gride-done>>
+> print &(b)
+> echo <<gride-done>>\n
+$8 = (real[] *) 0xc0149be0
+<<gride-done>>
+> whatis b
+> echo <<gride-done>>\n
+type = real[]
+<<gride-done>>
+> print &(x)
+> echo <<gride-done>>\n
+$9 = (real[] *) 0xc0149bf0
+<<gride-done>>
+> whatis x
+> echo <<gride-done>>\n
+type = real[]
+<<gride-done>>
+> print &(r)
+> echo <<gride-done>>\n
+$10 = (real[] *) 0xc0149c00
+<<gride-done>>
+> whatis r
+> echo <<gride-done>>\n
+type = real[]
+<<gride-done>>
+> x/8xb 0xc0149bd0
+> echo <<gride-done>>\n
+0xc0149bd0:	0x08	0x00	0x00	0xc0	0xd0	0x00	0x00	0xc0
+<<gride-done>>
+> step
+> echo <<gride-done>>\n
+shmf_gauss () at /work/showcase/solve3-shalimar/gauss.shl:11
+11	  real M[3][3]
+<<gride-done>>
+> backtrace
+> echo <<gride-done>>\n
+#0  shmf_gauss () at /work/showcase/solve3-shalimar/gauss.shl:11
+#1  0xc0106690 in shm_user_main () at /work/showcase/solve3-shalimar/solve3.shl:22
+#2  0xc013ce7a in main ()
+#3  0xc01401d2 in _ZN5rts6x7Startup3runEv () at src/boot/Startup.cpp:43
+#4  0xc014022e in __rts6x_start () at src/boot/Startup.cpp:50
+<<gride-done>>
+> info args
+> echo <<gride-done>>\n
+A = {{1, 1, 1}, {2, -1, 1}, {1, 2, -1}}
+b = {25, 16, 6}
+x = {0, 0, 0}
+<<gride-done>>
+> info locals
+> echo <<gride-done>>\n
+M = 0x0
+c = 0x0
+t = -5.21177
+f = 0
+n = -1073741192
+p = -1072391576
+r = -1072383100
+i = 3
+j = -1072391504
+k = 3
+i = 0
+j = -1073741192
+i = -1072391232
+j = 22
+j = -1073741304
+<<gride-done>>
+> print &(A)
+> echo <<gride-done>>\n
+$11 = (real[][] *) 0xc01499b8
+<<gride-done>>
+> whatis A
+> echo <<gride-done>>\n
+type = real[][]
+<<gride-done>>
+> print &(b)
+> echo <<gride-done>>\n
+$12 = (real[] *) 0xc01499c0
+<<gride-done>>
+> whatis b
+> echo <<gride-done>>\n
+type = real[]
+<<gride-done>>
+> print &(x)
+> echo <<gride-done>>\n
+$13 = (real[] *) 0xc01499c8
+<<gride-done>>
+> whatis x
+> echo <<gride-done>>\n
+type = real[]
+<<gride-done>>
+> print &(M)
+> echo <<gride-done>>\n
+$14 = (real[][] *) 0xc01499e8
+<<gride-done>>
+> whatis M
+> echo <<gride-done>>\n
+type = real[][]
+<<gride-done>>
+> print &(c)
+> echo <<gride-done>>\n
+$15 = (real[] *) 0xc01499f8
+<<gride-done>>
+> whatis c
+> echo <<gride-done>>\n
+type = real[]
+<<gride-done>>
+> print &(t)
+> echo <<gride-done>>\n
+$16 = (real *) 0xc0149a00
+<<gride-done>>
+> whatis t
+> echo <<gride-done>>\n
+type = real
+<<gride-done>>
+> print &(f)
+> echo <<gride-done>>\n
+$17 = (real *) 0xc0149a08
+<<gride-done>>
+> whatis f
+> echo <<gride-done>>\n
+type = real
+<<gride-done>>
+> print &(n)
+> echo <<gride-done>>\n
+$18 = (int *) 0xc0149a10
+<<gride-done>>
+> whatis n
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(p)
+> echo <<gride-done>>\n
+$19 = (int *) 0xc0149a18
+<<gride-done>>
+> whatis p
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(r)
+> echo <<gride-done>>\n
+$20 = (int *) 0xc0149a20
+<<gride-done>>
+> whatis r
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(i)
+> echo <<gride-done>>\n
+$21 = (int *) 0xc0149b10
+<<gride-done>>
+> whatis i
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(j)
+> echo <<gride-done>>\n
+$22 = (int *) 0xc0149b60
+<<gride-done>>
+> whatis j
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(k)
+> echo <<gride-done>>\n
+$23 = (int *) 0xc0149a98
+<<gride-done>>
+> whatis k
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(i)
+> echo <<gride-done>>\n
+$24 = (int *) 0xc0149b10
+<<gride-done>>
+> whatis i
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(j)
+> echo <<gride-done>>\n
+$25 = (int *) 0xc0149b60
+<<gride-done>>
+> whatis j
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(i)
+> echo <<gride-done>>\n
+$26 = (int *) 0xc0149b10
+<<gride-done>>
+> whatis i
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(j)
+> echo <<gride-done>>\n
+$27 = (int *) 0xc0149b60
+<<gride-done>>
+> whatis j
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(j)
+> echo <<gride-done>>\n
+$28 = (int *) 0xc0149b60
+<<gride-done>>
+> whatis j
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print x
+> echo <<gride-done>>\n
+$29 = {0, 0, 0}
+<<gride-done>>
+> print &(x)
+> echo <<gride-done>>\n
+$30 = (real[] *) 0xc01499c8
+<<gride-done>>
+> whatis x
+> echo <<gride-done>>\n
+type = real[]
+<<gride-done>>
+> next
+> echo <<gride-done>>\n
+12	  real c[3]
+<<gride-done>>
+> backtrace
+> echo <<gride-done>>\n
+#0  shmf_gauss () at /work/showcase/solve3-shalimar/gauss.shl:12
+#1  0xc0106690 in shm_user_main () at /work/showcase/solve3-shalimar/solve3.shl:22
+#2  0xc013ce7a in main ()
+#3  0xc01401d2 in _ZN5rts6x7Startup3runEv () at src/boot/Startup.cpp:43
+#4  0xc014022e in __rts6x_start () at src/boot/Startup.cpp:50
+<<gride-done>>
+> info args
+> echo <<gride-done>>\n
+A = {{1, 1, 1}, {2, -1, 1}, {1, 2, -1}}
+b = {25, 16, 6}
+x = {0, 0, 0}
+<<gride-done>>
+> info locals
+> echo <<gride-done>>\n
+M = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}}
+c = 0x0
+t = -5.21177
+f = 0
+n = -1073741192
+p = -1072391576
+r = -1072383100
+i = 3
+j = -1072391504
+k = 3
+i = 0
+j = -1073741192
+i = -1072391232
+j = 22
+j = -1073741304
+<<gride-done>>
+> print &(A)
+> echo <<gride-done>>\n
+$31 = (real[][] *) 0xc01499b8
+<<gride-done>>
+> whatis A
+> echo <<gride-done>>\n
+type = real[][]
+<<gride-done>>
+> print &(b)
+> echo <<gride-done>>\n
+$32 = (real[] *) 0xc01499c0
+<<gride-done>>
+> whatis b
+> echo <<gride-done>>\n
+type = real[]
+<<gride-done>>
+> print &(x)
+> echo <<gride-done>>\n
+$33 = (real[] *) 0xc01499c8
+<<gride-done>>
+> whatis x
+> echo <<gride-done>>\n
+type = real[]
+<<gride-done>>
+> print &(M)
+> echo <<gride-done>>\n
+$34 = (real[][] *) 0xc01499e8
+<<gride-done>>
+> whatis M
+> echo <<gride-done>>\n
+type = real[][]
+<<gride-done>>
+> print &(c)
+> echo <<gride-done>>\n
+$35 = (real[] *) 0xc01499f8
+<<gride-done>>
+> whatis c
+> echo <<gride-done>>\n
+type = real[]
+<<gride-done>>
+> print &(t)
+> echo <<gride-done>>\n
+$36 = (real *) 0xc0149a00
+<<gride-done>>
+> whatis t
+> echo <<gride-done>>\n
+type = real
+<<gride-done>>
+> print &(f)
+> echo <<gride-done>>\n
+$37 = (real *) 0xc0149a08
+<<gride-done>>
+> whatis f
+> echo <<gride-done>>\n
+type = real
+<<gride-done>>
+> print &(n)
+> echo <<gride-done>>\n
+$38 = (int *) 0xc0149a10
+<<gride-done>>
+> whatis n
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(p)
+> echo <<gride-done>>\n
+$39 = (int *) 0xc0149a18
+<<gride-done>>
+> whatis p
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(r)
+> echo <<gride-done>>\n
+$40 = (int *) 0xc0149a20
+<<gride-done>>
+> whatis r
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(i)
+> echo <<gride-done>>\n
+$41 = (int *) 0xc0149b10
+<<gride-done>>
+> whatis i
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(j)
+> echo <<gride-done>>\n
+$42 = (int *) 0xc0149b60
+<<gride-done>>
+> whatis j
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(k)
+> echo <<gride-done>>\n
+$43 = (int *) 0xc0149a98
+<<gride-done>>
+> whatis k
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(i)
+> echo <<gride-done>>\n
+$44 = (int *) 0xc0149b10
+<<gride-done>>
+> whatis i
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(j)
+> echo <<gride-done>>\n
+$45 = (int *) 0xc0149b60
+<<gride-done>>
+> whatis j
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(i)
+> echo <<gride-done>>\n
+$46 = (int *) 0xc0149b10
+<<gride-done>>
+> whatis i
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(j)
+> echo <<gride-done>>\n
+$47 = (int *) 0xc0149b60
+<<gride-done>>
+> whatis j
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(j)
+> echo <<gride-done>>\n
+$48 = (int *) 0xc0149b60
+<<gride-done>>
+> whatis j
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print x
+> echo <<gride-done>>\n
+$49 = {0, 0, 0}
+<<gride-done>>
+> print &(x)
+> echo <<gride-done>>\n
+$50 = (real[] *) 0xc01499c8
+<<gride-done>>
+> whatis x
+> echo <<gride-done>>\n
+type = real[]
+<<gride-done>>
+> finish
+> echo <<gride-done>>\n
+Run till exit from #0  shmf_gauss () at /work/showcase/solve3-shalimar/gauss.shl:12
+0xc0106690 in shm_user_main () at /work/showcase/solve3-shalimar/solve3.shl:22
+22	  if gauss(A, b, x) = 0 {
+<<gride-done>>
+> backtrace
+> echo <<gride-done>>\n
+#0  shm_user_main () at /work/showcase/solve3-shalimar/solve3.shl:22
+#1  0xc013ce7a in main ()
+#2  0xc01401d2 in _ZN5rts6x7Startup3runEv () at src/boot/Startup.cpp:43
+#3  0xc014022e in __rts6x_start () at src/boot/Startup.cpp:50
+<<gride-done>>
+> info args
+> echo <<gride-done>>\n
+No arguments.
+<<gride-done>>
+> info locals
+> echo <<gride-done>>\n
+A = {{1, 1, 1}, {2, -1, 1}, {1, 2, -1}}
+b = {25, 16, 6}
+x = {5, 7, 13}
+r = {0, 0, 0}
+<<gride-done>>
+> print &(A)
+> echo <<gride-done>>\n
+$51 = (real[][] *) 0xc0149bd0
+<<gride-done>>
+> whatis A
+> echo <<gride-done>>\n
+type = real[][]
+<<gride-done>>
+> print &(b)
+> echo <<gride-done>>\n
+$52 = (real[] *) 0xc0149be0
+<<gride-done>>
+> whatis b
+> echo <<gride-done>>\n
+type = real[]
+<<gride-done>>
+> print &(x)
+> echo <<gride-done>>\n
+$53 = (real[] *) 0xc0149bf0
+<<gride-done>>
+> whatis x
+> echo <<gride-done>>\n
+type = real[]
+<<gride-done>>
+> print &(r)
+> echo <<gride-done>>\n
+$54 = (real[] *) 0xc0149c00
+<<gride-done>>
+> whatis r
+> echo <<gride-done>>\n
+type = real[]
+<<gride-done>>
+> print x
+> echo <<gride-done>>\n
+$55 = {5, 7, 13}
+<<gride-done>>
+> print &(x)
+> echo <<gride-done>>\n
+$56 = (real[] *) 0xc0149bf0
+<<gride-done>>
+> whatis x
+> echo <<gride-done>>\n
+type = real[]
+<<gride-done>>
+> continue
+> echo <<gride-done>>\n
+Continuing.
+x = 5.0000000 
+y = 7.0000000 
+z = 13.0000000 
+check: all three equations hold 
+[Inferior 1 (process 1) exited normally]
+<<gride-done>>
+> quit

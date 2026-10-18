@@ -1,0 +1,30 @@
+// numbers.shl
+// Two small number functions. primes.shl
+// calls them by name: a function this file
+// defines is found from the project's other
+// files, with nothing to declare.
+
+fun <int> = isprime(n: int) {
+  if n < 2 { return 0 }
+  d : 2
+  while d * d <= n {
+    if n % d = 0 { return 0 }
+    d : d + 1
+  }
+  return 1
+}
+
+fun <int> = gcd(a: int, b: int) {
+  while b != 0 {
+    r : a % b
+    a : b
+    b : r
+  }
+  return a
+}
+
+// This file's own main, run on its own.
+fun <> = main() {
+  ? "isprime 97:" isprime(97)
+  ? "gcd 84 36:" gcd(84, 36)
+}

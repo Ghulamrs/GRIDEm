@@ -1,0 +1,74 @@
+// gauss.shl
+// Gaussian elimination with partial pivoting:
+// A x = b for up to three unknowns. A and b are
+// copied first, so the caller keeps its system;
+// x is filled. Returns 1, or 0 when A is
+// singular (a pivot no larger than 1e-12).
+
+uses abs
+
+fun <int> = gauss(A[][]: real, b[]: real, x[]: real) {
+  real M[3][3]
+  real c[3]
+  real t : 0.0
+  real f : 0.0
+  n : A.row
+  p : 0
+  r : 0
+
+  for i < n {
+    for j < n { M[i][j] : A[i][j] }
+    c[i] : b[i]
+  }
+
+  // Elimination: the row with the largest
+  // pivot in column k is swapped up to row k,
+  // then column k is cleared below it.
+  for k < n {
+    p : k
+    for i < n {
+      if i > k & abs(M[i][k]) > abs(M[p][k]) { p : i }
+    }
+    if abs(M[p][k]) <= 1.0e-12 { return 0 }
+    if p != k {
+      for j < n {
+        t : M[k][j]
+        M[k][j] : M[p][j]
+        M[p][j] : t
+      }
+      t : c[k]
+      c[k] : c[p]
+      c[p] : t
+    }
+    for i < n {
+      if i > k {
+        f : M[i][k] / M[k][k]
+        for j < n { M[i][j] -: f * M[k][j] }
+        c[i] -: f * c[k]
+      }
+    }
+  }
+
+  // Back substitution, last unknown first.
+  r : n - 1
+  while r >= 0 {
+    t : c[r]
+    for j < n {
+      if j > r { t -: M[r][j] * x[j] }
+    }
+    x[r] : t / M[r][r]
+    r : r - 1
+  }
+  return 1
+}
+
+// This file's own main, run on its own:
+// x + y = 3, x - y = 1 gives x = 2, y = 1.
+fun <> = main() {
+  real A[2][2] : {{1.0, 1.0}, {1.0, -1.0}}
+  real b[2] : {3.0, 1.0}
+  real x[2]
+  if gauss(A, b, x) = 1 {
+    ? "x, y:" x[0] x[1]
+  }
+}

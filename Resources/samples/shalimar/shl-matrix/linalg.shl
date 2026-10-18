@@ -1,0 +1,27 @@
+// linalg.shl
+// 3x3 matrices: a product and a trace.
+// An array argument is a reference, so
+// mul fills the caller's c.
+
+fun <> = mul(a[][]: real, b[][]: real, c[][]: real) {
+  for i < 3 {
+    for j < 3 {
+      real s : 0.0
+      for k < 3 {
+        s : s + a[i][k] * b[k][j]
+      }
+      c[i][j] : s
+    }
+  }
+}
+
+fun <real> = trace(a[][]: real) {
+  real t : 0.0
+  for i < 3 { t : t + a[i][i] }
+  return t
+}
+
+fun <> = main() {
+  real m[3][3] : {{2.,0.,0.},{0.,3.,0.},{0.,0.,4.}}
+  ? "trace:" trace(m)
+}

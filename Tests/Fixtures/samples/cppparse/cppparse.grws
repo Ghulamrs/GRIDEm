@@ -1,0 +1,20 @@
+{
+  "gride": "1.0",
+  "type": "workspace",
+  "name": "cppparse",
+  "projects": [
+    {
+      "path": "cppparse/cppparse.vcxproj",
+      "kind": "vs",
+      "readOnly": true,
+      "solution": "cppparse.sln",
+      "toolchain": "cl",
+      "programArgs": ["--health", "."]
+    }
+  ],
+  "solution": "cppparse.sln",
+  "startup": "cppparse",
+  "activeConfig": "Release",
+  "activeTarget": "Windows",
+  "breakpoints": {}
+}

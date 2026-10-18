@@ -1,0 +1,26 @@
+{
+  "dialect": "gdb",
+  "marker": "<<gride-done>>",
+  "recordedBy": "GRIDEm (Linux shell, 2026-10-18); GRIDEd's reading to be confirmed on the Windows box",
+  "reads": [
+    { "command": "run", "reader": "stop", "expect": { "stopped": true, "exited": false, "status": 0, "file": "solve3.shl", "line": 22, "function": "shm_user_main" } },
+    { "command": "backtrace", "reader": "frames", "expect": [{ "function": "shm_user_main", "file": "solve3.shl", "line": 22 }, { "function": "_ZN5rts6x7Startup3runEv", "file": "Startup.cpp", "line": 43 }, { "function": "__rts6x_start", "file": "Startup.cpp", "line": 50 }] },
+    { "command": "info locals", "reader": "locals", "expect": [{ "name": "A", "value": "{{1, 1, 1}, {2, -1, 1}, {1, 2, -1}}" }, { "name": "b", "value": "{25, 16, 6}" }, { "name": "x", "value": "{0, 0, 0}" }, { "name": "r", "value": "{0, 0, 0}" }] },
+    { "command": "print x", "reader": "evaluate", "expect": "{0, 0, 0}" },
+    { "command": "info registers", "reader": "registers", "expect": { "count": 65, "first": { "name": "A0", "value": "0x0" } } },
+    { "command": "info locals", "reader": "locals", "expect": [{ "name": "A", "value": "{{1, 1, 1}, {2, -1, 1}, {1, 2, -1}}" }, { "name": "b", "value": "{25, 16, 6}" }, { "name": "x", "value": "{0, 0, 0}" }, { "name": "r", "value": "{0, 0, 0}" }] },
+    { "command": "step", "reader": "stop", "expect": { "stopped": true, "exited": false, "status": 0, "file": "gauss.shl", "line": 11, "function": "shmf_gauss" } },
+    { "command": "backtrace", "reader": "frames", "expect": [{ "function": "shmf_gauss", "file": "gauss.shl", "line": 11 }, { "function": "shm_user_main", "file": "solve3.shl", "line": 22 }, { "function": "_ZN5rts6x7Startup3runEv", "file": "Startup.cpp", "line": 43 }, { "function": "__rts6x_start", "file": "Startup.cpp", "line": 50 }] },
+    { "command": "info locals", "reader": "locals", "expect": [{ "name": "M", "value": "0x0" }, { "name": "c", "value": "0x0" }, { "name": "t", "value": "-5.21177" }, { "name": "f", "value": "0" }, { "name": "n", "value": "-1073741192" }, { "name": "p", "value": "-1072391576" }, { "name": "r", "value": "-1072383100" }, { "name": "i", "value": "3" }, { "name": "j", "value": "-1072391504" }, { "name": "k", "value": "3" }, { "name": "i", "value": "0" }, { "name": "j", "value": "-1073741192" }, { "name": "i", "value": "-1072391232" }, { "name": "j", "value": "22" }, { "name": "j", "value": "-1073741304" }] },
+    { "command": "print x", "reader": "evaluate", "expect": "{0, 0, 0}" },
+    { "command": "next", "reader": "stop", "expect": { "stopped": true, "exited": false, "status": 0, "file": "", "line": 12, "function": "" } },
+    { "command": "backtrace", "reader": "frames", "expect": [{ "function": "shmf_gauss", "file": "gauss.shl", "line": 12 }, { "function": "shm_user_main", "file": "solve3.shl", "line": 22 }, { "function": "_ZN5rts6x7Startup3runEv", "file": "Startup.cpp", "line": 43 }, { "function": "__rts6x_start", "file": "Startup.cpp", "line": 50 }] },
+    { "command": "info locals", "reader": "locals", "expect": [{ "name": "M", "value": "{{0, 0, 0}, {0, 0, 0}, {0, 0, 0}}" }, { "name": "c", "value": "0x0" }, { "name": "t", "value": "-5.21177" }, { "name": "f", "value": "0" }, { "name": "n", "value": "-1073741192" }, { "name": "p", "value": "-1072391576" }, { "name": "r", "value": "-1072383100" }, { "name": "i", "value": "3" }, { "name": "j", "value": "-1072391504" }, { "name": "k", "value": "3" }, { "name": "i", "value": "0" }, { "name": "j", "value": "-1073741192" }, { "name": "i", "value": "-1072391232" }, { "name": "j", "value": "22" }, { "name": "j", "value": "-1073741304" }] },
+    { "command": "print x", "reader": "evaluate", "expect": "{0, 0, 0}" },
+    { "command": "finish", "reader": "stop", "expect": { "stopped": true, "exited": false, "status": 0, "file": "solve3.shl", "line": 22, "function": "shm_user_main" } },
+    { "command": "backtrace", "reader": "frames", "expect": [{ "function": "shm_user_main", "file": "solve3.shl", "line": 22 }, { "function": "_ZN5rts6x7Startup3runEv", "file": "Startup.cpp", "line": 43 }, { "function": "__rts6x_start", "file": "Startup.cpp", "line": 50 }] },
+    { "command": "info locals", "reader": "locals", "expect": [{ "name": "A", "value": "{{1, 1, 1}, {2, -1, 1}, {1, 2, -1}}" }, { "name": "b", "value": "{25, 16, 6}" }, { "name": "x", "value": "{5, 7, 13}" }, { "name": "r", "value": "{0, 0, 0}" }] },
+    { "command": "print x", "reader": "evaluate", "expect": "{5, 7, 13}" },
+    { "command": "continue", "reader": "stop", "expect": { "stopped": false, "exited": true, "status": 0, "file": "", "line": 0, "function": "" } }
+  ]
+}

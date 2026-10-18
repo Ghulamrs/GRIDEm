@@ -1,0 +1,617 @@
+> set confirm off
+> set pagination off
+> set width unlimited
+> set breakpoint pending on
+> echo <<gride-done>>\n
+<<gride-done>>
+> delete
+> echo <<gride-done>>\n
+<<gride-done>>
+> break main.cpp:26
+> echo <<gride-done>>\n
+Breakpoint 1 at 0x363c: file main.cpp, line 26.
+<<gride-done>>
+> run
+> echo <<gride-done>>\n
+Starting program: /work/showcase/solve3-cpp11/obj/Debug/C6747/check.s
+
+Breakpoint 1, main () at /work/showcase/solve3-cpp11/src/main.cpp:26
+26	    std::cout << "det A = " << A.det() << "\n";
+<<gride-done>>
+> backtrace
+> echo <<gride-done>>\n
+#0  main () at /work/showcase/solve3-cpp11/src/main.cpp:26
+<<gride-done>>
+> info args
+> echo <<gride-done>>\n
+No arguments.
+<<gride-done>>
+> info locals
+> echo <<gride-done>>\n
+.ilbacking0 = {{scalar = {1, 1, 1}}, {scalar = {2, -1, 1}}, {scalar = {1, 2, -1}}}
+.ilbacking1 = {1, 1, 1}
+.ilobject1 = {first_ = 0x1fffee0, count_ = 3}
+.ilbacking2 = {2, -1, 1}
+.ilobject2 = {first_ = 0x1fffeb0, count_ = 3}
+.ilbacking3 = {1, 2, -1}
+.ilobject3 = {first_ = 0x1fffe80, count_ = 3}
+.ilobject0 = {first_ = 0x1ffff00, count_ = 3}
+A = {vector = {{scalar = {1, 1, 1}}, {scalar = {2, -1, 1}}, {scalar = {1, 2, -1}}}}
+.ilbacking4 = {25, 16, 6}
+.ilobject4 = {first_ = 0x1fffe00, count_ = 3}
+b = {scalar = {25, 16, 6}}
+x = {scalar = {0, 0, 0}}
+names = {0x0, 0x0, 0x0}
+<<gride-done>>
+> print &(.ilbacking0)
+> echo <<gride-done>>\n
+$1 = (class CVector<3> [3] *) 0x1ffff00
+<<gride-done>>
+> whatis .ilbacking0
+> echo <<gride-done>>\n
+type = class CVector<3> [3]
+<<gride-done>>
+> print &(.ilbacking1)
+> echo <<gride-done>>\n
+$2 = (double [3] *) 0x1fffee0
+<<gride-done>>
+> whatis .ilbacking1
+> echo <<gride-done>>\n
+type = double [3]
+<<gride-done>>
+> print &(.ilobject1)
+> echo <<gride-done>>\n
+$3 = (class initializer_list<double> *) 0x1fffed8
+<<gride-done>>
+> whatis .ilobject1
+> echo <<gride-done>>\n
+type = class initializer_list<double>
+<<gride-done>>
+> print &(.ilbacking2)
+> echo <<gride-done>>\n
+$4 = (double [3] *) 0x1fffeb0
+<<gride-done>>
+> whatis .ilbacking2
+> echo <<gride-done>>\n
+type = double [3]
+<<gride-done>>
+> print &(.ilobject2)
+> echo <<gride-done>>\n
+$5 = (class initializer_list<double> *) 0x1fffea8
+<<gride-done>>
+> whatis .ilobject2
+> echo <<gride-done>>\n
+type = class initializer_list<double>
+<<gride-done>>
+> print &(.ilbacking3)
+> echo <<gride-done>>\n
+$6 = (double [3] *) 0x1fffe80
+<<gride-done>>
+> whatis .ilbacking3
+> echo <<gride-done>>\n
+type = double [3]
+<<gride-done>>
+> print &(.ilobject3)
+> echo <<gride-done>>\n
+$7 = (class initializer_list<double> *) 0x1fffe78
+<<gride-done>>
+> whatis .ilobject3
+> echo <<gride-done>>\n
+type = class initializer_list<double>
+<<gride-done>>
+> print &(.ilobject0)
+> echo <<gride-done>>\n
+$8 = (class initializer_list<class CVector<3>> *) 0x1fffe68
+<<gride-done>>
+> whatis .ilobject0
+> echo <<gride-done>>\n
+type = class initializer_list<class CVector<3>>
+<<gride-done>>
+> print &(A)
+> echo <<gride-done>>\n
+$9 = (const class CMatrix<3,3> *) 0x1fffe20
+<<gride-done>>
+> whatis A
+> echo <<gride-done>>\n
+type = const class CMatrix<3,3>
+<<gride-done>>
+> print &(.ilbacking4)
+> echo <<gride-done>>\n
+$10 = (double [3] *) 0x1fffe00
+<<gride-done>>
+> whatis .ilbacking4
+> echo <<gride-done>>\n
+type = double [3]
+<<gride-done>>
+> print &(.ilobject4)
+> echo <<gride-done>>\n
+$11 = (class initializer_list<double> *) 0x1fffdf8
+<<gride-done>>
+> whatis .ilobject4
+> echo <<gride-done>>\n
+type = class initializer_list<double>
+<<gride-done>>
+> print &(b)
+> echo <<gride-done>>\n
+$12 = (const class CVector<3> *) 0x1fffde0
+<<gride-done>>
+> whatis b
+> echo <<gride-done>>\n
+type = const class CVector<3>
+<<gride-done>>
+> print &(x)
+> echo <<gride-done>>\n
+$13 = (class CVector<3> *) 0x1fffdc0
+<<gride-done>>
+> whatis x
+> echo <<gride-done>>\n
+type = class CVector<3>
+<<gride-done>>
+> print &(names)
+> echo <<gride-done>>\n
+$14 = (const char * [3] *) 0x1fffdac
+<<gride-done>>
+> whatis names
+> echo <<gride-done>>\n
+type = const char * [3]
+<<gride-done>>
+> print x
+> echo <<gride-done>>\n
+$15 = {scalar = {0, 0, 0}}
+<<gride-done>>
+> print &(x)
+> echo <<gride-done>>\n
+$16 = (class CVector<3> *) 0x1fffdc0
+<<gride-done>>
+> whatis x
+> echo <<gride-done>>\n
+type = class CVector<3>
+<<gride-done>>
+> info registers
+> echo <<gride-done>>\n
+A0             0x30                48
+A1             0x0                 0
+A2             0x0                 0
+A3             0x1fffd68           33553768
+A4             0x91e8              37352
+A5             0x0                 0
+A6             0x91fc              37372
+A7             0x0                 0
+A8             0x0                 0
+A9             0x0                 0
+A10            0x0                 0
+A11            0x0                 0
+A12            0x0                 0
+A13            0x0                 0
+A14            0x0                 0
+A15            0x1ffff78           33554296
+A16            0x0                 0
+A17            0x0                 0
+A18            0x0                 0
+A19            0x0                 0
+A20            0x0                 0
+A21            0x0                 0
+A22            0x0                 0
+A23            0x0                 0
+A24            0x0                 0
+A25            0x0                 0
+A26            0x0                 0
+A27            0x0                 0
+A28            0x0                 0
+A29            0x0                 0
+A30            0x0                 0
+A31            0x0                 0
+B0             0x38                56
+B1             0x2a54              10836
+B2             0x0                 0
+B3             0x3638              13880
+B4             0x7                 7
+B5             0x3                 3
+B6             0x0                 0
+B7             0x0                 0
+B8             0x0                 0
+B9             0x0                 0
+B10            0x0                 0
+B11            0x0                 0
+B12            0x0                 0
+B13            0x0                 0
+B14            0x0                 0
+B15            0x1fffda0           33553824
+B16            0x0                 0
+B17            0x0                 0
+B18            0x0                 0
+B19            0x0                 0
+B20            0x0                 0
+B21            0x0                 0
+B22            0x0                 0
+B23            0x0                 0
+B24            0x0                 0
+B25            0x0                 0
+B26            0x0                 0
+B27            0x0                 0
+B28            0x0                 0
+B29            0x0                 0
+B30            0x0                 0
+B31            0x0                 0
+pc             0x363c              0x363c
+<<gride-done>>
+> info args
+> echo <<gride-done>>\n
+No arguments.
+<<gride-done>>
+> info locals
+> echo <<gride-done>>\n
+.ilbacking0 = {{scalar = {1, 1, 1}}, {scalar = {2, -1, 1}}, {scalar = {1, 2, -1}}}
+.ilbacking1 = {1, 1, 1}
+.ilobject1 = {first_ = 0x1fffee0, count_ = 3}
+.ilbacking2 = {2, -1, 1}
+.ilobject2 = {first_ = 0x1fffeb0, count_ = 3}
+.ilbacking3 = {1, 2, -1}
+.ilobject3 = {first_ = 0x1fffe80, count_ = 3}
+.ilobject0 = {first_ = 0x1ffff00, count_ = 3}
+A = {vector = {{scalar = {1, 1, 1}}, {scalar = {2, -1, 1}}, {scalar = {1, 2, -1}}}}
+.ilbacking4 = {25, 16, 6}
+.ilobject4 = {first_ = 0x1fffe00, count_ = 3}
+b = {scalar = {25, 16, 6}}
+x = {scalar = {0, 0, 0}}
+names = {0x0, 0x0, 0x0}
+<<gride-done>>
+> print &(.ilbacking0)
+> echo <<gride-done>>\n
+$17 = (class CVector<3> [3] *) 0x1ffff00
+<<gride-done>>
+> whatis .ilbacking0
+> echo <<gride-done>>\n
+type = class CVector<3> [3]
+<<gride-done>>
+> print &(.ilbacking1)
+> echo <<gride-done>>\n
+$18 = (double [3] *) 0x1fffee0
+<<gride-done>>
+> whatis .ilbacking1
+> echo <<gride-done>>\n
+type = double [3]
+<<gride-done>>
+> print &(.ilobject1)
+> echo <<gride-done>>\n
+$19 = (class initializer_list<double> *) 0x1fffed8
+<<gride-done>>
+> whatis .ilobject1
+> echo <<gride-done>>\n
+type = class initializer_list<double>
+<<gride-done>>
+> print &(.ilbacking2)
+> echo <<gride-done>>\n
+$20 = (double [3] *) 0x1fffeb0
+<<gride-done>>
+> whatis .ilbacking2
+> echo <<gride-done>>\n
+type = double [3]
+<<gride-done>>
+> print &(.ilobject2)
+> echo <<gride-done>>\n
+$21 = (class initializer_list<double> *) 0x1fffea8
+<<gride-done>>
+> whatis .ilobject2
+> echo <<gride-done>>\n
+type = class initializer_list<double>
+<<gride-done>>
+> print &(.ilbacking3)
+> echo <<gride-done>>\n
+$22 = (double [3] *) 0x1fffe80
+<<gride-done>>
+> whatis .ilbacking3
+> echo <<gride-done>>\n
+type = double [3]
+<<gride-done>>
+> print &(.ilobject3)
+> echo <<gride-done>>\n
+$23 = (class initializer_list<double> *) 0x1fffe78
+<<gride-done>>
+> whatis .ilobject3
+> echo <<gride-done>>\n
+type = class initializer_list<double>
+<<gride-done>>
+> print &(.ilobject0)
+> echo <<gride-done>>\n
+$24 = (class initializer_list<class CVector<3>> *) 0x1fffe68
+<<gride-done>>
+> whatis .ilobject0
+> echo <<gride-done>>\n
+type = class initializer_list<class CVector<3>>
+<<gride-done>>
+> print &(A)
+> echo <<gride-done>>\n
+$25 = (const class CMatrix<3,3> *) 0x1fffe20
+<<gride-done>>
+> whatis A
+> echo <<gride-done>>\n
+type = const class CMatrix<3,3>
+<<gride-done>>
+> print &(.ilbacking4)
+> echo <<gride-done>>\n
+$26 = (double [3] *) 0x1fffe00
+<<gride-done>>
+> whatis .ilbacking4
+> echo <<gride-done>>\n
+type = double [3]
+<<gride-done>>
+> print &(.ilobject4)
+> echo <<gride-done>>\n
+$27 = (class initializer_list<double> *) 0x1fffdf8
+<<gride-done>>
+> whatis .ilobject4
+> echo <<gride-done>>\n
+type = class initializer_list<double>
+<<gride-done>>
+> print &(b)
+> echo <<gride-done>>\n
+$28 = (const class CVector<3> *) 0x1fffde0
+<<gride-done>>
+> whatis b
+> echo <<gride-done>>\n
+type = const class CVector<3>
+<<gride-done>>
+> print &(x)
+> echo <<gride-done>>\n
+$29 = (class CVector<3> *) 0x1fffdc0
+<<gride-done>>
+> whatis x
+> echo <<gride-done>>\n
+type = class CVector<3>
+<<gride-done>>
+> print &(names)
+> echo <<gride-done>>\n
+$30 = (const char * [3] *) 0x1fffdac
+<<gride-done>>
+> whatis names
+> echo <<gride-done>>\n
+type = const char * [3]
+<<gride-done>>
+> x/8xb 0x1ffff00
+> echo <<gride-done>>\n
+0x01ffff00:	0x00	0x00	0x00	0x00	0x00	0x00	0xf0	0x3f
+<<gride-done>>
+> step
+> echo <<gride-done>>\n
+_ZNSt7ostreamlsEPKc () at /work/tcbuild/src/Compilers/C++Optimize/include/ostream:144
+144	        if (s == 0) s = "(null)";
+<<gride-done>>
+> backtrace
+> echo <<gride-done>>\n
+#0  _ZNSt7ostreamlsEPKc () at /work/tcbuild/src/Compilers/C++Optimize/include/ostream:144
+#1  0x00003680 in main () at /work/showcase/solve3-cpp11/src/main.cpp:26
+<<gride-done>>
+> info args
+> echo <<gride-done>>\n
+s = (const char *) 0x9277 "det A = "
+this = (class std::ostream *) 0x91e8
+<<gride-done>>
+> info locals
+> echo <<gride-done>>\n
+No locals.
+<<gride-done>>
+> print &(s)
+> echo <<gride-done>>\n
+$31 = (const char * *) 0x1fffd5c
+<<gride-done>>
+> whatis s
+> echo <<gride-done>>\n
+type = const char *
+<<gride-done>>
+> print &(this)
+> echo <<gride-done>>\n
+$32 = (class std::ostream * *) 0x1fffd58
+<<gride-done>>
+> whatis this
+> echo <<gride-done>>\n
+type = class std::ostream *
+<<gride-done>>
+> print x
+> echo <<gride-done>>\n
+No symbol "x" in current context.
+<<gride-done>>
+> next
+> echo <<gride-done>>\n
+145	        return pad(s);
+<<gride-done>>
+> backtrace
+> echo <<gride-done>>\n
+#0  _ZNSt7ostreamlsEPKc () at /work/tcbuild/src/Compilers/C++Optimize/include/ostream:145
+#1  0x00003680 in main () at /work/showcase/solve3-cpp11/src/main.cpp:26
+<<gride-done>>
+> info args
+> echo <<gride-done>>\n
+s = (const char *) 0x9277 "det A = "
+this = (class std::ostream *) 0x91e8
+<<gride-done>>
+> info locals
+> echo <<gride-done>>\n
+No locals.
+<<gride-done>>
+> print &(s)
+> echo <<gride-done>>\n
+$33 = (const char * *) 0x1fffd5c
+<<gride-done>>
+> whatis s
+> echo <<gride-done>>\n
+type = const char *
+<<gride-done>>
+> print &(this)
+> echo <<gride-done>>\n
+$34 = (class std::ostream * *) 0x1fffd58
+<<gride-done>>
+> whatis this
+> echo <<gride-done>>\n
+type = class std::ostream *
+<<gride-done>>
+> print x
+> echo <<gride-done>>\n
+No symbol "x" in current context.
+<<gride-done>>
+> finish
+> echo <<gride-done>>\n
+Run till exit from #0  _ZNSt7ostreamlsEPKc () at /work/tcbuild/src/Compilers/C++Optimize/include/ostream:145
+det A = 0x00003680 in main () at /work/showcase/solve3-cpp11/src/main.cpp:26
+26	    std::cout << "det A = " << A.det() << "\n";
+<<gride-done>>
+> backtrace
+> echo <<gride-done>>\n
+#0  main () at /work/showcase/solve3-cpp11/src/main.cpp:26
+<<gride-done>>
+> info args
+> echo <<gride-done>>\n
+No arguments.
+<<gride-done>>
+> info locals
+> echo <<gride-done>>\n
+.ilbacking0 = {{scalar = {1, 1, 1}}, {scalar = {2, -1, 1}}, {scalar = {1, 2, -1}}}
+.ilbacking1 = {1, 1, 1}
+.ilobject1 = {first_ = 0x1fffee0, count_ = 3}
+.ilbacking2 = {2, -1, 1}
+.ilobject2 = {first_ = 0x1fffeb0, count_ = 3}
+.ilbacking3 = {1, 2, -1}
+.ilobject3 = {first_ = 0x1fffe80, count_ = 3}
+.ilobject0 = {first_ = 0x1ffff00, count_ = 3}
+A = {vector = {{scalar = {1, 1, 1}}, {scalar = {2, -1, 1}}, {scalar = {1, 2, -1}}}}
+.ilbacking4 = {25, 16, 6}
+.ilobject4 = {first_ = 0x1fffe00, count_ = 3}
+b = {scalar = {25, 16, 6}}
+x = {scalar = {0, 0, 0}}
+names = {0x0, 0x0, 0x0}
+<<gride-done>>
+> print &(.ilbacking0)
+> echo <<gride-done>>\n
+$35 = (class CVector<3> [3] *) 0x1ffff00
+<<gride-done>>
+> whatis .ilbacking0
+> echo <<gride-done>>\n
+type = class CVector<3> [3]
+<<gride-done>>
+> print &(.ilbacking1)
+> echo <<gride-done>>\n
+$36 = (double [3] *) 0x1fffee0
+<<gride-done>>
+> whatis .ilbacking1
+> echo <<gride-done>>\n
+type = double [3]
+<<gride-done>>
+> print &(.ilobject1)
+> echo <<gride-done>>\n
+$37 = (class initializer_list<double> *) 0x1fffed8
+<<gride-done>>
+> whatis .ilobject1
+> echo <<gride-done>>\n
+type = class initializer_list<double>
+<<gride-done>>
+> print &(.ilbacking2)
+> echo <<gride-done>>\n
+$38 = (double [3] *) 0x1fffeb0
+<<gride-done>>
+> whatis .ilbacking2
+> echo <<gride-done>>\n
+type = double [3]
+<<gride-done>>
+> print &(.ilobject2)
+> echo <<gride-done>>\n
+$39 = (class initializer_list<double> *) 0x1fffea8
+<<gride-done>>
+> whatis .ilobject2
+> echo <<gride-done>>\n
+type = class initializer_list<double>
+<<gride-done>>
+> print &(.ilbacking3)
+> echo <<gride-done>>\n
+$40 = (double [3] *) 0x1fffe80
+<<gride-done>>
+> whatis .ilbacking3
+> echo <<gride-done>>\n
+type = double [3]
+<<gride-done>>
+> print &(.ilobject3)
+> echo <<gride-done>>\n
+$41 = (class initializer_list<double> *) 0x1fffe78
+<<gride-done>>
+> whatis .ilobject3
+> echo <<gride-done>>\n
+type = class initializer_list<double>
+<<gride-done>>
+> print &(.ilobject0)
+> echo <<gride-done>>\n
+$42 = (class initializer_list<class CVector<3>> *) 0x1fffe68
+<<gride-done>>
+> whatis .ilobject0
+> echo <<gride-done>>\n
+type = class initializer_list<class CVector<3>>
+<<gride-done>>
+> print &(A)
+> echo <<gride-done>>\n
+$43 = (const class CMatrix<3,3> *) 0x1fffe20
+<<gride-done>>
+> whatis A
+> echo <<gride-done>>\n
+type = const class CMatrix<3,3>
+<<gride-done>>
+> print &(.ilbacking4)
+> echo <<gride-done>>\n
+$44 = (double [3] *) 0x1fffe00
+<<gride-done>>
+> whatis .ilbacking4
+> echo <<gride-done>>\n
+type = double [3]
+<<gride-done>>
+> print &(.ilobject4)
+> echo <<gride-done>>\n
+$45 = (class initializer_list<double> *) 0x1fffdf8
+<<gride-done>>
+> whatis .ilobject4
+> echo <<gride-done>>\n
+type = class initializer_list<double>
+<<gride-done>>
+> print &(b)
+> echo <<gride-done>>\n
+$46 = (const class CVector<3> *) 0x1fffde0
+<<gride-done>>
+> whatis b
+> echo <<gride-done>>\n
+type = const class CVector<3>
+<<gride-done>>
+> print &(x)
+> echo <<gride-done>>\n
+$47 = (class CVector<3> *) 0x1fffdc0
+<<gride-done>>
+> whatis x
+> echo <<gride-done>>\n
+type = class CVector<3>
+<<gride-done>>
+> print &(names)
+> echo <<gride-done>>\n
+$48 = (const char * [3] *) 0x1fffdac
+<<gride-done>>
+> whatis names
+> echo <<gride-done>>\n
+type = const char * [3]
+<<gride-done>>
+> print x
+> echo <<gride-done>>\n
+$49 = {scalar = {0, 0, 0}}
+<<gride-done>>
+> print &(x)
+> echo <<gride-done>>\n
+$50 = (class CVector<3> *) 0x1fffdc0
+<<gride-done>>
+> whatis x
+> echo <<gride-done>>\n
+type = class CVector<3>
+<<gride-done>>
+> continue
+> echo <<gride-done>>\n
+Continuing.
+7.0000000
+x = 5.0000000
+y = 7.0000000
+z = 13.0000000
+check: all three equations hold
+[Inferior 1 (process 1) exited normally]
+<<gride-done>>
+> quit

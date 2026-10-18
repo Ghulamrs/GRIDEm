@@ -1,0 +1,21 @@
+! #file 0 solve3.shl
+! #file 1 gauss.shl
+! #file 2 check.shl
+! #ready
+> w
+> b 0 22
+> c
+! #at 0 0 0
+! #stop 0 22 1
+> s
+! #stop 1 11 2
+> n
+! #stop 1 12 2
+> o
+! #stop 0 25 1
+> c
+x = 5.0000000 
+y = 7.0000000 
+z = 13.0000000 
+check: all three equations hold 
+! #exit 0

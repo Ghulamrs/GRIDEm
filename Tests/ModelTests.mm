@@ -1,0 +1,112 @@
+// =============================================================================
+//  ModelTests.mm - workspaces and projects as GRIDEd writes them: GRIDEd's own
+//  samples (Tests/Fixtures/samples, copied from GRIDEd/samples) load, and a
+//  save, reload and save again gives the same bytes.
+// =============================================================================
+#import "TestSupport.h"
+#include "Model/GrideProject.h"
+#include "Model/VsProjectReader.h"
+#include "Model/VsSolution.h"
+#include "Model/Workspace.h"
+
+using namespace GRIDEm;
+using namespace GRIDEm::Model;
+
+@interface ModelTests : XCTestCase
+@end
+
+@implementation ModelTests
+
+- (void)setUp
+{
+    GRLoadMacToolchain();
+}
+
+- (void)testShowcaseLoads
+{
+    std::string dir = GRCopyFixture("samples/showcase");
+    WorkspacePtr w = Workspace::Load(dir + "/showcase.grws", std::string());
+    GRAssertEq(w->Projects.size(), (size_t)3);
+    XCTAssertTrue(w->LoadErrors.empty());
+    GRAssertEq(w->StartupName, "solve3-shalimar");
+    GRAssertEq(w->ActiveConfig, "Debug");
+    XCTAssertTrue(w->FindProject("average-c90") != nullptr);
+    GRAssertEq(w->BuildOrder().size(), (size_t)3);
+    for (const GrideProjectPtr& p : w->Projects)
+    {
+        XCTAssertFalse(p->IsImported());
+        XCTAssertFalse(p->AllFiles().empty(), @"%s has no files", p->Name.c_str());
+    }
+}
+
+- (void)testShowcaseSaveReloadSaveIsByteStable
+{
+    std::string dir = GRCopyFixture("samples/showcase");
+    std::string grws = dir + "/showcase.grws";
+    WorkspacePtr w = Workspace::Load(grws, std::string());
+    w->Save();
+    for (const GrideProjectPtr& p : w->Projects) p->Save();
+    std::string first = GRRead(grws);
+    std::vector<std::string> pros;
+    for (const GrideProjectPtr& p : w->Projects) pros.push_back(GRRead(p->FilePath));
+    XCTAssertTrue(first.find("\r\n") != std::string::npos);                    // CRLF, as GRIDEd writes
+
+    WorkspacePtr again = Workspace::Load(grws, std::string());
+    XCTAssertFalse(again->HasChanges());
+    again->Save();
+    for (const GrideProjectPtr& p : again->Projects) p->Save();
+    GRAssertEq(GRRead(grws), first);
+    for (size_t i = 0; i < again->Projects.size() && i < pros.size(); i++)
+        GRAssertEq(GRRead(again->Projects[i]->FilePath), pros[i]);
+}
+
+- (void)testGRIDEdWrittenWorkspaceIsWrittenBackUnchanged
+{
+    // cppparse.grws was written by GRIDEd itself
+    std::string dir = GRCopyFixture("samples/cppparse");
+    std::string grws = dir + "/cppparse.grws";
+    std::string before = GRRead(grws);
+    WorkspacePtr w = Workspace::Load(grws, std::string());
+    w->Save();
+    GRAssertEq(GRRead(grws), before);
+}
+
+- (void)testVisualStudioProjectReadOnly
+{
+    std::string dir = GRCopyFixture("samples/cppparse");
+    WorkspacePtr w = Workspace::Load(dir + "/cppparse.grws", std::string());
+    GRAssertEq(w->Projects.size(), (size_t)1);
+    if (w->Projects.empty()) return;
+    GrideProjectPtr p = w->Projects[0];
+    XCTAssertTrue(p->IsImported());
+    XCTAssertTrue(p->IsVs());
+    XCTAssertTrue(p->AllFiles().size() >= 70, @"%d files", (int)p->AllFiles().size());
+}
+
+- (void)testSolutionOpensAsAWorkspace
+{
+    std::string dir = GRCopyFixture("samples/cppparse");
+    std::string sln = dir + "/cppparse.sln";
+    XCTAssertTrue(VsProjectReader::IsSolution(sln));
+    WorkspacePtr w = Workspace::ForSolution(VsSolution::Read(sln));
+    GRAssertEq(w->Projects.size(), (size_t)1);
+    if (!w->Projects.empty()) GRAssertEq(w->Projects[0]->Name, "cppparse");
+}
+
+- (void)testNewProjectSkeleton
+{
+    std::string dir = GRTempDir();
+    std::vector<Core::Target> targets{ Core::Target::MacOS, Core::Target::C6747 };
+    GrideProjectPtr p = GrideProject::CreateNew(dir, "Hello", Core::Language::C90, "Console application", targets);
+    XCTAssertTrue(p != nullptr);
+    if (!p) return;
+    GRAssertEq(p->Name, "Hello");
+    XCTAssertTrue(p->Lang == Core::Language::C90);
+    GRAssertEq(p->Targets.size(), (size_t)2);
+    p->Save();
+    GrideProjectPtr back = GrideProject::Load(p->FilePath);
+    GRAssertEq(back->Name, "Hello");
+    GRAssertEq(back->Targets.size(), (size_t)2);
+}
+
+@end

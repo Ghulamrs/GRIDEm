@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+ LastUpgradeVersion = "1600"
+ version = "1.7">
+<BuildAction
+ parallelizeBuildables = "YES"
+ buildImplicitDependencies = "YES">
+<BuildActionEntries>
+<BuildActionEntry
+ buildForTesting = "YES"
+ buildForRunning = "NO"
+ buildForProfiling = "YES"
+ buildForArchiving = "YES"
+ buildForAnalyzing = "YES">
+<BuildableReference
+ BuildableIdentifier = "primary"
+ BlueprintIdentifier = "71AA35B1A3D93ED6D5E10A22"
+ BuildableName = "libGRIDEm.a"
+ BlueprintName = "libGRIDEm"
+ ReferencedContainer = "container:GRIDEm.xcodeproj">
+</BuildableReference>
+</BuildActionEntry>
+<BuildActionEntry
+ buildForTesting = "YES"
+ buildForRunning = "NO"
+ buildForProfiling = "YES"
+ buildForArchiving = "YES"
+ buildForAnalyzing = "YES">
+<BuildableReference
+ BuildableIdentifier = "primary"
+ BlueprintIdentifier = "2A05F0CDD83B71111439EE83"
+ BuildableName = "GRIDEmTests.xctest"
+ BlueprintName = "GRIDEmTests"
+ ReferencedContainer = "container:GRIDEm.xcodeproj">
+</BuildableReference>
+</BuildActionEntry>
+</BuildActionEntries>
+</BuildAction>
+<TestAction
+ buildConfiguration = "Debug"
+ selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+ selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+ shouldUseLaunchSchemeArgsEnv = "YES">
+<Testables>
+<TestableReference
+ skipped = "NO">
+<BuildableReference
+ BuildableIdentifier = "primary"
+ BlueprintIdentifier = "2A05F0CDD83B71111439EE83"
+ BuildableName = "GRIDEmTests.xctest"
+ BlueprintName = "GRIDEmTests"
+ ReferencedContainer = "container:GRIDEm.xcodeproj">
+</BuildableReference>
+</TestableReference>
+</Testables>
+</TestAction>
+<LaunchAction
+ buildConfiguration = "Debug"
+ selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+ selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+ launchStyle = "0"
+ useCustomWorkingDirectory = "NO"
+ ignoresPersistentStateOnLaunch = "NO"
+ debugDocumentVersioning = "YES"
+ debugServiceExtension = "internal"
+ allowLocationSimulation = "YES">
+
+</LaunchAction>
+<ProfileAction
+ buildConfiguration = "Release"
+ shouldUseLaunchSchemeArgsEnv = "YES"
+ savedToolIdentifier = ""
+ useCustomWorkingDirectory = "NO"
+ debugDocumentVersioning = "YES">
+</ProfileAction>
+<AnalyzeAction
+ buildConfiguration = "Debug">
+</AnalyzeAction>
+<ArchiveAction
+ buildConfiguration = "Release"
+ revealArchiveInOrganizer = "YES">
+</ArchiveAction>
+</Scheme>

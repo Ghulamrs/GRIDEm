@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="driver">
+      <UniqueIdentifier>{3A1F6C20-5D4B-4E8A-9B71-0C2D8E4F1A01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{3A1F6C20-5D4B-4E8A-9B71-0C2D8E4F1A02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="frontend">
+      <UniqueIdentifier>{3A1F6C20-5D4B-4E8A-9B71-0C2D8E4F1A03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="middle">
+      <UniqueIdentifier>{3A1F6C20-5D4B-4E8A-9B71-0C2D8E4F1A04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="backend">
+      <UniqueIdentifier>{3A1F6C20-5D4B-4E8A-9B71-0C2D8E4F1A05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="analyzer">
+      <UniqueIdentifier>{3A1F6C20-5D4B-4E8A-9B71-0C2D8E4F1A06}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="analyzer\report">
+      <UniqueIdentifier>{3A1F6C20-5D4B-4E8A-9B71-0C2D8E4F1A0C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="runtime">
+      <UniqueIdentifier>{3A1F6C20-5D4B-4E8A-9B71-0C2D8E4F1A07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libcpp">
+      <UniqueIdentifier>{3A1F6C20-5D4B-4E8A-9B71-0C2D8E4F1A08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{3A1F6C20-5D4B-4E8A-9B71-0C2D8E4F1A09}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform">
+      <UniqueIdentifier>{3A1F6C20-5D4B-4E8A-9B71-0C2D8E4F1A0A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="docs">
+      <UniqueIdentifier>{3A1F6C20-5D4B-4E8A-9B71-0C2D8E4F1A0B}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="driver\*.cpp">
+      <Filter>driver</Filter>
+    </ClCompile>
+    <ClCompile Include="common\*.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="frontend\*.cpp">
+      <Filter>frontend</Filter>
+    </ClCompile>
+    <ClCompile Include="middle\*.cpp">
+      <Filter>middle</Filter>
+    </ClCompile>
+    <ClCompile Include="backend\*.cpp">
+      <Filter>backend</Filter>
+    </ClCompile>
+    <ClCompile Include="analyzer\*.cpp">
+      <Filter>analyzer</Filter>
+    </ClCompile>
+    <ClCompile Include="analyzer\report\*.cpp">
+      <Filter>analyzer\report</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="common\*.hpp">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="frontend\*.hpp">
+      <Filter>frontend</Filter>
+    </ClInclude>
+    <ClInclude Include="middle\*.hpp">
+      <Filter>middle</Filter>
+    </ClInclude>
+    <ClInclude Include="backend\*.hpp">
+      <Filter>backend</Filter>
+    </ClInclude>
+    <ClInclude Include="analyzer\*.hpp">
+      <Filter>analyzer</Filter>
+    </ClInclude>
+    <ClInclude Include="analyzer\report\*.hpp">
+      <Filter>analyzer\report</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Filter>docs</Filter>
+    </None>
+    <None Include="..\docs\*.md">
+      <Filter>docs</Filter>
+    </None>
+    <None Include="..\include\*">
+      <Filter>include</Filter>
+    </None>
+    <None Include="..\platform\**\*.h">
+      <Filter>platform</Filter>
+    </None>
+    <None Include="..\runtime\cppparse_rt.cpp">
+      <Filter>runtime</Filter>
+    </None>
+    <None Include="..\libcpp\iostream.cpp">
+      <Filter>libcpp</Filter>
+    </None>
+  </ItemGroup>
+</Project>

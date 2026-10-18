@@ -1,0 +1,26 @@
+{
+  "dialect": "gdb",
+  "marker": "<<gride-done>>",
+  "recordedBy": "GRIDEm (Linux shell, 2026-10-18); GRIDEd's reading to be confirmed on the Windows box",
+  "reads": [
+    { "command": "run", "reader": "stop", "expect": { "stopped": true, "exited": false, "status": 0, "file": "main.cpp", "line": 26, "function": "main" } },
+    { "command": "backtrace", "reader": "frames", "expect": [{ "function": "main", "file": "main.cpp", "line": 26 }] },
+    { "command": "info locals", "reader": "locals", "expect": [{ "name": ".ilbacking0", "value": "{{scalar = {1, 1, 1}}, {scalar = {2, -1, 1}}, {scalar = {1, 2, -1}}}" }, { "name": ".ilbacking1", "value": "{1, 1, 1}" }, { "name": ".ilobject1", "value": "{first_ = 0xc011edc8, count_ = 3}" }, { "name": ".ilbacking2", "value": "{2, -1, 1}" }, { "name": ".ilobject2", "value": "{first_ = 0xc011ed98, count_ = 3}" }, { "name": ".ilbacking3", "value": "{1, 2, -1}" }, { "name": ".ilobject3", "value": "{first_ = 0xc011ed68, count_ = 3}" }, { "name": ".ilobject0", "value": "{first_ = 0xc011ede8, count_ = 3}" }, { "name": "A", "value": "{vector = {{scalar = {1, 1, 1}}, {scalar = {2, -1, 1}}, {scalar = {1, 2, -1}}}}" }, { "name": ".ilbacking4", "value": "{25, 16, 6}" }, { "name": ".ilobject4", "value": "{first_ = 0xc011ece8, count_ = 3}" }, { "name": "b", "value": "{scalar = {25, 16, 6}}" }, { "name": "x", "value": "{scalar = {0, 0, 0}}" }, { "name": "names", "value": "{0x0, 0x0, 0x0}" }] },
+    { "command": "print x", "reader": "evaluate", "expect": "{scalar = {0, 0, 0}}" },
+    { "command": "info registers", "reader": "registers", "expect": { "count": 65, "first": { "name": "A0", "value": "0x30" } } },
+    { "command": "info locals", "reader": "locals", "expect": [{ "name": ".ilbacking0", "value": "{{scalar = {1, 1, 1}}, {scalar = {2, -1, 1}}, {scalar = {1, 2, -1}}}" }, { "name": ".ilbacking1", "value": "{1, 1, 1}" }, { "name": ".ilobject1", "value": "{first_ = 0xc011edc8, count_ = 3}" }, { "name": ".ilbacking2", "value": "{2, -1, 1}" }, { "name": ".ilobject2", "value": "{first_ = 0xc011ed98, count_ = 3}" }, { "name": ".ilbacking3", "value": "{1, 2, -1}" }, { "name": ".ilobject3", "value": "{first_ = 0xc011ed68, count_ = 3}" }, { "name": ".ilobject0", "value": "{first_ = 0xc011ede8, count_ = 3}" }, { "name": "A", "value": "{vector = {{scalar = {1, 1, 1}}, {scalar = {2, -1, 1}}, {scalar = {1, 2, -1}}}}" }, { "name": ".ilbacking4", "value": "{25, 16, 6}" }, { "name": ".ilobject4", "value": "{first_ = 0xc011ece8, count_ = 3}" }, { "name": "b", "value": "{scalar = {25, 16, 6}}" }, { "name": "x", "value": "{scalar = {0, 0, 0}}" }, { "name": "names", "value": "{0x0, 0x0, 0x0}" }] },
+    { "command": "step", "reader": "stop", "expect": { "stopped": true, "exited": false, "status": 0, "file": "ostream", "line": 144, "function": "_ZNSt7ostreamlsEPKc" } },
+    { "command": "backtrace", "reader": "frames", "expect": [{ "function": "_ZNSt7ostreamlsEPKc", "file": "ostream", "line": 144 }, { "function": "main", "file": "main.cpp", "line": 26 }] },
+    { "command": "info locals", "reader": "locals", "expect": [] },
+    { "command": "print x", "reader": "evaluate", "expect": "" },
+    { "command": "next", "reader": "stop", "expect": { "stopped": true, "exited": false, "status": 0, "file": "", "line": 145, "function": "" } },
+    { "command": "backtrace", "reader": "frames", "expect": [{ "function": "_ZNSt7ostreamlsEPKc", "file": "ostream", "line": 145 }, { "function": "main", "file": "main.cpp", "line": 26 }] },
+    { "command": "info locals", "reader": "locals", "expect": [] },
+    { "command": "print x", "reader": "evaluate", "expect": "" },
+    { "command": "finish", "reader": "stop", "expect": { "stopped": true, "exited": false, "status": 0, "file": "main.cpp", "line": 26, "function": "main" } },
+    { "command": "backtrace", "reader": "frames", "expect": [{ "function": "main", "file": "main.cpp", "line": 26 }] },
+    { "command": "info locals", "reader": "locals", "expect": [{ "name": ".ilbacking0", "value": "{{scalar = {1, 1, 1}}, {scalar = {2, -1, 1}}, {scalar = {1, 2, -1}}}" }, { "name": ".ilbacking1", "value": "{1, 1, 1}" }, { "name": ".ilobject1", "value": "{first_ = 0xc011edc8, count_ = 3}" }, { "name": ".ilbacking2", "value": "{2, -1, 1}" }, { "name": ".ilobject2", "value": "{first_ = 0xc011ed98, count_ = 3}" }, { "name": ".ilbacking3", "value": "{1, 2, -1}" }, { "name": ".ilobject3", "value": "{first_ = 0xc011ed68, count_ = 3}" }, { "name": ".ilobject0", "value": "{first_ = 0xc011ede8, count_ = 3}" }, { "name": "A", "value": "{vector = {{scalar = {1, 1, 1}}, {scalar = {2, -1, 1}}, {scalar = {1, 2, -1}}}}" }, { "name": ".ilbacking4", "value": "{25, 16, 6}" }, { "name": ".ilobject4", "value": "{first_ = 0xc011ece8, count_ = 3}" }, { "name": "b", "value": "{scalar = {25, 16, 6}}" }, { "name": "x", "value": "{scalar = {0, 0, 0}}" }, { "name": "names", "value": "{0x0, 0x0, 0x0}" }] },
+    { "command": "print x", "reader": "evaluate", "expect": "{scalar = {0, 0, 0}}" },
+    { "command": "continue", "reader": "stop", "expect": { "stopped": false, "exited": true, "status": 0, "file": "", "line": 0, "function": "" } }
+  ]
+}

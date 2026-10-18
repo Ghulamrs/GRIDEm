@@ -1,0 +1,339 @@
+tool	option id	valueType	command	commandFalse	defaultValue	superClass	enum values (id suffix=flag)
+com.ti.ccstudio.buildDefinitions.C6000_8.2.exe.compilerRelease	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.OPT_LEVEL.release				com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.OPT_LEVEL.2	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.OPT_LEVEL	
+com.ti.ccstudio.buildDefinitions.C6000_8.2.library.compilerRelease	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.OPT_LEVEL.library.release				com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.OPT_LEVEL.2	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.OPT_LEVEL	
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.SILICON_VERSION	string	-mv				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.BIG_ENDIAN	boolean	--big_endian		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.ABI	enumerated	--abi				_none= | coffabi=--abi=coffabi | eabi=--abi=eabi | elfabi=--abi=elfabi
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.OPT_LEVEL	enumerated	-O				_none= | off=-Ooff | 0=-O0 | 1=-O1 | 2=-O2 | 3=-O3
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.OPT_FOR_SPEED	enumerated	--opt_for_speed				_none= | 0=--opt_for_speed=0 | 1=--opt_for_speed=1 | 2=--opt_for_speed=2 | 3=--opt_for_speed=3 | 4=--opt_for_speed=4 | 5=--opt_for_speed=5
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.OPT_FOR_SPACE	enumerated	-ms				_none= | 0=-ms0 | 1=-ms1 | 2=-ms2 | 3=-ms3
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.INCLUDE_PATH	includePath	--include_path=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.PREINCLUDE	includeFiles	--preinclude=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.ADVICE__PERFORMANCE	string	${value}				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.ADVICE__PERFORMANCE_DIR	string	--advice:performance_dir=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.ADVICE__PERFORMANCE_FILE	string	--advice:performance_file=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.DEFINE	definedSymbols	--define=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.LLOPT	enumerated	--llopt				_none= | 0=--llopt=0 | 1=--llopt=1 | 2=--llopt=2 | 3=--llopt=3
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.UNDEFINE	stringList	--undefine=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.W	stringList	-W				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.DEBUGGING_MODEL	enumerated	@mutex				_none= | SYMDEBUG__DWARF=-g | SYMDEBUG__SKELETAL=--symdebug:skeletal | SYMDEBUG__NONE=--symdebug:none | SYMDEBUG__COFF=--symdebug:coff | SYMDEBUG__PROFILE_COFF=--symdebug:profile_coff
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.OPTIMIZE_WITH_DEBUG	enumerated	--optimize_with_debug				_none= | on=--optimize_with_debug=on | off=--optimize_with_debug=off
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.MACHINE_REGS	boolean	--machine_regs		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.SYMDEBUG__KEEP_ALL_TYPES	boolean	--symdebug:keep_all_types		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.SYMDEBUG__DWARF_VERSION	enumerated	--symdebug:dwarf_version				_none= | 2=--symdebug:dwarf_version=2 | 3=--symdebug:dwarf_version=3 | 4=--symdebug:dwarf_version=4
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.C_DIALECT	enumerated	@mutex				_none= | C89=--c89 | C99=--c99 | KR_COMPATIBLE=--kr_compatible
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.C___DIALECT	enumerated	@mutex				_none= | CPLUSPLUS03=--c++03 | EMBEDDED_CPP=--embedded_cpp
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.LANGUAGE_MODE	enumerated	@mutex				_none= | RELAXED_ANSI=--relaxed_ansi | STRICT_ANSI=--strict_ansi
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.EXCEPTIONS	boolean	--exceptions		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.RTTI	boolean	--rtti		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.CPP_DEFAULT	boolean	--cpp_default		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.EXTERN_C_CAN_THROW	boolean	--extern_c_can_throw		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.FLOAT_OPERATIONS_ALLOWED	enumerated	--float_operations_allowed				_none= | all=--float_operations_allowed=all | 32=--float_operations_allowed=32 | 64=--float_operations_allowed=64 | none=--float_operations_allowed=none
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.CREATE_PCH	string	--create_pch=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.GCC	boolean	--gcc		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.KEEP_UNNEEDED_STATICS	boolean	--keep_unneeded_statics		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.MULTIBYTE_CHARS	boolean	--multibyte_chars		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.NO_INLINING	boolean	--no_inlining		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.NO_INTRINSICS	boolean	--no_intrinsics		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.PCH	boolean	--pch		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.PCH_DIR	string	--pch_dir=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.PCH_VERBOSE	boolean	--pch_verbose		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.PENDING_INSTANTIATIONS	string	--pending_instantiations=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.PRINTF_SUPPORT	enumerated	--printf_support				_none= | nofloat=--printf_support=nofloat | minimal=--printf_support=minimal | full=--printf_support=full
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.STATIC_TEMPLATE_INSTANTIATION	boolean	--static_template_instantiation		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.USE_PCH	string	--use_pch=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.VECTYPES	enumerated	--vectypes				_none= | on=--vectypes=on | off=--vectypes=off
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.PREPROC_MODE	enumerated					automatic= (default) | manual=
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.PREPROC_ONLY	boolean	--preproc_only		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.PREPROC_WITH_COMMENT	boolean	--preproc_with_comment		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.PREPROC_WITH_COMPILE	boolean	--preproc_with_compile		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.PREPROC_WITH_LINE	boolean	--preproc_with_line		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.PREPROC_DEPENDENCY	string	--preproc_dependency=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.PREPROC_INCLUDES	string	--preproc_includes=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.PREPROC_MACROS	string	--preproc_macros=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.BUFFER_DIAGNOSTICS	boolean	--buffer_diagnostics		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.DIAG_ERROR	stringList	--diag_error=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.DIAG_REMARK	stringList	--diag_remark=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.DIAG_SUPPRESS	stringList	--diag_suppress=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.DIAG_WARNING	stringList	--diag_warning=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.DIAG_WRAP	enumerated	--diag_wrap				_none= | on=--diag_wrap=on | off=--diag_wrap=off
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.DISPLAY_ERROR_NUMBER	boolean	--display_error_number		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.EMIT_WARNINGS_AS_ERRORS	boolean	--emit_warnings_as_errors		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.ISSUE_REMARKS	boolean	--issue_remarks		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.NO_WARNINGS	boolean	--no_warnings		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.SET_ERROR_LIMIT	string	--set_error_limit=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.TOOL_VERSION	boolean	--tool_version		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.VERBOSE_DIAGNOSTICS	boolean	--verbose_diagnostics		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.WRITE_DIAGNOSTICS_FILE	boolean	--write_diagnostics_file		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.QUIET_LEVEL	enumerated	@mutex				_none= | VERBOSE=--verbose | QUIET=--quiet | SUPER_QUIET=--super_quiet
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.GEN_FUNC_SUBSECTIONS	enumerated	--gen_func_subsections				_none= | on=--gen_func_subsections=on | off=--gen_func_subsections=off
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.GEN_DATA_SUBSECTIONS	enumerated	--gen_data_subsections				_none= | on=--gen_data_subsections=on | off=--gen_data_subsections=off
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.WCHAR_T	enumerated	--wchar_t				_none= | 16=--wchar_t=16 | 32=--wchar_t=32
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.DEBUG_SOFTWARE_PIPELINE	boolean	--debug_software_pipeline		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.DISABLE_SOFTWARE_PIPELINE	boolean	--disable_software_pipeline		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.DPREL	boolean	--dprel		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.FP_NOT_ASSOCIATIVE	boolean	--fp_not_associative		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.INTERRUPT_THRESHOLD	string	${value}				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.MEM_MODEL__CONST	enumerated	--mem_model:const				_none= | data=--mem_model:const=data | far=--mem_model:const=far | far_aggregates=--mem_model:const=far_aggregates
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.MEM_MODEL__DATA	enumerated	--mem_model:data				_none= | near=--mem_model:data=near | far=--mem_model:data=far | far_aggregates=--mem_model:data=far_aggregates
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.NO_BAD_ALIASES	boolean	--no_bad_aliases		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.NO_COMPRESS	boolean	--no_compress		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.NO_RELOAD_ERRORS	boolean	--no_reload_errors		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.PROFILE__BREAKPT	boolean	--profile:breakpt		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.PROFILE__POWER	boolean	--profile:power		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.RAMFUNC	enumerated	--ramfunc				_none= | on=--ramfunc=on | off=--ramfunc=off
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.SMALL_ENUM	boolean	--small_enum		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.SPECULATE_LOADS	string	--speculate_loads=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.SPECULATE_UNKNOWN_LOADS	boolean	--speculate_unknown_loads		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.TARGET_COMPATIBILITY_6200	boolean	--target_compatibility_6200		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.USE_CONST_FOR_ALIAS_ANALYSIS	boolean	--use_const_for_alias_analysis		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.FP_REASSOC	enumerated	--fp_reassoc				_none= | on=--fp_reassoc=on | off=--fp_reassoc=off
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.SAT_REASSOC	enumerated	--sat_reassoc				_none= | on=--sat_reassoc=on | off=--sat_reassoc=off
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.PROGRAM_LEVEL_COMPILE	boolean	--program_level_compile		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.CALL_ASSUMPTIONS	enumerated	--call_assumptions				_none= | 0=--call_assumptions=0 | 1=--call_assumptions=1 | 2=--call_assumptions=2 | 3=--call_assumptions=3
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.AUTO_INLINE	string	--auto_inline=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.DISABLE_INLINING	boolean	--disable_inlining		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.DISABLE_PUSH_POP	boolean	--disable_push_pop		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.FP_MODE	enumerated	--fp_mode				_none= | relaxed=--fp_mode=relaxed | strict=--fp_mode=strict
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.MULTITHREAD	boolean	--multithread		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.OPENMP	boolean	--openmp		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.SINGLE_INLINE	boolean	--single_inline		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.ALIASED_VARIABLES	boolean	--aliased_variables		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.ENTRY_HOOK	string	--entry_hook=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.EXIT_HOOK	string	--exit_hook=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.ENTRY_PARM	enumerated	--entry_parm				_none= | name=--entry_parm=name | address=--entry_parm=address | none=--entry_parm=none
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.EXIT_PARM	enumerated	--exit_parm				_none= | name=--exit_parm=name | address=--exit_parm=address | none=--exit_parm=none
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.REMOVE_HOOKS_WHEN_INLINING	boolean	--remove_hooks_when_inlining		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.GEN_PROFILE_INFO	boolean	--gen_profile_info		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.ANALYZE	enumerated	--analyze				_none= | codecov=--analyze=codecov | callgraph=--analyze=callgraph
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.ANALYZE_ONLY	boolean	--analyze_only		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.USE_PROFILE_INFO	stringList	--use_profile_info=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.STD_LIB_FUNC_DEFINED	boolean	--std_lib_func_defined		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.STD_LIB_FUNC_NOT_DEFINED	boolean	--std_lib_func_not_defined		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.STD_LIB_FUNC_REDEFINED	boolean	--std_lib_func_redefined		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.KEEP_ASM	boolean	-k		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.ASM_LISTING	boolean	--asm_listing		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.SOURCE_INTERLIST	enumerated	@mutex				_none= | SRC_INTERLIST=--src_interlist | C_SRC_INTERLIST=--c_src_interlist
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.ASM_DEFINE	stringList	--asm_define=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.ASM_UNDEFINE	stringList	--asm_undefine=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.ASM_CROSS_REFERENCE_LISTING	boolean	--asm_cross_reference_listing		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.ASM_DEPENDENCY	string	--asm_dependency=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.ASM_INCLUDES	boolean	--asm_includes		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.COPY_FILE	stringList	--copy_file=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.CROSS_REFERENCE	boolean	--cross_reference		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.INCLUDE_FILE	stringList	--include_file=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.NO_CONST_CLINK	boolean	--no_const_clink		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.OUTPUT_ALL_SYMS	boolean	--output_all_syms		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.STRIP_COFF_UNDERSCORE	boolean	--strip_coff_underscore		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.SYMS_IGNORE_CASE	boolean	--syms_ignore_case		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.AP_FILE	stringList	--ap_file=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.ASM_FILE	stringList	--asm_file=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.C_FILE	stringList	--c_file=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.CPP_FILE	stringList	--cpp_file=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.OBJ_FILE	stringList	--obj_file=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.DIRECTORY_MODE	enumerated					automatic= (default) | manual=
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.ASM_DIRECTORY	string	--asm_directory=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.LIST_DIRECTORY	string	--list_directory=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.OBJ_DIRECTORY	string	--obj_directory=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.OUTPUT_FILE	string	--output_file=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.PP_DIRECTORY	string	--pp_directory=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.TEMP_DIRECTORY	string	--temp_directory=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.AP_EXTENSION	string	--ap_extension=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.ASM_EXTENSION	string	--asm_extension=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.C_EXTENSION	string	--c_extension=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.CPP_EXTENSION	string	--cpp_extension=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.LISTING_EXTENSION	string	--listing_extension=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.OBJ_EXTENSION	string	--obj_extension=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.DSBT	boolean	--dsbt		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.EXPORT_ALL_CPP_VTBL	boolean	--export_all_cpp_vtbl		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.IMPORT_HELPER_FUNCTIONS	boolean	--import_helper_functions		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.IMPORT_UNDEF	enumerated	--import_undef				_none= | on=--import_undef=on | off=--import_undef=off
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.INLINE_PLT	enumerated	--inline_plt				_none= | on=--inline_plt=on | off=--inline_plt=off
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.LINUX	boolean	--linux		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.PIC	enumerated	--pic				_none= | near=--pic=near | far=--pic=far
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.VISIBILITY	enumerated	--visibility				_none= | default=--visibility=default | protected=--visibility=protected | hidden=--visibility=hidden
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.generatedCommandOptionFiles	string					
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.CMD_FILE	stringList	--cmd_file=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.CHECK_MISRA	string	--check_misra=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.MISRA_ADVISORY	enumerated	--misra_advisory				_none= | error=--misra_advisory=error | warning=--misra_advisory=warning | remark=--misra_advisory=remark | suppress=--misra_advisory=suppress
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.MISRA_REQUIRED	enumerated	--misra_required				_none= | error=--misra_required=error | warning=--misra_required=warning | remark=--misra_required=remark | suppress=--misra_required=suppress
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.GEN_ACP_RAW	boolean	--gen_acp_raw		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.GEN_ACP_XREF	boolean	--gen_acp_xref		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.GEN_CROSS_REFERENCE_LISTING	boolean	--gen_cross_reference_listing		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.GEN_FUNC_INFO_LISTING	boolean	--gen_func_info_listing		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.GEN_OPT_INFO	enumerated	--gen_opt_info				_none= | 0=--gen_opt_info=0 | 1=--gen_opt_info=1 | 2=--gen_opt_info=2
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.GEN_PREPROCESSOR_LISTING	boolean	--gen_preprocessor_listing		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.SECTION_SIZES	enumerated	--section_sizes				_none= | on=--section_sizes=on | off=--section_sizes=off
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.LEGACY	boolean	--legacy		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.OTHER_FLAGS	stringList					
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.Z	boolean	-z		 value=true		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.MAP_FILE	string	-m				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.OUTPUT_FILE	string	-o				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.HEAP_SIZE	string	--heap_size=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.STACK_SIZE	string	--stack_size=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.linkerCommandFiles	stringList					
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.generatedLinkerCommandFiles	stringList					
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.LIBRARY	libs	-l				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.SEARCH_PATH	libPaths	-i				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.PRIORITY	boolean	--priority		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.REREAD_LIBS	boolean	--reread_libs		true		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.DISABLE_AUTO_RTS	boolean	--disable_auto_rts		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.DEFINE	definedSymbols	--define=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.UNDEFINE	stringList	--undefine=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.DISABLE_PP	boolean	--disable_pp		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.BUFFER_DIAGNOSTICS	boolean	--buffer_diagnostics		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.DIAG_ERROR	stringList	--diag_error=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.DIAG_REMARK	stringList	--diag_remark=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.DIAG_SUPPRESS	stringList	--diag_suppress=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.DIAG_WARNING	stringList	--diag_warning=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.DIAG_WRAP	enumerated	--diag_wrap				_none= | on=--diag_wrap=on | off=--diag_wrap=off
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.DISPLAY_ERROR_NUMBER	boolean	--display_error_number		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.EMIT_WARNINGS_AS_ERRORS	boolean	--emit_warnings_as_errors		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.ISSUE_REMARKS	boolean	--issue_remarks		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.NO_DEMANGLE	boolean	--no_demangle		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.NO_WARNINGS	boolean	--no_warnings		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.SET_ERROR_LIMIT	string	--set_error_limit=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.VERBOSE_DIAGNOSTICS	boolean	--verbose_diagnostics		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.WARN_SECTIONS	boolean	--warn_sections		true		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.ABSOLUTE_EXE	boolean	--absolute_exe		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.ECC__DATA_ERROR	stringList	--ecc:data_error=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.ECC__ECC_ERROR	stringList	--ecc:ecc_error=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.MAPFILE_CONTENTS	string	--mapfile_contents=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.RELOCATABLE	boolean	--relocatable		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.ROM	boolean	--rom		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.XML_LINK_INFO	string	--xml_link_info=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.ENTRY_POINT	string	--entry_point=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.GLOBALIZE	stringList	--globalize=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.HIDE	stringList	--hide=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.LOCALIZE	stringList	--localize=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.MAKE_GLOBAL	stringList	--make_global=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.MAKE_STATIC	boolean	--make_static		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.NO_SYM_MERGE	boolean	--no_sym_merge		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.NO_SYMTABLE	boolean	--no_symtable		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.RETAIN	stringList	--retain=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.SCAN_LIBRARIES	boolean	--scan_libraries		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.SYMBOL_MAP	stringList	--symbol_map=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.UNDEF_SYM	stringList	--undef_sym=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.UNHIDE	stringList	--unhide=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.ARG_SIZE	string	--arg_size=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.CINIT_COMPRESSION	enumerated	--cinit_compression				_none= | rle=--cinit_compression=rle | lzss=--cinit_compression=lzss | off=--cinit_compression=off
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.COPY_COMPRESSION	enumerated	--copy_compression				_none= | rle=--copy_compression=rle | lzss=--copy_compression=lzss | off=--copy_compression=off
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.FILL_VALUE	string	--fill_value=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.MULTITHREAD	boolean	--multithread		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.TRAMPOLINES	enumerated	--trampolines				_none= | on=--trampolines=on | off=--trampolines=off
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.INITIALIZATION_MODEL	enumerated	@mutex				_none= | ROM_MODEL=--rom_model (default) | RAM_MODEL=--ram_model
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.COMPRESS_DWARF	enumerated	--compress_dwarf				_none= | on=--compress_dwarf=on | off=--compress_dwarf=off
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.DISABLE_CLINK	boolean	--disable_clink		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.MINIMIZE_TRAMPOLINES	enumerated	--minimize_trampolines				_none= | postorder=--minimize_trampolines=postorder | off=--minimize_trampolines=off
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.PREFERRED_ORDER	stringList	--preferred_order=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.STRICT_COMPATIBILITY	enumerated	--strict_compatibility				_none= | on=--strict_compatibility=on | off=--strict_compatibility=off
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.TRAMPOLINE_MIN_SPACING	string	--trampoline_min_spacing=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.UNUSED_SECTION_ELIMINATION	enumerated	--unused_section_elimination				_none= | on=--unused_section_elimination=on | off=--unused_section_elimination=off
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.ZERO_INIT	enumerated	--zero_init				_none= | on=--zero_init=on | off=--zero_init=off
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.BIND_NOW	boolean	--bind_now		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.DSBT_INDEX	string	--dsbt_index=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.DSBT_SIZE	string	--dsbt_size=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.DYNAMIC	enumerated	--dynamic				_none= | exe=--dynamic=exe | lib=--dynamic=lib
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.EXPORT	stringList	--export=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.FINI	string	--fini=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.FORCED_STATIC_BINDING	enumerated	--forced_static_binding				_none= | on=--forced_static_binding=on | off=--forced_static_binding=off
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.IMPORT	stringList	--import=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.INIT	string	--init=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.RPATH	stringList	--rpath=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.RUNPATH	stringList	--runpath=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.SONAME	string	--soname=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.OTHER_FLAGS	stringList					
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.TOOL_ENABLE	boolean					
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.BYTE	boolean	--byte		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.ENTRYPOINT	string	--entrypoint=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.EXCLUDE	stringList	--exclude=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.FILL	string	--fill=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.IMAGE	boolean	--image		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.LINKERFILL	boolean	--linkerfill		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.MAP	string	--map=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.MEMWIDTH	string	--memwidth=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.ORDER	enumerated	--order=				_none= | L=--order=L | M=--order=M
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.OUTPUT_FILE	string	--outfile=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.QUIET	boolean	--quiet		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.ROMWIDTH	string	--romwidth=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.ZERO	boolean	--zero		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.BUFFER_DIAGNOSTICS	boolean	--buffer_diagnostics		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.DIAG_ERROR	stringList	--diag_error=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.DIAG_REMARK	stringList	--diag_remark=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.DIAG_SUPPRESS	stringList	--diag_suppress=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.DIAG_WARNING	stringList	--diag_warning=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.DIAG_WRAP	enumerated	--diag_wrap=				_none= | on=--diag_wrap=on | off=--diag_wrap=off
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.DISPLAY_ERROR_NUMBER	boolean	--display_error_number		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.EMIT_WARNINGS_AS_ERRORS	boolean	--emit_warnings_as_errors		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.ISSUE_REMARKS	boolean	--issue_remarks		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.NO_WARNINGS	boolean	--no_warnings		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.SET_ERROR_LIMIT	string	--set_error_limit=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.BOOT	boolean	--boot		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.BOOTORG	string	--bootorg=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.BOOTSECTION	string	--bootsection=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.OUTPUT_FORMAT	enumerated					_none= | ASCII=--ascii | INTEL=--intel | MOTOROLA1=--motorola=1 | MOTOROLA2=--motorola=2 | MOTOROLA3=--motorola=3 | TEKTRONIX=--tektronix | TI_TAGGED=--ti_tagged | TI_TXT=--ti_txt
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.OBJECT_FORMAT	enumerated					_none= | HOST_IMAGE=--host_image | LOAD_IMAGE=--load_image
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.HOST_IMAGE:ENDIANNESS	enumerated	--host_image:endianness=				_none= | big=--host_image:endianness=big | little=--host_image:endianness=little
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.HOST_IMAGE:HIDDEN_SYMBOLS	boolean	--host_image:hidden_symbols		false		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.HOST_IMAGE:HIDE	stringList	--host_image:hide=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.HOST_IMAGE:SHOW	stringList	--host_image:show=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.HOST_IMAGE:TARGET	enumerated	--host_image:target=				_none= | ARM=--host_image:target=ARM | MSP430=--host_image:target=MSP430 | C2000=--host_image:target=C2000 | C6000=--host_image:target=C6000 | ARP32=--host_image:target=ARP32 | PRU=--host_image:target=PRU
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.SECTION_NAME_PREFIX	string	--section_name_prefix=				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.hex	com.ti.ccstudio.buildDefinitions.C6000_8.2.hex.OTHER_FLAGS	stringList					
+com.ti.ccstudio.buildDefinitions.C6000_8.2.archiverID	com.ti.ccstudio.buildDefinitions.C6000_8.2.archiverID.R	boolean	r		 value=true		
+com.ti.ccstudio.buildDefinitions.C6000_8.2.archiverID	com.ti.ccstudio.buildDefinitions.C6000_8.2.archiverID.OUTPUT_FILE	string					
+com.ti.ccstudio.buildDefinitions.C6000_8.2.archiverID	com.ti.ccstudio.buildDefinitions.C6000_8.2.archiverID.QUIET	boolean	q				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.archiverID	com.ti.ccstudio.buildDefinitions.C6000_8.2.archiverID.PRINT_GLOBAL_SYMBOLS	boolean	s				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.archiverID	com.ti.ccstudio.buildDefinitions.C6000_8.2.archiverID.VERBOSE	boolean	v				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.archiverID	com.ti.ccstudio.buildDefinitions.C6000_8.2.archiverID.CMD_FILE	string	@				
+com.ti.ccstudio.buildDefinitions.C6000_8.2.archiverID	com.ti.ccstudio.buildDefinitions.C6000_8.2.archiverID.OTHER_FLAGS	stringList					
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.BIG_ENDIAN						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.ABI						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.OPTIMIZE_WITH_DEBUG						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.SYMDEBUG__KEEP_ALL_TYPES						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.EXCEPTIONS						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.CREATE_PCH						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.GCC						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.KEEP_UNNEEDED_STATICS						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.MULTIBYTE_CHARS						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.NO_INLINING						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.NO_INTRINSICS						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.PCH						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.PCH_DIR						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.PCH_VERBOSE						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.STATIC_TEMPLATE_INSTANTIATION						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.USE_PCH						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.VECTYPES						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.BUFFER_DIAGNOSTICS						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.DIAG_WRAP						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.DISPLAY_ERROR_NUMBER						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.TOOL_VERSION						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.WRITE_DIAGNOSTICS_FILE						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.DEBUG_SOFTWARE_PIPELINE						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.FP_NOT_ASSOCIATIVE						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.PROFILE__BREAKPT						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.PROFILE__POWER						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.SMALL_ENUM						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.TARGET_COMPATIBILITY_6200						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.MULTITHREAD						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.OPENMP						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.SINGLE_INLINE						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.STD_LIB_FUNC_DEFINED						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.STD_LIB_FUNC_NOT_DEFINED						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.STD_LIB_FUNC_REDEFINED						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.COPY_FILE						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.CROSS_REFERENCE						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.INCLUDE_FILE						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.NO_CONST_CLINK						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.OUTPUT_ALL_SYMS						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.SYMS_IGNORE_CASE						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.LIST_DIRECTORY						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.LINUX						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.PIC						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.GEN_ACP_RAW						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.GEN_ACP_XREF						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.compilerID.LEGACY						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.BUFFER_DIAGNOSTICS						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.DIAG_WRAP						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.FINI						
+	com.ti.ccstudio.buildDefinitions.C6000_8.2.linkerID.INIT						

@@ -1,0 +1,31 @@
+{
+  "gride": "1.0",
+  "type": "workspace",
+  "name": "shalimar",
+  "projects": [
+    {
+      "path": "hello/hello.pro"
+    },
+    {
+      "path": "gcd/gcd.pro"
+    },
+    {
+      "path": "primes/primes.pro"
+    },
+    {
+      "path": "table/table.pro"
+    },
+    {
+      "path": "rotmat/rotmat.pro"
+    },
+    {
+      "path": "shl-matrix/shl-matrix.pro"
+    },
+    {
+      "path": "shl-primes/shl-primes.pro"
+    }
+  ],
+  "startup": "hello",
+  "activeConfig": "Debug",
+  "activeTarget": "Windows"
+}

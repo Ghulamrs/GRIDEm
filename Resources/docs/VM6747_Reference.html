@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>VM6747 / SIM6747 reference - GRIDE</title>
+<style>
+  body { font-family: "Segoe UI", sans-serif; margin: 0; background: #F6F6F4; color: #1E1F22; line-height: 1.5; }
+  header { background: #1F2226; color: #F2F2F2; padding: 22px 40px; }
+  header h1 { margin: 0; font-size: 26px; } header p { margin: 4px 0 0; color: #C9CED6; }
+  main { max-width: 980px; margin: 0 auto; padding: 20px 40px 50px; }
+  h2 { border-bottom: 2px solid #E0A23B; padding-bottom: 4px; margin-top: 30px; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; background: #fff; }
+  th, td { border: 1px solid #D5D8DD; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #ECEDEF; }
+  code, kbd { font-family: Consolas, monospace; background: #ECEDEF; padding: 1px 5px; border-radius: 3px; }
+  a { color: #8A5A00; }
+</style>
+</head>
+<body>
+<header>
+  <h1>VM6747 / SIM6747</h1>
+  <p>The two ways GRIDE runs a TMS320C6747 program</p>
+</header>
+<main>
+
+<p>A TMS320C6747 build goes <code>source &rarr; compile &rarr; .s &rarr; asm6x &rarr; .obj &rarr; lnk6x (+ RTS6x) &rarr; .out</code>. GRIDE can run the program at two points of that chain:</p>
+<table>
+  <tr><th></th><th><b>vm6747</b> - the emulator</th><th><b>sim6747</b> - the simulator</th></tr>
+  <tr><td>Runs</td><td>the <b>assembly</b> the compilers write (<code>.s</code>, or a <code>.vm</code> folder of them) - nothing is assembled or linked</td><td>the <b>linked program</b> (<code>.out</code>) that <code>asm6x</code> and <code>lnk6x</code> make against RTS6x - the build's final output</td></tr>
+  <tr><td>In GRIDE</td><td><b>Debug &gt; Emulate on VM6747</b>; also <b>Run</b> (<kbd>Ctrl+F5</kbd>) for a project marked <i>Emulate only</i> (Project &gt; Properties), which stops at the assembly</td><td><b>Run</b> (<kbd>Ctrl+F5</kbd>) on the TMS320C6747 target</td></tr>
+  <tr><td>Command line</td><td><code>vm6747 "&lt;prog&gt;.s" [Shalimar runtime dir] [arguments]</code></td><td><code>sim6747 --run -c "&lt;prog&gt;.out"</code> (takes no command line for the program)</td></tr>
+  <tr><td>Debugging (<kbd>F5</kbd>)</td><td><code>vm6747 --debug "&lt;prog&gt;.s"</code> - when there is no <code>.out</code> of this build with a line table</td><td><code>sim6747 --run --debug "&lt;prog&gt;.out"</code> - when the <code>.out</code> is this build's and carries a line table (<code>-g</code>)</td></tr>
+  <tr><td>Found through</td><td><code>%VM6747%</code>, beside <code>GRIDE.exe</code>, RIDE's <code>bin</code>, <code>PATH</code></td><td><code>%SIM6747%</code>, beside <code>GRIDE.exe</code>, RIDE's <code>bin</code>, <code>PATH</code></td></tr>
+</table>
+<ul>
+  <li><b>Debug &gt; Verify</b> runs the program both ways and compares the output line for line (<code>[verify] the two agree, line for line</code>): the assembly on vm6747 against the linked <code>.out</code> on sim6747.</li>
+  <li>The debugger in use can be fixed under <b>Tools &gt; Options &gt; Projects &gt; RIDE Paths</b> (<code>auto</code>, <code>sim6747</code>, <code>vm6747</code>); <code>RIDE_DEBUG_SIM6747=1</code> or <code>RIDE_DEBUG_VM6747=1</code> in the environment at start wins.</li>
+  <li>A Shalimar Debug program under sim6747 stops itself (<code>SHM_DEBUG=1</code>), as the User Guide's section 6 describes.</li>
+  <li>Both tools, their arguments and their debugger sessions are entries in <code>toolchain.json</code> (<code>vm6747</code>: <code>emulate</code>, <code>launch</code>, <code>debug</code>; <code>sim6747</code>: <code>simulate</code>, <code>debug</code>, <code>session</code>).</li>
+</ul>
+
+<h2>In RIDE's manual</h2>
+<p>RIDE 5.17's Complete Manual (<a href="RIDE_Manual.html">RIDE_Manual.html</a>) explains the emulator and the target:</p>
+<ul>
+  <li><a href="RIDE_Manual.html#24-the-vm6747-emulator">24. The vm6747 emulator</a> - what it runs, the helpers it provides, what it is for. It describes vm6747 as RIDE 5.17 shipped it; the toolchain GRIDE drives has since given it a debugger session (<code>--debug</code>).</li>
+  <li><a href="RIDE_Manual.html#21-tms6747-the-fourth-target">21. tms6747 - the fourth target</a> and <a href="RIDE_Manual.html#23-the-tms320c6747-c6000-target">23. The TMS320C6747 / C6000 target</a> - the chain to the <code>.out</code>.</li>
+  <li><a href="RIDE_Manual.html#19-host-versus-target-and-runs-here">19. Host versus target, and "runs here"</a>.</li>
+</ul>
+</main>
+</body>
+</html>

@@ -1,0 +1,7 @@
+// hello.shl
+// The first Shalimar program:
+// Build > Run File runs it.
+
+fun <> = main() {
+  ? "Hello from Shalimar"
+}

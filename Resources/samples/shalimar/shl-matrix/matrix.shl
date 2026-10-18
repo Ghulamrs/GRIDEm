@@ -1,0 +1,13 @@
+// matrix.shl
+// The program: a matrix times itself,
+// and the trace of both. mul and trace
+// are in linalg.shl.
+
+fun <> = main() {
+  real a[3][3] : {{1.,2.,0.},{0.,1.,3.},{4.,0.,1.}}
+  real p[3][3]
+  mul(a, a, p)
+  ? "trace a:" trace(a)
+  ? "trace a*a:" trace(p)
+  ? "row 0:" p[0][0] p[0][1] p[0][2]
+}

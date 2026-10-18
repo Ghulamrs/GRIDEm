@@ -1,0 +1,31 @@
+// primes.shl
+// Every prime below a limit, by trial division
+// against the primes already found - which is
+// the whole of the speed-up worth having here
+// and needs no array of flags.
+//
+// Shalimar has no break, so the search says
+// what it means with a flag instead: `is`
+// stays 1 until something divides.
+fun <> = main() {
+  limit : 60
+  ? "primes below" limit
+
+  n : 2
+  while n < limit {
+    is : 1
+    d : 2
+    while d * d <= n {
+      if n % d = 0 {
+        is : 0
+        d : n
+      }
+      d : d + 1
+    }
+    if is = 1 {
+      ? n
+    }
+    n : n + 1
+  }
+  ? "done"
+}

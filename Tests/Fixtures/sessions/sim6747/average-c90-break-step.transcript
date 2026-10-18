@@ -1,0 +1,483 @@
+> set confirm off
+> set pagination off
+> set width unlimited
+> set breakpoint pending on
+> echo <<gride-done>>\n
+<<gride-done>>
+> delete
+> echo <<gride-done>>\n
+<<gride-done>>
+> break main.c:33
+> echo <<gride-done>>\n
+Breakpoint 1 at 0xc0111f6c: file main.c, line 33.
+<<gride-done>>
+> run
+> echo <<gride-done>>\n
+Starting program: /work/showcase/average-c90/out/Debug/C6747/average-c90.out
+
+Breakpoint 1, main () at /work/showcase/average-c90/src/main.c:33
+33	    s = summarise(values, n);
+<<gride-done>>
+> backtrace
+> echo <<gride-done>>\n
+#0  main () at /work/showcase/average-c90/src/main.c:33
+#1  0xc0113792 in _ZN5rts6x7Startup3runEv () at src/boot/Startup.cpp:43
+#2  0xc01137ee in __rts6x_start () at src/boot/Startup.cpp:50
+<<gride-done>>
+> info args
+> echo <<gride-done>>\n
+argc = 0
+argv = (char * *) 0xc011ad58
+<<gride-done>>
+> info locals
+> echo <<gride-done>>\n
+seed = 2026
+n = 18
+i = 18
+values = (int *) 0xc0000008
+s = {sum = -1072581753, average = -4.30149, smallest = -1072581712, largest = 0}
+<<gride-done>>
+> print &(argc)
+> echo <<gride-done>>\n
+$1 = (int *) 0xc011a494
+<<gride-done>>
+> whatis argc
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(argv)
+> echo <<gride-done>>\n
+$2 = (char * * *) 0xc011a490
+<<gride-done>>
+> whatis argv
+> echo <<gride-done>>\n
+type = char * *
+<<gride-done>>
+> print &(seed)
+> echo <<gride-done>>\n
+$3 = (unsigned long *) 0xc011a48c
+<<gride-done>>
+> whatis seed
+> echo <<gride-done>>\n
+type = unsigned long
+<<gride-done>>
+> print &(n)
+> echo <<gride-done>>\n
+$4 = (int *) 0xc011a488
+<<gride-done>>
+> whatis n
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(i)
+> echo <<gride-done>>\n
+$5 = (int *) 0xc011a484
+<<gride-done>>
+> whatis i
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(values)
+> echo <<gride-done>>\n
+$6 = (int * *) 0xc011a480
+<<gride-done>>
+> whatis values
+> echo <<gride-done>>\n
+type = int *
+<<gride-done>>
+> print &(s)
+> echo <<gride-done>>\n
+$7 = (struct summary *) 0xc011a468
+<<gride-done>>
+> whatis s
+> echo <<gride-done>>\n
+type = struct summary
+<<gride-done>>
+> print n
+> echo <<gride-done>>\n
+$8 = 18
+<<gride-done>>
+> print &(n)
+> echo <<gride-done>>\n
+$9 = (int *) 0xc011a488
+<<gride-done>>
+> whatis n
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> info registers
+> echo <<gride-done>>\n
+A0             0x38                56
+A1             0x0                 0
+A2             0x0                 0
+A3             0xc011a484          -1072585596
+A4             0x0                 0
+A5             0xb53               2899
+A6             0x12                18
+A7             0x0                 0
+A8             0x0                 0
+A9             0x0                 0
+A10            0x0                 0
+A11            0x0                 0
+A12            0x0                 0
+A13            0x0                 0
+A14            0x0                 0
+A15            0xc011a4c0          -1072585536
+A16            0x0                 0
+A17            0x0                 0
+A18            0x0                 0
+A19            0x0                 0
+A20            0x0                 0
+A21            0x0                 0
+A22            0x0                 0
+A23            0x0                 0
+A24            0x0                 0
+A25            0x0                 0
+A26            0x0                 0
+A27            0x0                 0
+A28            0x0                 0
+A29            0x0                 0
+A30            0x0                 0
+A31            0x0                 0
+B0             0x1                 1
+B1             0x0                 0
+B2             0x16a               362
+B3             0xc0111ee2          -1072619806
+B4             0x3e8               1000
+B5             0x0                 0
+B6             0x0                 0
+B7             0x0                 0
+B8             0x0                 0
+B9             0x0                 0
+B10            0x0                 0
+B11            0x0                 0
+B12            0x0                 0
+B13            0x0                 0
+B14            0xc011a960          -1072584352
+B15            0xc011a448          -1072585656
+B16            0x0                 0
+B17            0x0                 0
+B18            0x0                 0
+B19            0x0                 0
+B20            0x0                 0
+B21            0x0                 0
+B22            0x0                 0
+B23            0x0                 0
+B24            0x0                 0
+B25            0x0                 0
+B26            0x0                 0
+B27            0x0                 0
+B28            0x0                 0
+B29            0x0                 0
+B30            0x3e8               1000
+B31            0x16a               362
+pc             0xc0111f6c          0xc0111f6c
+<<gride-done>>
+> info args
+> echo <<gride-done>>\n
+argc = 0
+argv = (char * *) 0xc011ad58
+<<gride-done>>
+> info locals
+> echo <<gride-done>>\n
+seed = 2026
+n = 18
+i = 18
+values = (int *) 0xc0000008
+s = {sum = -1072581753, average = -4.30149, smallest = -1072581712, largest = 0}
+<<gride-done>>
+> print &(argc)
+> echo <<gride-done>>\n
+$10 = (int *) 0xc011a494
+<<gride-done>>
+> whatis argc
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(argv)
+> echo <<gride-done>>\n
+$11 = (char * * *) 0xc011a490
+<<gride-done>>
+> whatis argv
+> echo <<gride-done>>\n
+type = char * *
+<<gride-done>>
+> print &(seed)
+> echo <<gride-done>>\n
+$12 = (unsigned long *) 0xc011a48c
+<<gride-done>>
+> whatis seed
+> echo <<gride-done>>\n
+type = unsigned long
+<<gride-done>>
+> print &(n)
+> echo <<gride-done>>\n
+$13 = (int *) 0xc011a488
+<<gride-done>>
+> whatis n
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(i)
+> echo <<gride-done>>\n
+$14 = (int *) 0xc011a484
+<<gride-done>>
+> whatis i
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(values)
+> echo <<gride-done>>\n
+$15 = (int * *) 0xc011a480
+<<gride-done>>
+> whatis values
+> echo <<gride-done>>\n
+type = int *
+<<gride-done>>
+> print &(s)
+> echo <<gride-done>>\n
+$16 = (struct summary *) 0xc011a468
+<<gride-done>>
+> whatis s
+> echo <<gride-done>>\n
+type = struct summary
+<<gride-done>>
+> x/8xb 0xc011a494
+> echo <<gride-done>>\n
+0xc011a494:	0x00	0x00	0x00	0x00	0x86	0xb3	0x11	0xc0
+<<gride-done>>
+> step
+> echo <<gride-done>>\n
+summarise () at /work/showcase/average-c90/src/stats.c:9
+9	    s.sum = 0;
+<<gride-done>>
+> backtrace
+> echo <<gride-done>>\n
+#0  summarise () at /work/showcase/average-c90/src/stats.c:9
+#1  0xc0111fb2 in main () at /work/showcase/average-c90/src/main.c:33
+#2  0xc0113792 in _ZN5rts6x7Startup3runEv () at src/boot/Startup.cpp:43
+#3  0xc01137ee in __rts6x_start () at src/boot/Startup.cpp:50
+<<gride-done>>
+> info args
+> echo <<gride-done>>\n
+v = (int *) 0xc0000008
+n = 18
+<<gride-done>>
+> info locals
+> echo <<gride-done>>\n
+s = {sum = 0, average = 4.93572e-321, smallest = 3362, largest = -1072601966}
+i = 0
+<<gride-done>>
+> print &(v)
+> echo <<gride-done>>\n
+$17 = (int * *) 0xc011a414
+<<gride-done>>
+> whatis v
+> echo <<gride-done>>\n
+type = int *
+<<gride-done>>
+> print &(n)
+> echo <<gride-done>>\n
+$18 = (int *) 0xc011a410
+<<gride-done>>
+> whatis n
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(s)
+> echo <<gride-done>>\n
+$19 = (struct summary *) 0xc011a3e8
+<<gride-done>>
+> whatis s
+> echo <<gride-done>>\n
+type = struct summary
+<<gride-done>>
+> print &(i)
+> echo <<gride-done>>\n
+$20 = (int *) 0xc011a3e4
+<<gride-done>>
+> whatis i
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print n
+> echo <<gride-done>>\n
+$21 = 18
+<<gride-done>>
+> print &(n)
+> echo <<gride-done>>\n
+$22 = (int *) 0xc011a410
+<<gride-done>>
+> whatis n
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> next
+> echo <<gride-done>>\n
+10	    s.smallest = v[0];
+<<gride-done>>
+> backtrace
+> echo <<gride-done>>\n
+#0  summarise () at /work/showcase/average-c90/src/stats.c:10
+#1  0xc0111fb2 in main () at /work/showcase/average-c90/src/main.c:33
+#2  0xc0113792 in _ZN5rts6x7Startup3runEv () at src/boot/Startup.cpp:43
+#3  0xc01137ee in __rts6x_start () at src/boot/Startup.cpp:50
+<<gride-done>>
+> info args
+> echo <<gride-done>>\n
+v = (int *) 0xc0000008
+n = 18
+<<gride-done>>
+> info locals
+> echo <<gride-done>>\n
+s = {sum = 0, average = 4.93572e-321, smallest = 3362, largest = -1072601966}
+i = 0
+<<gride-done>>
+> print &(v)
+> echo <<gride-done>>\n
+$23 = (int * *) 0xc011a414
+<<gride-done>>
+> whatis v
+> echo <<gride-done>>\n
+type = int *
+<<gride-done>>
+> print &(n)
+> echo <<gride-done>>\n
+$24 = (int *) 0xc011a410
+<<gride-done>>
+> whatis n
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(s)
+> echo <<gride-done>>\n
+$25 = (struct summary *) 0xc011a3e8
+<<gride-done>>
+> whatis s
+> echo <<gride-done>>\n
+type = struct summary
+<<gride-done>>
+> print &(i)
+> echo <<gride-done>>\n
+$26 = (int *) 0xc011a3e4
+<<gride-done>>
+> whatis i
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print n
+> echo <<gride-done>>\n
+$27 = 18
+<<gride-done>>
+> print &(n)
+> echo <<gride-done>>\n
+$28 = (int *) 0xc011a410
+<<gride-done>>
+> whatis n
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> finish
+> echo <<gride-done>>\n
+Run till exit from #0  summarise () at /work/showcase/average-c90/src/stats.c:10
+0xc0111fb2 in main () at /work/showcase/average-c90/src/main.c:33
+33	    s = summarise(values, n);
+<<gride-done>>
+> backtrace
+> echo <<gride-done>>\n
+#0  main () at /work/showcase/average-c90/src/main.c:33
+#1  0xc0113792 in _ZN5rts6x7Startup3runEv () at src/boot/Startup.cpp:43
+#2  0xc01137ee in __rts6x_start () at src/boot/Startup.cpp:50
+<<gride-done>>
+> info args
+> echo <<gride-done>>\n
+argc = 0
+argv = (char * *) 0xc011ad58
+<<gride-done>>
+> info locals
+> echo <<gride-done>>\n
+seed = 2026
+n = 18
+i = 18
+values = (int *) 0xc0000008
+s = {sum = -1072581753, average = -4.30149, smallest = -1072581712, largest = 0}
+<<gride-done>>
+> print &(argc)
+> echo <<gride-done>>\n
+$29 = (int *) 0xc011a494
+<<gride-done>>
+> whatis argc
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(argv)
+> echo <<gride-done>>\n
+$30 = (char * * *) 0xc011a490
+<<gride-done>>
+> whatis argv
+> echo <<gride-done>>\n
+type = char * *
+<<gride-done>>
+> print &(seed)
+> echo <<gride-done>>\n
+$31 = (unsigned long *) 0xc011a48c
+<<gride-done>>
+> whatis seed
+> echo <<gride-done>>\n
+type = unsigned long
+<<gride-done>>
+> print &(n)
+> echo <<gride-done>>\n
+$32 = (int *) 0xc011a488
+<<gride-done>>
+> whatis n
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(i)
+> echo <<gride-done>>\n
+$33 = (int *) 0xc011a484
+<<gride-done>>
+> whatis i
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> print &(values)
+> echo <<gride-done>>\n
+$34 = (int * *) 0xc011a480
+<<gride-done>>
+> whatis values
+> echo <<gride-done>>\n
+type = int *
+<<gride-done>>
+> print &(s)
+> echo <<gride-done>>\n
+$35 = (struct summary *) 0xc011a468
+<<gride-done>>
+> whatis s
+> echo <<gride-done>>\n
+type = struct summary
+<<gride-done>>
+> print n
+> echo <<gride-done>>\n
+$36 = 18
+<<gride-done>>
+> print &(n)
+> echo <<gride-done>>\n
+$37 = (int *) 0xc011a488
+<<gride-done>>
+> whatis n
+> echo <<gride-done>>\n
+type = int
+<<gride-done>>
+> continue
+> echo <<gride-done>>\n
+Continuing.
+seed 2026: N = 18
+first five: 958 587 582 544 655
+sum = 9207
+average = 511.500
+smallest = 46, largest = 958
+[Inferior 1 (process 1) exited normally]
+<<gride-done>>
+> quit

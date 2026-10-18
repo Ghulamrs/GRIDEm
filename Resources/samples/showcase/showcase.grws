@@ -1,0 +1,13 @@
+{
+  "gride": "1.0",
+  "type": "workspace",
+  "name": "showcase",
+  "projects": [
+    { "path": "solve3-shalimar/solve3-shalimar.pro" },
+    { "path": "average-c90/average-c90.pro" },
+    { "path": "solve3-cpp11/solve3-cpp11.pro" }
+  ],
+  "startup": "solve3-shalimar",
+  "activeConfig": "Debug",
+  "activeTarget": "Windows"
+}

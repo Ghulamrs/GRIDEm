@@ -1,0 +1,5 @@
+build/
+GRIDEm.xcodeproj/xcuserdata/
+GRIDEm.xcodeproj/project.xcworkspace/xcuserdata/
+DerivedData/
+.DS_Store

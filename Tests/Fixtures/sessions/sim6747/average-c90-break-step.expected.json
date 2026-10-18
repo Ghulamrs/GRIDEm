@@ -1,0 +1,26 @@
+{
+  "dialect": "gdb",
+  "marker": "<<gride-done>>",
+  "recordedBy": "GRIDEm (Linux shell, 2026-10-18); GRIDEd's reading to be confirmed on the Windows box",
+  "reads": [
+    { "command": "run", "reader": "stop", "expect": { "stopped": true, "exited": false, "status": 0, "file": "main.c", "line": 33, "function": "main" } },
+    { "command": "backtrace", "reader": "frames", "expect": [{ "function": "main", "file": "main.c", "line": 33 }] },
+    { "command": "info locals", "reader": "locals", "expect": [{ "name": "seed", "value": "2026" }, { "name": "n", "value": "18" }, { "name": "i", "value": "18" }, { "name": "values", "value": "(int *) 0xc0000008" }, { "name": "s", "value": "{sum = -1072581753, average = -4.30149, smallest = -1072581712, largest = 0}" }] },
+    { "command": "print n", "reader": "evaluate", "expect": "18" },
+    { "command": "info registers", "reader": "registers", "expect": { "count": 65, "first": { "name": "A0", "value": "0x38" } } },
+    { "command": "info locals", "reader": "locals", "expect": [{ "name": "seed", "value": "2026" }, { "name": "n", "value": "18" }, { "name": "i", "value": "18" }, { "name": "values", "value": "(int *) 0xc0000008" }, { "name": "s", "value": "{sum = -1072581753, average = -4.30149, smallest = -1072581712, largest = 0}" }] },
+    { "command": "step", "reader": "stop", "expect": { "stopped": true, "exited": false, "status": 0, "file": "stats.c", "line": 9, "function": "summarise" } },
+    { "command": "backtrace", "reader": "frames", "expect": [{ "function": "summarise", "file": "stats.c", "line": 9 }, { "function": "main", "file": "main.c", "line": 33 }] },
+    { "command": "info locals", "reader": "locals", "expect": [{ "name": "s", "value": "{sum = 0, average = 4.93572e-321, smallest = 3362, largest = -1072601966}" }, { "name": "i", "value": "0" }] },
+    { "command": "print n", "reader": "evaluate", "expect": "18" },
+    { "command": "next", "reader": "stop", "expect": { "stopped": true, "exited": false, "status": 0, "file": "", "line": 10, "function": "" } },
+    { "command": "backtrace", "reader": "frames", "expect": [{ "function": "summarise", "file": "stats.c", "line": 10 }, { "function": "main", "file": "main.c", "line": 33 }] },
+    { "command": "info locals", "reader": "locals", "expect": [{ "name": "s", "value": "{sum = 0, average = 4.93572e-321, smallest = 3362, largest = -1072601966}" }, { "name": "i", "value": "0" }] },
+    { "command": "print n", "reader": "evaluate", "expect": "18" },
+    { "command": "finish", "reader": "stop", "expect": { "stopped": true, "exited": false, "status": 0, "file": "main.c", "line": 33, "function": "main" } },
+    { "command": "backtrace", "reader": "frames", "expect": [{ "function": "main", "file": "main.c", "line": 33 }] },
+    { "command": "info locals", "reader": "locals", "expect": [{ "name": "seed", "value": "2026" }, { "name": "n", "value": "18" }, { "name": "i", "value": "18" }, { "name": "values", "value": "(int *) 0xc0000008" }, { "name": "s", "value": "{sum = -1072581753, average = -4.30149, smallest = -1072581712, largest = 0}" }] },
+    { "command": "print n", "reader": "evaluate", "expect": "18" },
+    { "command": "continue", "reader": "stop", "expect": { "stopped": false, "exited": true, "status": 0, "file": "", "line": 0, "function": "" } }
+  ]
+}

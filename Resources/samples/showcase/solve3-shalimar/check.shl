@@ -1,0 +1,32 @@
+// check.shl
+// Puts an answer back into A x = b: each
+// residual r[i] is row i of A x less b[i], and
+// within says whether all n of them are no
+// larger than tol.
+
+uses abs
+
+fun <> = residual(A[][]: real, b[]: real, x[]: real, r[]: real) {
+  for i < A.row {
+    real s : 0.0
+    for j < A.col { s : s + A[i][j] * x[j] }
+    r[i] : s - b[i]
+  }
+}
+
+fun <int> = within(r[]: real, n: int, tol: real) {
+  for i < n {
+    if abs(r[i]) > tol { return 0 }
+  }
+  return 1
+}
+
+// This file's own main, run on its own.
+fun <> = main() {
+  real A[2][2] : {{1.0, 1.0}, {1.0, -1.0}}
+  real b[2] : {3.0, 1.0}
+  real x[2] : {2.0, 1.0}
+  real r[2]
+  residual(A, b, x, r)
+  ? "fits:" within(r, 2, 1.0e-9)
+}

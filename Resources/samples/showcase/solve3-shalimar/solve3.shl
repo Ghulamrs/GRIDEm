@@ -1,0 +1,39 @@
+// solve3.shl
+// The program: three equations in x, y and z
+//
+//    x +  y +  z = 25
+//   2x -  y +  z = 16
+//    x + 2y -  z =  6
+//
+// solved by Gaussian elimination with partial
+// pivoting (gauss.shl), then put back into the
+// equations to check the answer (check.shl).
+// The functions of the project's other files
+// are called by name, with nothing to declare.
+
+fun <> = main() {
+  real A[3][3] : {{1.0,  1.0,  1.0},
+                  {2.0, -1.0,  1.0},
+                  {1.0,  2.0, -1.0}}
+  real b[3] : {25.0, 16.0, 6.0}
+  real x[3]
+  real r[3]
+
+  if gauss(A, b, x) = 0 {
+    ? "the system is singular"
+  } else {
+    ? "x =" x[0]
+    ? "y =" x[1]
+    ? "z =" x[2]
+    residual(A, b, x, r)
+    if within(r, 3, 1.0e-9) = 1 {
+      ? "check: all three equations hold"
+    } else {
+      ? "check: the answer does not fit"
+    }
+  }
+}
+// expected: x = 5.0000000
+// expected: y = 7.0000000
+// expected: z = 13.0000000
+// expected: check: all three equations hold
