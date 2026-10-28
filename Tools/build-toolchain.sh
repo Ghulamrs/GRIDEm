@@ -3,10 +3,11 @@
 #  build-toolchain.sh - builds the eleven tools GRIDEm drives, for this machine,
 #  into GRIDEm's own build folder (reference section 6). Nothing is written
 #  inside GRIDE1 or the tool repositories:
-#    - the sources are GRIDE1's toolchain/ (the copy GRIDEd and GRIDE 2.0 build),
+#    - the sources are GRIDE1's Toolchain/ (the copy GRIDEd and GRIDE 2.0 build) - except cpp11,
+#      taken whole from C++Optimize's last commit -
 #      copied into $OUT/src with the same Compilers/ TI/ Windows/ layout;
 #    - GRIDE1's copy leaves out the tools' Makefiles, so each comes from the tool's
-#      own repository under Developer/Claude (Compilers/, TI/, Windows/);
+#      own repository under Developer/Claude (C++Optimize/, Compilers/, TI/, Windows/);
 #    - the programs land in $OUT/bin, the runtimes in $OUT/lib.
 #  `make app` then copies bin/* into GRIDEm.app/Contents/MacOS and lib/ into
 #  Contents/Resources/lib.
@@ -31,7 +32,10 @@ JOBS="${JOBS:-$( (sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null || echo 4) 
 say() { printf '\n== %s\n' "$*"; }
 die() { printf 'build-toolchain: %s\n' "$*" >&2; exit 1; }
 
-[ -d "$GRIDE1/toolchain" ] || die "no toolchain at $GRIDE1/toolchain (set GRIDE1)"
+# GRIDE1's copy of the toolchain: Toolchain/ (toolchain/ before GRIDEx3)
+TC_SRC="$GRIDE1/Toolchain"
+[ -d "$TC_SRC" ] || TC_SRC="$GRIDE1/toolchain"
+[ -d "$TC_SRC" ] || die "no toolchain at $GRIDE1/Toolchain (set GRIDE1)"
 mkdir -p "$SRC" "$BIN" "$LIB"
 
 # tool word -> tree under toolchain/ (and under TOOL_REPOS)
@@ -46,10 +50,26 @@ tree_of() {
   esac
 }
 
+# where a tool's own repository is: C++Optimize sits in Developer/Claude itself (moved there from
+# Compilers/), the others under Compilers/, TI/ and Windows/
+repo_of() {
+  local t; t="$(tree_of "$1")"
+  if [ "$1" = cpp11 ] && [ -f "$TOOL_REPOS/C++Optimize/Makefile" ]; then echo "$TOOL_REPOS/C++Optimize"
+  else echo "$TOOL_REPOS/$t"; fi
+}
+
 # the sources of one tree, refreshed from GRIDE1, with the repository's Makefile beside them
 stage() {
   local t; t="$(tree_of "$1")"
-  local from="$GRIDE1/toolchain/$t" to="$SRC/$t" repo="$TOOL_REPOS/$t"
+  local from="$TC_SRC/$t" to="$SRC/$t" repo; repo="$(repo_of "$1")"
+  # cpp11 comes whole from its own repository's last commit (1.21 on), not from GRIDE1's older
+  # copy (1.11, which refuses an unnamed template parameter). Its Makefile compiles every
+  # src/*.cpp it finds and keeps objects in obj/, so the staged tree is replaced, not overlaid.
+  if [ "$1" = cpp11 ] && [ -e "$repo/.git" ]; then
+    rm -rf "$to"; mkdir -p "$to"
+    git -C "$repo" archive HEAD Makefile src include lib ide msvc tools | (cd "$to" && tar xf -)
+    return
+  fi
   [ -d "$from" ] || die "$1: no sources at $from"
   [ -f "$repo/Makefile" ] || die "$1: no Makefile at $repo/Makefile (set TOOL_REPOS)"
   mkdir -p "$to"

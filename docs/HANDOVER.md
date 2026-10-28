@@ -20,7 +20,7 @@ Nothing here is in git yet (where GRIDEm goes in git is still to be decided).
 - `GRIDEm-toolcheck --toolchain Resources/toolchain.json`: 4 targets, 22 tools, 5 libraries, 17 compiler
   options, **0 problems**, host target `arm64-darwin`.
 - `Tools/build-toolchain.sh` built all eleven tools (cpp11, c90, shalimar + runtimes, c2s, asm6x, lnk6x,
-  sim6747, vm6747, masm, link, rts6x + shmrt6x[d].lib) from `../GRIDE1/toolchain` with the tool
+  sim6747, vm6747, masm, link, rts6x + shmrt6x[d].lib) from `../GRIDE1/Toolchain` with the tool
   repositories' Makefiles, writing nothing inside GRIDE1 or the repositories.
 - `GRIDEm-build showcase.grws --config Debug --target TMS320C6747`: the three showcase projects (C90,
   C++11, Shalimar) compile, assemble and link; each `.out` runs on `sim6747 --run` with the right output.
@@ -33,7 +33,7 @@ Nothing here is in git yet (where GRIDEm goes in git is still to be decided).
 ## First steps on the Mac (for the local Claude)
 
 1. `Tools/build-toolchain.sh` - the tools for arm64-darwin into `build/toolchain` (needs read access to
-   `../GRIDE1` and `../Compilers`, `../TI`, `../Windows`).
+   `../GRIDE1` and `../C++Optimize`, `../Compilers`, `../TI`, `../Windows`).
 2. `make lib && make tools && ./build/GRIDEm-toolcheck` - the library with Apple clang. Apple's libc++
    lets C++17 names through under `-std=c++14`; the Linux g++ build is the strict one.
 3. `make app` - the first compile of `Sources/UI`. Expect a round of errors: Objective-C argument types
