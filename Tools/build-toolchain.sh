@@ -90,7 +90,10 @@ build_simple() {   # word  -> $BIN/<exe>
   local w="$1" t; t="$(tree_of "$w")"
   say "$w"
   stage "$w"
-  make -C "$SRC/$t" -j"$JOBS" BINDIR="$BIN" all
+  # C++Optimize's Makefile names its program cxx3; GRIDEm's toolchain.json knows it as cpp11
+  local name=""
+  [ "$w" = cpp11 ] && name="PROGRAM=cpp11"
+  make -C "$SRC/$t" -j"$JOBS" BINDIR="$BIN" $name all
 }
 
 build_shalimar() {
