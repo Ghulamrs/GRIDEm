@@ -369,4 +369,20 @@ using namespace GRIDEm::Model;
     GRAssertEq(back->Targets.size(), (size_t)2);
 }
 
+
+// a workspace saved on Windows names Windows, which here only reaches the assembly: it opens on a
+// target this machine runs, and the file keeps "Windows" until another target is chosen
+- (void)testWorkspaceOfAnotherHostOpensOnATargetThatRunsHere
+{
+    std::string dir = GRCopyFixture("samples/showcase");
+    std::string grws = dir + "/showcase.grws";
+    WorkspacePtr w = Workspace::Load(grws, std::string());
+    XCTAssertTrue(w->ActiveTarget == Core::Target::C6747);
+    w->Save();
+    XCTAssertTrue(GRRead(grws).find("\"activeTarget\": \"Windows\"") != std::string::npos);
+    w->ActiveTarget = Core::Target::MacOS;
+    w->Save();
+    XCTAssertTrue(GRRead(grws).find("\"activeTarget\": \"macOS\"") != std::string::npos);
+}
+
 @end

@@ -56,7 +56,8 @@ namespace GRIDEm { namespace Model {
 
     // ---- Workspace ----------------------------------------------------------------
     Workspace::Workspace()
-        : Name("Workspace"), ActiveConfig("Debug"), ActiveTarget(Target::Windows), IsTemporary(false), IsDirty(false),
+        : Name("Workspace"), ActiveConfig("Debug"), ActiveTarget(Target::Windows), ActiveTargetRead(Target::Windows),
+          IsTemporary(false), IsDirty(false),
           hasSavedText(false) {}
 
     WorkspacePtr Workspace::ForSolution(const VsSolutionPtr& s)
@@ -108,6 +109,7 @@ namespace GRIDEm { namespace Model {
         }
         for (const std::string& n : s->Notes) w->LoadErrors.push_back(n);
         w->StartupName = !w->Projects.empty() ? w->Projects[0]->Name : std::string();
+        w->TargetForThisMachine();
         w->IsDirty = false;
         return w;
     }
@@ -218,7 +220,8 @@ namespace GRIDEm { namespace Model {
         w->Name = j->GetString("name", Paths::FileNameWithoutExtension(w->FilePath));
         w->StartupName = j->GetString("startup", "");
         w->ActiveConfig = j->GetString("activeConfig", "Debug");
-        w->ActiveTarget = TargetInfo::Parse(j->GetString("activeTarget", "Windows"));
+        w->ActiveTargetWritten = j->GetString("activeTarget", "Windows");
+        w->ActiveTarget = TargetInfo::Parse(w->ActiveTargetWritten);
         std::string sln = j->GetString("solution", "");
         if (!sln.empty()) w->SolutionPath = PathUtil::MakeAbsolute(w->Directory(), sln);
         if (j->Has("solutionFolders")) w->SolutionFolders = j->GetStringList("solutionFolders");
@@ -268,10 +271,45 @@ namespace GRIDEm { namespace Model {
                 for (int i = 0; i < arr->Count(); i++) lines.insert((int)arr->At(i)->AsNumber());
                 if (!lines.empty()) w->Breakpoints.Set(PathUtil::MakeAbsolute(w->Directory(), rel), lines);
             }
+        w->TargetForThisMachine();
         w->IsDirty = false;
         w->savedText = JsonWriter::Write(w->ToJson());
         w->hasSavedText = true;
         return w;
+    }
+
+    bool Workspace::RunsHere(Target t)
+    {
+#if defined(__APPLE__)
+        return t == Target::MacOS || t == Target::C6747;
+#elif defined(_WIN32)
+        return t == Target::Windows || t == Target::C6747;
+#else
+        return t == Target::Linux || t == Target::C6747;
+#endif
+    }
+
+    void Workspace::TargetForThisMachine()
+    {
+        if (!RunsHere(ActiveTarget))
+        {
+#if defined(__APPLE__)
+            const Target host = Target::MacOS;
+#elif defined(_WIN32)
+            const Target host = Target::Windows;
+#else
+            const Target host = Target::Linux;
+#endif
+            bool takesHost = false, takesC6747 = false;
+            for (const GrideProjectPtr& p : Projects)
+            {
+                if (p->SupportsTarget(host)) takesHost = true;
+                if (p->SupportsTarget(Target::C6747)) takesC6747 = true;
+            }
+            if (takesHost) ActiveTarget = host;
+            else if (takesC6747) ActiveTarget = Target::C6747;
+        }
+        ActiveTargetRead = ActiveTarget;
     }
 
     WorkspacePtr Workspace::ForSingleProject(const GrideProjectPtr& p)
@@ -282,6 +320,7 @@ namespace GRIDEm { namespace Model {
         w->Projects.push_back(p);
         w->StartupName = p->Name;
         if (!p->Targets.empty()) w->ActiveTarget = p->Targets[0];
+        w->TargetForThisMachine();
         w->IsTemporary = true;
         return w;
     }
@@ -347,7 +386,8 @@ namespace GRIDEm { namespace Model {
         }
         j->SetString("startup", StartupName);
         j->SetString("activeConfig", ActiveConfig);
-        j->SetString("activeTarget", TargetInfo::Name(ActiveTarget));
+        j->SetString("activeTarget", ActiveTarget == ActiveTargetRead && !ActiveTargetWritten.empty()
+                                     ? ActiveTargetWritten : TargetInfo::Name(ActiveTarget));
         JsonPtr bps = JsonValue::MakeObject();
         for (const std::pair<std::string, std::set<int> >& kv : Breakpoints.Items())
         {

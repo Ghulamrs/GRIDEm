@@ -91,9 +91,18 @@ namespace GRIDEm { namespace Model {
         std::string StartupName;
         std::string ActiveConfig;
         Core::Target ActiveTarget;
+        // the target as the file names it: a workspace made on another machine names its host
+        // (Windows), which here only reaches the assembly; ActiveTarget is then one that runs here
+        // and the file keeps the name it had until another target is chosen
+        std::string ActiveTargetWritten;
+        Core::Target ActiveTargetRead;
         bool IsTemporary;              // opened from a single .pro - not yet saved as .grws
         bool IsDirty;
         BreakpointTable Breakpoints;
+
+        static bool RunsHere(Core::Target t);
+        // ActiveTarget moved to one this machine runs: its host where a project takes it, else the C6747
+        void TargetForThisMachine();
 
         std::string Directory() const;
         GrideProjectPtr StartupProject() const;
