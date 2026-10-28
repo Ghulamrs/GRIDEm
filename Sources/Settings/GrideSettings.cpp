@@ -2,6 +2,8 @@
 //  GrideSettings.cpp - see GrideSettings.h
 // =============================================================================
 #include "GrideSettings.h"
+#include <algorithm>
+#include <stdexcept>
 #include "../Core/PathUtil.h"
 #include "../Core/StringUtil.h"
 #include "../Platform/Paths.h"
@@ -13,6 +15,8 @@ namespace GRIDEm { namespace Settings {
     using namespace GRIDEm::Core;
     using namespace GRIDEm::Services;
     using Platform::Paths;
+
+    static std::string OwnHelpDirectory() { return Paths::Combine(Paths::ResourcesDirectory(), "docs"); }
 
     static void AddAll(std::vector<std::string>& into, const char* const* items, size_t n)
     {
@@ -61,11 +65,12 @@ namespace GRIDEm { namespace Settings {
     EnvironmentSettings::EnvironmentSettings()
         : Theme("Dark"), FontName("Menlo"), FontSize(12.0f), TabSize(4), InsertSpaces(false), LineNumbers(true),
           ShowWhitespace(false), ReopenLastWorkspace(true), SaveBeforeBuild(true), JumpToFirstError(true),
-          AskNativeTools(true), RunInIde(true), CcsToolRoot("C:\\ti\\ccsv7\\tools\\compiler\\c6000_7.4.24"),
-          DefaultCompiler("auto"), CcsEnabled(true), C6747Debugger("auto")
+          AskNativeTools(true), RunInIde(true), BuildJobs(0), CcsToolRoot("C:\\ti\\ccsv7\\tools\\compiler\\c6000_7.4.24"),
+          DefaultCompiler("auto"), CcsEnabled(true), C6747Debugger("auto"),
+          WindowsDebugger("auto"), WindowsRuntime("auto")
     {
         DefaultProjectLocation = Paths::Combine(Paths::HomeDirectory(), "Documents/GRIDE Projects");
-        HelpDirectory = Paths::Combine(Paths::ResourcesDirectory(), "docs");
+        HelpDirectory = OwnHelpDirectory();
     }
 
     std::string EnvironmentSettings::CcsCompilerRoot() const
@@ -78,11 +83,24 @@ namespace GRIDEm { namespace Settings {
     std::string EnvironmentSettings::EffectiveC6747Debugger() const
     {
         std::string vm, sim;
-        if (Paths::GetEnvironment("RIDE_DEBUG_VM6747", vm) && !StringUtil::IsNullOrWhiteSpace(vm) && StringUtil::Trim(vm) != "0")
+        if (Paths::GetEnvironment("GRIDE_DEBUG_VM6747", vm) && !StringUtil::IsNullOrWhiteSpace(vm) && StringUtil::Trim(vm) != "0")
             return "vm6747";
-        if (Paths::GetEnvironment("RIDE_DEBUG_SIM6747", sim) && !StringUtil::IsNullOrWhiteSpace(sim) && StringUtil::Trim(sim) != "0")
+        if (Paths::GetEnvironment("GRIDE_DEBUG_SIM6747", sim) && !StringUtil::IsNullOrWhiteSpace(sim) && StringUtil::Trim(sim) != "0")
             return "sim6747";
         return StringUtil::IsNullOrWhiteSpace(C6747Debugger) ? std::string("auto") : StringUtil::ToLower(StringUtil::Trim(C6747Debugger));
+    }
+
+    std::string EnvironmentSettings::EffectiveWindowsDebugger() const
+    {
+        return StringUtil::IsNullOrWhiteSpace(WindowsDebugger) ? std::string("auto") : StringUtil::ToLower(StringUtil::Trim(WindowsDebugger));
+    }
+
+    std::string EnvironmentSettings::EffectiveWindowsRuntime() const
+    {
+        std::string v;
+        if (!Paths::GetEnvironment("GRIDE_WINDOWS_RUNTIME", v) || StringUtil::IsNullOrWhiteSpace(v)) v = WindowsRuntime;
+        v = StringUtil::IsNullOrWhiteSpace(v) ? std::string("auto") : StringUtil::ToLower(StringUtil::Trim(v));
+        return v == "grt" || v == "msvc" ? v : std::string("auto");
     }
 
     JsonPtr EnvironmentSettings::ToJson() const
@@ -100,12 +118,13 @@ namespace GRIDEm { namespace Settings {
         o->SetBool("jumpToFirstError", JumpToFirstError);
         o->SetBool("askNativeTools", AskNativeTools);
         o->SetBool("runInIde", RunInIde);
+        o->SetNumber("buildJobs", BuildJobs);
         o->SetString("defaultProjectLocation", DefaultProjectLocation);
         o->SetString("ccsToolRoot", CcsToolRoot);
-        o->SetString("helpDirectory", HelpDirectory);
-        o->SetString("rideRoot", RideRoot);
-        o->SetString("rideIncludeDir", RideIncludeDir);
-        o->SetString("rideLibDir", RideLibDir);
+        if (!PathUtil::SamePath(HelpDirectory, OwnHelpDirectory())) o->SetString("helpDirectory", HelpDirectory);
+        o->SetString("grideRoot", RideRoot);
+        o->SetString("grideIncludeDir", RideIncludeDir);
+        o->SetString("grideLibDir", RideLibDir);
         o->SetString("vcvars", Vcvars);
         o->SetString("tiCompilerDir", TiCompilerDir);
         o->SetString("tiLibDir", TiLibDir);
@@ -115,6 +134,8 @@ namespace GRIDEm { namespace Settings {
         o->SetBool("ccsEnabled", CcsEnabled);
         o->SetString("ccsRoot", CcsRoot);
         o->SetString("c6747Debugger", C6747Debugger);
+        o->SetString("windowsDebugger", WindowsDebugger);
+        o->SetString("windowsRuntime", WindowsRuntime);
         JsonPtr c = JsonValue::MakeObject();
         for (const std::pair<std::string, std::string>& kv : SyntaxColors.Items()) c->SetString(kv.first, kv.second);
         o->SetValue("syntaxColors", c);
@@ -136,12 +157,14 @@ namespace GRIDEm { namespace Settings {
         JumpToFirstError = o->GetBool("jumpToFirstError", JumpToFirstError);
         AskNativeTools = o->GetBool("askNativeTools", AskNativeTools);
         RunInIde = o->GetBool("runInIde", RunInIde);
+        BuildJobs = std::max(0, o->GetInt("buildJobs", BuildJobs));
         DefaultProjectLocation = o->GetString("defaultProjectLocation", DefaultProjectLocation);
         CcsToolRoot = o->GetString("ccsToolRoot", CcsToolRoot);
-        HelpDirectory = o->GetString("helpDirectory", HelpDirectory);
-        RideRoot = o->GetString("rideRoot", RideRoot);
-        RideIncludeDir = o->GetString("rideIncludeDir", RideIncludeDir);
-        RideLibDir = o->GetString("rideLibDir", RideLibDir);
+        std::string help = o->GetString("helpDirectory", HelpDirectory);
+        if (!StringUtil::IsNullOrWhiteSpace(help) && Paths::IsDirectory(Paths::ExpandHome(help))) HelpDirectory = help;
+        RideRoot = o->GetString("grideRoot", o->GetString("rideRoot", RideRoot));
+        RideIncludeDir = o->GetString("grideIncludeDir", o->GetString("rideIncludeDir", RideIncludeDir));
+        RideLibDir = o->GetString("grideLibDir", o->GetString("rideLibDir", RideLibDir));
         Vcvars = o->GetString("vcvars", Vcvars);
         TiCompilerDir = o->GetString("tiCompilerDir", TiCompilerDir);
         TiLibDir = o->GetString("tiLibDir", TiLibDir);
@@ -152,6 +175,8 @@ namespace GRIDEm { namespace Settings {
         CcsEnabled = o->GetBool("ccsEnabled", CcsEnabled);
         CcsRoot = o->GetString("ccsRoot", CcsRoot);
         C6747Debugger = o->GetString("c6747Debugger", C6747Debugger);
+        WindowsDebugger = o->GetString("windowsDebugger", WindowsDebugger);
+        WindowsRuntime = o->GetString("windowsRuntime", WindowsRuntime);
         JsonPtr c = o->GetObject("syntaxColors");
         if (c)
             for (const std::string& k : c->KeyNames()) SyntaxColors.Set(k, c->GetString(k, ""));
@@ -549,6 +574,7 @@ namespace GRIDEm { namespace Settings {
         if (keys)
             for (const std::string& k : keys->KeyNames()) s->KeyBindings.Set(k, keys->GetString(k, ""));
         s->KeySet = o->GetString("keySet", s->KeySet);
+        if (StringUtil::EqualsIgnoreCase(s->KeySet, "ride")) s->KeySet = "gride";
 
         JsonPtr snip = o->GetObject("snippets");
         if (snip)
@@ -589,27 +615,41 @@ namespace GRIDEm { namespace Settings {
     // =========================================================================
     //  SettingsManager
     // =========================================================================
+    const char* const SettingsManager::FileName = "settings.json";
+    const char* const SettingsManager::FormerFileName = "gride.settings.json";
+
     std::string SettingsManager::PortablePath()
     {
-        return Paths::Combine(ToolchainDefinitions::PortableDirectory(), "gride.settings.json");
+        return Paths::Combine(ToolchainDefinitions::PortableDirectory(), FileName);
     }
 
     std::string SettingsManager::UserPath()
     {
-        return Paths::Combine(Paths::UserSettingsDirectory(), "gride.settings.json");
+        return Paths::Combine(Paths::UserSettingsDirectory(), FileName);
+    }
+
+    bool SettingsManager::Holds(const JsonPtr& o)
+    {
+        return o && o->IsObject() && (o->Has("gride") || o->Has("environment"));
     }
 
     GrideSettingsPtr SettingsManager::Load(std::string& warning)
     {
         warning.clear();
-        std::string path = Paths::IsFile(PortablePath()) ? PortablePath() : UserPath();
-        bool portable = PathUtil::SamePath(path, PortablePath());
+        bool portable = Paths::IsFile(PortablePath())
+                        || Paths::IsFile(Paths::Combine(ToolchainDefinitions::PortableDirectory(), FormerFileName));
+        std::string path = portable ? PortablePath() : UserPath();
+        std::string former = Paths::Combine(Paths::DirectoryName(path), FormerFileName);
         ToolchainDefinitions::SetCurrent(ToolchainDefinitions::Load(ToolchainDefinitions::ShippedPath(),
                                                                     ToolchainDefinitions::UserPath(portable)));
-        GrideSettingsPtr s;
+        JsonPtr shared;
         if (Paths::IsFile(path))
         {
-            try { s = GrideSettings::FromJson(JsonParser::ParseFile(path)); }
+            try
+            {
+                shared = JsonParser::ParseFile(path);
+                if (!shared || !shared->IsObject()) throw std::runtime_error("the file is not a JSON object");
+            }
             catch (const std::exception& ex)
             {
                 std::string backup = path + ".bad";
@@ -617,20 +657,49 @@ namespace GRIDEm { namespace Settings {
                 Paths::CopyFile(path, backup, error);
                 warning = std::string("Settings file could not be read and was reset to defaults.\n") + ex.what()
                           + "\nA copy was kept as: " + backup;
+                shared = nullptr;
+            }
+        }
+
+        JsonPtr mine = Holds(shared) ? shared : nullptr;
+        bool moving = false;
+        if (!mine && Paths::IsFile(former))
+        {
+            try { mine = JsonParser::ParseFile(former); moving = mine && mine->IsObject(); }
+            catch (const std::exception&) { mine = nullptr; }
+            if (!moving) mine = nullptr;
+        }
+        GrideSettingsPtr s = std::make_shared<GrideSettings>();
+        if (mine)
+        {
+            try { s = GrideSettings::FromJson(mine); }
+            catch (const std::exception& ex)
+            {
+                warning = std::string("Settings could not be read and were reset to defaults.\n") + ex.what();
                 s = std::make_shared<GrideSettings>();
             }
         }
-        else s = std::make_shared<GrideSettings>();
 
         s->FilePath = path;
         s->IsPortable = portable;
-        if (!Paths::IsFile(path)) Save(s);
+        if (moving || !Holds(shared))
+            if (Save(s) && moving && !PathUtil::SamePath(former, path)) Paths::DeleteFile(former);
         return s;
     }
 
-    void SettingsManager::Save(const GrideSettingsPtr& s)
+    bool SettingsManager::Save(const GrideSettingsPtr& s)
     {
-        try { JsonWriter::WriteFile(s->FilePath, s->ToJson()); }
-        catch (const std::exception&) { /* read-only media: keep running with in-memory settings */ }
+        try
+        {
+            JsonPtr doc;
+            if (Paths::IsFile(s->FilePath))
+                try { doc = JsonParser::ParseFile(s->FilePath); } catch (const std::exception&) { doc = nullptr; }
+            if (!doc || !doc->IsObject()) doc = JsonValue::MakeObject();
+            JsonPtr own = s->ToJson();
+            for (const std::string& k : own->KeyNames()) doc->SetValue(k, own->Get(k));
+            JsonWriter::WriteFile(s->FilePath, doc);
+            return true;
+        }
+        catch (const std::exception&) { return false; }
     }
 }}

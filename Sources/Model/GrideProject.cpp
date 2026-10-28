@@ -35,7 +35,79 @@ namespace GRIDEm { namespace Model {
     // ---- GrideProject -----------------------------------------------------------
     GrideProject::GrideProject()
         : Name("Project"), Lang(Language::C90), Template("Empty"), Kind("gride"), IsReadOnly(false), IsDirty(false),
-          Toolchain("auto"), EmulateOnly(false), Options(std::make_shared<Settings::CompilerOptionStore>()) {}
+          Toolchain("auto"), EmulateOnly(false), Options(std::make_shared<Settings::CompilerOptionStore>()),
+          BuildGroupsSaid(false) {}
+
+    std::string GrideProject::ProgramName() const
+    {
+        return StringUtil::IsNullOrWhiteSpace(TargetName) ? Name : TargetName;
+    }
+
+    bool GrideProject::IsBuilt(const std::string& abs) const
+    {
+        if (!BuildGroupsSaid) return true;
+        std::string folder;
+        if (!FolderOfFile(abs, folder)) return true;
+        return StringUtil::ContainsIgnoreCase(BuildGroups, folder);
+    }
+
+    bool GrideProject::FileToOpen(std::string& path) const
+    {
+        std::string named = raw && raw->IsObject() ? raw->GetString("open", "") : std::string();
+        if (!StringUtil::IsNullOrWhiteSpace(named) && Paths::IsFile(ToAbsolute(named))) { path = ToAbsolute(named); return true; }
+        std::vector<std::string> files = AllFiles();
+        if (MainSource::Find(files, path)) return true;
+        for (const std::string& f : files)
+            if (Paths::IsFile(f)) { path = f; return true; }
+        return false;
+    }
+
+    // ---- MainSource -------------------------------------------------------------------
+    static std::string Uncommented(const std::string& line, bool shalimar, bool& inComment)
+    {
+        std::string out;
+        for (size_t i = 0; i < line.size(); i++)
+        {
+            if (inComment)
+            {
+                if (i + 1 < line.size() && line[i] == '*' && line[i + 1] == '/') { inComment = false; i++; }
+                continue;
+            }
+            if (!shalimar && i + 1 < line.size() && line[i] == '/' && line[i + 1] == '*') { inComment = true; i++; continue; }
+            if (!shalimar && i + 1 < line.size() && line[i] == '/' && line[i + 1] == '/') break;
+            out += line[i];
+        }
+        return out;
+    }
+
+    static bool DefinesMain(const std::string& line, bool shalimar)
+    {
+        size_t at = line.find("main");
+        if (at == std::string::npos) return false;
+        if (shalimar) return line.find("fun") != std::string::npos && line.compare(at, 6, "main()") == 0;
+        if (at > 0 && StringUtil::IsIdentifierChar(line[at - 1])) return false;
+        size_t paren = at + 4;
+        while (paren < line.size() && (line[paren] == ' ' || line[paren] == '\t')) paren++;
+        if (paren >= line.size() || line[paren] != '(') return false;
+        std::string t = StringUtil::TrimEnd(line);
+        return t.empty() || t[t.size() - 1] != ';';
+    }
+
+    bool MainSource::Find(const std::vector<std::string>& files, std::string& found)
+    {
+        for (const std::string& f : files)
+        {
+            std::string ext = StringUtil::ToLower(Paths::Extension(f));
+            bool shalimar = ext == ".shl" || ext == ".shm";
+            if (!shalimar && ext != ".c" && ext != ".cpp" && ext != ".cc" && ext != ".cxx") continue;
+            std::string text, error;
+            if (!Paths::ReadFile(f, text, error)) continue;
+            bool inComment = false;
+            for (const std::string& line : StringUtil::SplitLines(text))
+                if (DefinesMain(Uncommented(line, shalimar, inComment), shalimar)) { found = f; return true; }
+        }
+        return false;
+    }
 
     std::string GrideProject::ToolchainFor(const std::string& folderName) const
     {
@@ -131,6 +203,7 @@ namespace GRIDEm { namespace Model {
             f = std::make_shared<ProjectFolder>(name);
             Folders.push_back(f);
             IsDirty = true;
+            if (BuildGroupsSaid) BuildGroups.push_back(name);      // a folder made here is built
         }
         return f;
     }
@@ -254,40 +327,57 @@ namespace GRIDEm { namespace Model {
     }
 
 
-    // ---- RIDE's own .pro ----------------------------------------------------------
+    // ---- the one format -----------------------------------------------------------
     bool GrideProject::IsRideForm(const JsonPtr& j)
     {
         if (!j || !j->IsObject()) return false;
         if (j->Has("gride") || j->Has("folders") || j->Has("formatVersion") || j->Has("sourceFiles")) return false;
-        if (j->GetObject("ccs")) return false;       // a CCS workspace project's .pro: not this form
-        return j->Has("groups") || j->Has("build") || j->Has("arch") || j->Has("toolchain");
+        return !j->GetObject("ccs");          // a CCS workspace project's .pro is read by CcsProjectReader
     }
 
-    // the language a RIDE project's files say most of: Shalimar, C++ or C
-    static Language LanguageOfFiles(const std::vector<ProjectFolderPtr>& folders)
+    Language GrideProject::LanguageOfFiles(const std::vector<ProjectFolderPtr>& folders)
     {
-        int c = 0, cpp = 0, shl = 0;
+        bool shalimar = false;
         for (const ProjectFolderPtr& f : folders)
             for (const std::string& file : f->Files)
             {
-                std::string ext = StringUtil::ToLower(Paths::Extension(file));
-                if (ext == ".shl" || ext == ".shm") shl++;
-                else if (ext == ".cpp" || ext == ".cc" || ext == ".cxx" || ext == ".c++") cpp++;
-                else if (ext == ".c") c++;
+                std::string e = StringUtil::ToLower(Paths::Extension(file));
+                if (e == ".cpp" || e == ".cc" || e == ".cxx" || e == ".hpp" || e == ".hh") return Language::Cpp11;
+                if (e == ".shl" || e == ".shm") shalimar = true;
             }
-        if (shl > 0 && shl >= cpp && shl >= c) return Language::Shalimar;
-        if (cpp > 0 && cpp >= c) return Language::Cpp11;
-        return Language::C90;
+        return shalimar ? Language::Shalimar : Language::C90;
     }
 
-    static bool TargetOfArch(const std::string& arch, Target& t)
+    std::string GrideProject::ArchOf(Target t)
     {
-        std::string a = StringUtil::ToLower(arch);
-        if (a == "tms6747") { t = Target::C6747; return true; }
-        if (StringUtil::EndsWith(a, "-windows")) { t = Target::Windows; return true; }
-        if (StringUtil::EndsWith(a, "-linux")) { t = Target::Linux; return true; }
-        if (StringUtil::EndsWith(a, "-darwin")) { t = Target::MacOS; return true; }
-        return false;
+        switch (t)
+        {
+        case Target::Linux: return "x86_64-linux";
+        case Target::MacOS: return "arm64-darwin";
+        case Target::C6747: return "tms6747";
+        default:            return "x86_64-windows";
+        }
+    }
+
+    Target GrideProject::TargetOfArch(const std::string& arch)
+    {
+        std::string a = StringUtil::ToLower(StringUtil::Trim(arch));
+        if (StringUtil::EndsWith(a, "-linux")) return Target::Linux;
+        if (StringUtil::EndsWith(a, "-darwin")) return Target::MacOS;
+        if (StringUtil::Contains(a, "6747") || StringUtil::StartsWith(a, "tms")) return Target::C6747;
+        if (StringUtil::EndsWith(a, "-windows")) return Target::Windows;
+        return TargetInfo::Parse(arch);
+    }
+
+    Target GrideProject::TargetOfProjectArch(const std::string& arch)
+    {
+        Target t = TargetOfArch(arch);
+        return t == Target::Windows || t == Target::Linux ? Target::MacOS : t;
+    }
+
+    static void AddTarget(std::vector<Target>& targets, Target t)
+    {
+        if (std::find(targets.begin(), targets.end(), t) == targets.end()) targets.push_back(t);
     }
 
     GrideProjectPtr GrideProject::FromRide(const std::string& path, const JsonPtr& j)
@@ -295,9 +385,7 @@ namespace GRIDEm { namespace Model {
         GrideProjectPtr p = std::make_shared<GrideProject>();
         p->FilePath = Paths::FullPath(PathUtil::Normalize(path));
         p->Kind = "ride";
-        p->Template = "Program";
-        std::string dirName = Paths::FileName(Paths::DirectoryName(p->FilePath));
-        p->Name = j->GetString("name", dirName);
+        p->Name = j->GetString("name", Paths::FileName(Paths::DirectoryName(p->FilePath)));
         p->Toolchain = j->GetString("toolchain", "auto");
 
         // groups: name -> [files], or name -> { "files": [...], "toolchain": word }
@@ -311,7 +399,7 @@ namespace GRIDEm { namespace Model {
                 if (entry && entry->IsObject())
                 {
                     std::string word = entry->GetString("toolchain", "auto");
-                    if (!StringUtil::IsNullOrWhiteSpace(word) && word != "auto") p->FolderToolchains.Set(name, word);
+                    if (!StringUtil::IsNullOrWhiteSpace(word) && !StringUtil::EqualsIgnoreCase(word, "auto")) p->FolderToolchains.Set(name, word);
                 }
                 if (files && files->IsArray())
                     for (const std::string& file : files->ToStringList())
@@ -322,66 +410,71 @@ namespace GRIDEm { namespace Model {
                 p->Folders.push_back(f);
             }
         if (p->Folders.empty()) p->Folders.push_back(std::make_shared<ProjectFolder>("Sources"));
-        p->Lang = LanguageOfFiles(p->Folders);
+        p->Lang = j->Has("language") ? LanguageInfo::Parse(j->GetString("language", "C90")) : LanguageOfFiles(p->Folders);
+        p->Template = j->GetString("template", "Program");
+        p->Includes = j->GetStringList("include");
+        p->Libraries = j->GetStringList("libraries");
 
-        // the build: the groups compiled into the program and its arguments. No "build" entry at all
-        // builds Sources (RIDE's projects from before 2026-09-16); an empty one builds nothing.
-        std::vector<std::string> built;
+        // the build: no "build" at all builds Sources (RIDE's projects from before 2026-09-16)
         JsonPtr build = j->GetObject("build");
         if (build)
         {
-            built = build->GetStringList("groups");
+            p->TargetName = build->GetString("target", "");
+            if (build->Has("groups")) { p->BuildGroupsSaid = true; p->BuildGroups = build->GetStringList("groups"); }
             p->ProgramArgs = build->GetStringList("args");
         }
-        else if (!j->Has("build")) built.push_back("Sources");
-        // a group the build does not take (RIDE's Input: sample.cpp) is shown and never compiled
-        std::vector<std::string> skipped;
-        for (const ProjectFolderPtr& f : p->Folders)
+        else if (!j->Has("build") && p->FindFolder("Sources"))
         {
-            if (StringUtil::ContainsIgnoreCase(built, f->Name)) continue;
-            bool any = false;
-            for (const std::string& file : f->Files)
-                if (DefaultFolderFor(file) == "src")      // a source; headers and libraries are never compiled anyway
-                {
-                    p->ExcludedFiles.push_back(file);
-                    any = true;
-                }
-            if (any) skipped.push_back(f->Name);
+            p->BuildGroupsSaid = true;
+            p->BuildGroups.push_back(p->FindFolder("Sources")->Name);
         }
 
-        // targets: the file's arch first (another Mac's or PC's host arch means this host), then the
-        // Mac and the C6747, so both are offered as RIDE offers them
-        Target first = Target::MacOS;
-        std::string arch = j->GetString("arch", "");
-        if (TargetOfArch(arch, first) && (first == Target::Windows || first == Target::Linux)) first = Target::MacOS;
-        p->Targets.push_back(first);
-        if (first != Target::MacOS) p->Targets.push_back(Target::MacOS);
-        if (first != Target::C6747) p->Targets.push_back(Target::C6747);
-        for (Target t : p->Targets)
+        // targets: GRIDEd's list, else the Mac and the C6747 as RIDE offers them; the file's arch first
+        for (const std::string& t : j->GetStringList("targets")) AddTarget(p->Targets, TargetInfo::Parse(t));
+        if (p->Targets.empty()) { p->Targets.push_back(Target::MacOS); p->Targets.push_back(Target::C6747); }
+        p->ArchWritten = j->GetString("arch", "");
+        if (!StringUtil::IsNullOrWhiteSpace(p->ArchWritten))
         {
-            p->Configurations.push_back(std::make_shared<BuildConfiguration>("Debug", t));
-            p->Configurations.push_back(std::make_shared<BuildConfiguration>("Release", t));
+            Target first = TargetOfProjectArch(p->ArchWritten);
+            p->Targets.erase(std::remove(p->Targets.begin(), p->Targets.end(), first), p->Targets.end());
+            p->Targets.insert(p->Targets.begin(), first);
         }
-        for (const std::string& inc : j->GetStringList("include"))
-            for (const BuildConfigurationPtr& c : p->Configurations) c->IncludeDirs.push_back(PathUtil::Normalize(inc));
+
+        JsonPtr cfgs = j->GetObject("configurations");
+        if (cfgs)
+            for (const std::string& key : cfgs->KeyNames())
+                p->Configurations.push_back(BuildConfiguration::FromJson(key, cfgs->Get(key)));
+        else
+            for (Target t : p->Targets)
+            {
+                p->Configurations.push_back(std::make_shared<BuildConfiguration>("Debug", t));
+                p->Configurations.push_back(std::make_shared<BuildConfiguration>("Release", t));
+            }
+        p->ExcludedFiles = j->GetStringList("excludeFromBuild");
+        p->DependsOn = j->GetStringList("dependsOn");
         p->EmulateOnly = j->GetBool("emulateOnly", false);
         p->Options->FromJson(j->GetObject("options"));
 
-        std::string line = "RIDE project " + p->Name + ": read as RIDE writes it (" + std::to_string(p->Folders.size())
-                           + " groups), saved back the same way; builds " + (built.empty() ? std::string("nothing")
-                                                                                  : StringUtil::Join(", ", built));
-        if (!skipped.empty()) line += "; not built: " + StringUtil::Join(", ", skipped);
-        p->RideReportLines.push_back(line);
+        bool gridesOwn = j->Has("language") || j->Has("targets") || j->Has("configurations") || j->Has("excludeFromBuild")
+                         || j->Has("dependsOn") || j->Has("template");
+        if (!gridesOwn)
+        {
+            std::vector<std::string> built, skipped;
+            for (const ProjectFolderPtr& f : p->Folders)
+                (!p->BuildGroupsSaid || StringUtil::ContainsIgnoreCase(p->BuildGroups, f->Name) ? built : skipped).push_back(f->Name);
+            std::string line = "RIDE project " + p->Name + ": " + std::to_string(p->Folders.size()) + " groups; builds "
+                               + (built.empty() ? std::string("nothing") : StringUtil::Join(", ", built));
+            if (!skipped.empty()) line += "; not built: " + StringUtil::Join(", ", skipped);
+            p->RideReportLines.push_back(line);
+        }
         p->raw = j;
         p->rideRead = p->RideFields();
-        p->IsReadOnly = false;
         p->IsDirty = false;
         return p;
     }
 
-    // what GRIDEm keeps of a RIDE .pro, in RIDE's words. "buildGroups" and "buildArgs" stand for the
-    // build entry's groups and args. A group is built when one of its sources is not excluded; a group
-    // with no sources keeps what the file said.
+    // what GRIDEm keeps of a .pro of the one format; Save writes only the entries that differ from the
+    // baseline taken when it was read, so what GRIDEm did not change stays as the file had it
     JsonPtr GrideProject::RideFields() const
     {
         JsonPtr f = JsonValue::MakeObject();
@@ -391,7 +484,7 @@ namespace GRIDEm { namespace Model {
         for (const ProjectFolderPtr& g : Folders)
         {
             std::string word;
-            if (FolderToolchains.Find(g->Name, word) && word != "auto")
+            if (FolderToolchains.Find(g->Name, word) && !StringUtil::EqualsIgnoreCase(word, "auto"))
             {
                 JsonPtr named = JsonValue::MakeObject();
                 named->SetList("files", g->Files);
@@ -401,28 +494,32 @@ namespace GRIDEm { namespace Model {
             else groups->SetList(g->Name, g->Files);
         }
         f->SetValue("groups", groups);
-        f->SetList("include", Configurations.empty() ? std::vector<std::string>() : Configurations[0]->IncludeDirs);
+        f->SetList("include", Includes);
+        f->SetList("libraries", Libraries);
         f->SetBool("emulateOnly", EmulateOnly);
         f->SetValue("options", Options->ToJson());
-
-        std::vector<std::string> said;
-        JsonPtr build = raw ? raw->GetObject("build") : JsonPtr();
-        if (build) said = build->GetStringList("groups");
-        else if (!raw || !raw->Has("build")) said.push_back("Sources");
-        std::vector<std::string> built;
-        for (const ProjectFolderPtr& g : Folders)
+        std::vector<std::string> built = BuildGroups;
+        if (!BuildGroupsSaid)
         {
-            bool sources = false, any = false;
-            for (const std::string& file : g->Files)
-                if (DefaultFolderFor(file) == "src")
-                {
-                    sources = true;
-                    if (!StringUtil::ContainsIgnoreCase(ExcludedFiles, file)) any = true;
-                }
-            if (sources ? any : StringUtil::ContainsIgnoreCase(said, g->Name)) built.push_back(g->Name);
+            built.clear();
+            for (const ProjectFolderPtr& g : Folders) built.push_back(g->Name);
         }
         f->SetList("buildGroups", built);
         f->SetList("buildArgs", ProgramArgs);
+        f->SetString("buildTarget", TargetName);
+        f->SetString("language", LanguageInfo::Name(Lang));
+        f->SetString("template", Template);
+        std::vector<std::string> t;
+        for (Target x : Targets) t.push_back(TargetInfo::Name(x));
+        f->SetList("targets", t);
+        if (!Targets.empty())
+            f->SetString("arch", !StringUtil::IsNullOrWhiteSpace(ArchWritten) && TargetOfProjectArch(ArchWritten) == Targets[0]
+                                     ? ArchWritten : ArchOf(Targets[0]));
+        JsonPtr cfgs = JsonValue::MakeObject();
+        for (const BuildConfigurationPtr& c : Configurations) cfgs->SetValue(c->Key(), c->ToJson());
+        f->SetValue("configurations", cfgs);
+        f->SetList("excludeFromBuild", ExcludedFiles);
+        f->SetList("dependsOn", DependsOn);
         return f;
     }
 
@@ -433,25 +530,34 @@ namespace GRIDEm { namespace Model {
 
     void GrideProject::SaveRide()
     {
-        JsonPtr out = raw ? raw->Clone() : JsonValue::MakeObject();
         JsonPtr now = RideFields();
         JsonPtr was = rideRead ? rideRead : JsonValue::MakeObject();
-        const char* const keys[] = { "name", "toolchain", "groups", "include", "emulateOnly", "options" };
+        if (SameJson(now, was)) { IsDirty = false; return; }
+        JsonPtr out = raw ? raw->Clone() : JsonValue::MakeObject();
+        const char* const keys[] = { "name", "toolchain", "arch", "groups", "include", "libraries", "emulateOnly", "options",
+                                     "language", "template", "targets", "configurations", "excludeFromBuild", "dependsOn" };
         for (const char* k : keys)
         {
-            JsonPtr v = now->Get(k);
-            if (SameJson(v, was->Get(k))) continue;               // as read: the file keeps its own
             std::string key = k;
-            bool says = !(key == "include" && v->ToStringList().empty()) && !(key == "emulateOnly" && !v->AsBool())
-                        && !(key == "options" && Options->Empty());
+            JsonPtr v = now->Get(key);
+            if (!v || SameJson(v, was->Get(key))) continue;
+            bool says = true;
+            if (key == "include" || key == "libraries" || key == "excludeFromBuild" || key == "dependsOn") says = !v->ToStringList().empty();
+            else if (key == "emulateOnly") says = v->AsBool();
+            else if (key == "options") says = !Options->Empty();
+            else if (key == "language") says = Lang != LanguageOfFiles(Folders) || out->Has("language");
+            else if (key == "template") says = Template != "Empty";
+            else if (key == "targets") says = Targets.size() > 1;
+            else if (key == "configurations") says = !Configurations.empty();
             if (says) out->SetValue(key, v);
             else out->Remove(key);
         }
-        if (!SameJson(now->Get("buildGroups"), was->Get("buildGroups")) || !SameJson(now->Get("buildArgs"), was->Get("buildArgs")))
+        if (!SameJson(now->Get("buildGroups"), was->Get("buildGroups")) || !SameJson(now->Get("buildArgs"), was->Get("buildArgs"))
+            || !SameJson(now->Get("buildTarget"), was->Get("buildTarget")))
         {
             JsonPtr old = out->GetObject("build");
             JsonPtr build = old ? old->Clone() : JsonValue::MakeObject();
-            if (!build->Has("target")) build->SetString("target", Name);
+            if (!StringUtil::IsNullOrWhiteSpace(TargetName) || !build->Has("target")) build->SetString("target", ProgramName());
             build->SetList("groups", now->GetStringList("buildGroups"));
             if (!ProgramArgs.empty()) build->SetList("args", ProgramArgs);
             else build->Remove("args");
@@ -510,43 +616,65 @@ namespace GRIDEm { namespace Model {
 
     JsonPtr GrideProject::ToJson()
     {
-        // start from the file we loaded so unknown keys survive a save
+        // from the file as loaded, so keys GRIDEm does not know survive (White's "indent", "tabs", "open")
         JsonPtr j = raw ? raw : JsonValue::MakeObject();
-        j->SetString("gride", "1.0");
-        j->SetString("type", "project");
+        bool saidLanguage = j->Has("language");
+        const char* const former[] = { "gride", "type", "folders", "folderToolchains", "programArgs" };
+        for (const char* k : former) j->Remove(k);
+
         j->SetString("name", Name);
-        j->SetString("language", LanguageInfo::Name(Lang));
-        j->SetString("template", Template);
-        std::vector<std::string> t;
-        for (Target x : Targets) t.push_back(TargetInfo::Name(x));
-        j->SetList("targets", t);
-
-        JsonPtr folders = JsonValue::MakeObject();
-        for (const ProjectFolderPtr& f : Folders) folders->SetList(f->Name, f->Files);
-        j->SetValue("folders", folders);
-
-        JsonPtr cfgs = JsonValue::MakeObject();
-        for (const BuildConfigurationPtr& c : Configurations) cfgs->SetValue(c->Key(), c->ToJson());
-        j->SetValue("configurations", cfgs);
-
-        j->SetList("excludeFromBuild", ExcludedFiles);
-        j->SetList("dependsOn", DependsOn);
-        // written only when they say something, so a file written before the port is unchanged
-        if (!StringUtil::IsNullOrWhiteSpace(Toolchain) && !StringUtil::EqualsIgnoreCase(Toolchain, "auto")) j->SetString("toolchain", Toolchain);
-        else if (j->Has("toolchain")) j->Remove("toolchain");
-        if (!FolderToolchains.Empty())
+        j->SetString("toolchain", StringUtil::IsNullOrWhiteSpace(Toolchain) ? std::string("auto") : Toolchain);
+        if (!Targets.empty())
+            j->SetString("arch", !StringUtil::IsNullOrWhiteSpace(ArchWritten) && TargetOfProjectArch(ArchWritten) == Targets[0]
+                                     ? ArchWritten : ArchOf(Targets[0]));
+        JsonPtr groups = JsonValue::MakeObject();
+        for (const ProjectFolderPtr& f : Folders)
         {
-            JsonPtr ft = JsonValue::MakeObject();
-            for (const std::pair<std::string, std::string>& kv : FolderToolchains.Items()) ft->SetString(kv.first, kv.second);
-            j->SetValue("folderToolchains", ft);
+            std::string w;
+            if (FolderToolchains.Find(f->Name, w) && !StringUtil::IsNullOrWhiteSpace(w))
+            {
+                JsonPtr g = JsonValue::MakeObject();
+                g->SetList("files", f->Files);
+                g->SetString("toolchain", w);
+                groups->SetValue(f->Name, g);
+            }
+            else groups->SetList(f->Name, f->Files);
         }
-        else if (j->Has("folderToolchains")) j->Remove("folderToolchains");
-        if (EmulateOnly) j->SetBool("emulateOnly", true);
-        else if (j->Has("emulateOnly")) j->Remove("emulateOnly");
-        if (!ProgramArgs.empty()) j->SetList("programArgs", ProgramArgs);
-        else if (j->Has("programArgs")) j->Remove("programArgs");
-        if (!Options->Empty()) j->SetValue("options", Options->ToJson());
-        else if (j->Has("options")) j->Remove("options");
+        j->SetValue("groups", groups);
+        if (!Includes.empty()) j->SetList("include", Includes); else j->Remove("include");
+        if (!Libraries.empty()) j->SetList("libraries", Libraries); else j->Remove("libraries");
+        if (EmulateOnly) j->SetBool("emulateOnly", true); else j->Remove("emulateOnly");
+        if (!Options->Empty()) j->SetValue("options", Options->ToJson()); else j->Remove("options");
+        JsonPtr build = JsonValue::MakeObject();
+        build->SetString("target", ProgramName());
+        std::vector<std::string> built = BuildGroups;
+        if (!BuildGroupsSaid)
+        {
+            built.clear();
+            for (const ProjectFolderPtr& f : Folders) built.push_back(f->Name);
+        }
+        build->SetList("groups", built);
+        if (!ProgramArgs.empty()) build->SetList("args", ProgramArgs);
+        j->SetValue("build", build);
+
+        if (saidLanguage || Lang != LanguageOfFiles(Folders)) j->SetString("language", LanguageInfo::Name(Lang));
+        if (!Template.empty() && Template != "Empty") j->SetString("template", Template); else j->Remove("template");
+        if (Targets.size() > 1)
+        {
+            std::vector<std::string> t;
+            for (Target x : Targets) t.push_back(TargetInfo::Name(x));
+            j->SetList("targets", t);
+        }
+        else j->Remove("targets");
+        if (!Configurations.empty())
+        {
+            JsonPtr cfgs = JsonValue::MakeObject();
+            for (const BuildConfigurationPtr& c : Configurations) cfgs->SetValue(c->Key(), c->ToJson());
+            j->SetValue("configurations", cfgs);
+        }
+        else j->Remove("configurations");
+        if (!ExcludedFiles.empty()) j->SetList("excludeFromBuild", ExcludedFiles); else j->Remove("excludeFromBuild");
+        if (!DependsOn.empty()) j->SetList("dependsOn", DependsOn); else j->Remove("dependsOn");
         return j;
     }
 
@@ -594,9 +722,12 @@ namespace GRIDEm { namespace Model {
         if (IsReadOnly) return;
         if (BeforeWrite && !BeforeWrite(FilePath)) return;
         if (IsRide()) { SaveRide(); return; }
+        // the older form, saved in the one format: from here on it is that format's project
         JsonPtr j = ToJson();
         JsonWriter::WriteFile(FilePath, j);
         raw = j;
+        Kind = "ride";
+        rideRead = RideFields();
         IsDirty = false;
     }
 

@@ -1,5 +1,5 @@
 // =============================================================================
-//  GrideSettings.h - everything stored in gride.settings.json
+//  GrideSettings.h - everything stored in settings.json (shared with the other outlooks)
 //
 //    EnvironmentSettings  theme, fonts, editor options, folders
 //    ToolchainSettings    one per target (see ToolchainSettings.h)
@@ -57,6 +57,7 @@ namespace GRIDEm { namespace Settings {
         bool JumpToFirstError;        // a failed build puts the caret on its first error (RIDE)
         bool AskNativeTools;          // RIDE's askNative: offer the vendor's assembler/linker when the project's own fail
         bool RunInIde;                // Start Without Debugging runs in the Output pane (RIDE); off: Terminal
+        int BuildJobs;                // files compiled at once: 0 one per processor, 1 one at a time
         std::string DefaultProjectLocation;
         std::string CcsToolRoot;      // value of ${CG_TOOL_ROOT} for CCS imports
         std::string HelpDirectory;
@@ -71,13 +72,18 @@ namespace GRIDEm { namespace Settings {
         std::vector<std::string> SharedLibraries;  // "libraries"
         bool CcsEnabled;              // "ccs.enabled": File > Open > CCS Project
         std::string CcsRoot;          // "ccs.root": the CCS installation ${CG_TOOL_ROOT} is found under
-        std::string C6747Debugger;    // auto, sim6747, vm6747; RIDE_DEBUG_* at start win
+        std::string C6747Debugger;    // auto, sim6747, vm6747; GRIDE_DEBUG_* at start win
+        std::string WindowsDebugger;  // auto, gride-dbg, cdb: kept and written back
+        std::string WindowsRuntime;   // auto, grt, msvc; GRIDE_WINDOWS_RUNTIME at start wins
         OrderedStringMap SyntaxColors;   // token -> "#RRGGBB" override
 
         // what ${CG_TOOL_ROOT} is resolved from, in RIDE's order
         std::string CcsCompilerRoot() const;
-        // the C6747 debugger choice in force: RIDE_DEBUG_VM6747 / RIDE_DEBUG_SIM6747 win
+        // the C6747 debugger choice in force: GRIDE_DEBUG_VM6747 / GRIDE_DEBUG_SIM6747 win
         std::string EffectiveC6747Debugger() const;
+        std::string EffectiveWindowsDebugger() const;
+        // auto, grt or msvc: GRIDE_WINDOWS_RUNTIME, then the setting
+        std::string EffectiveWindowsRuntime() const;
 
         Core::JsonPtr ToJson() const;
         void FromJson(const Core::JsonPtr& o);
@@ -194,7 +200,7 @@ namespace GRIDEm { namespace Settings {
         RecentListPtr Recent;
         std::vector<ExternalToolPtr> ExternalTools;
         OrderedStringMap KeyBindings;
-        std::string KeySet;                          // "visualstudio", "ride" (GRIDEd) or "macos" (GRIDEm)
+        std::string KeySet;                          // "visualstudio", "gride" (RIDE's keys) or "macos" (GRIDEm)
         OrderedStringMap Snippets;                   // name -> text (Tools > Code Snippets)
         CompilerOptionStorePtr CompilerOptions;      // what a new project starts with
         // RIDE's own state for a CCS project: absolute directory with forward slashes -> { args, emulateOnly, ... }
@@ -223,18 +229,25 @@ namespace GRIDEm { namespace Settings {
     };
 
     // -------------------------------------------------------------------------
-    //  SettingsManager - finds, loads and saves gride.settings.json
-    //    1. gride.settings.json beside GRIDEm.app       (portable install)
-    //    2. ~/Library/Application Support/GRIDE/gride.settings.json
+    //  SettingsManager - finds, loads and saves settings.json, GRIDE's one settings file
+    //    1. settings.json beside GRIDEm.app       (portable install)
+    //    2. ~/Library/Application Support/GRIDE/settings.json
+    //  The other outlooks' keys in the file are kept on save. gride.settings.json, the former
+    //  name, is read once when settings.json holds none of these keys, then removed.
     // -------------------------------------------------------------------------
     class SettingsManager
     {
     public:
+        static const char* const FileName;
+        static const char* const FormerFileName;
         static std::string PortablePath();
         static std::string UserPath();
         // warning receives a message when the file was unreadable (it is then backed up); the toolchain
         // definitions are loaded first, since the settings' defaults come from them
         static GrideSettingsPtr Load(std::string& warning);
-        static void Save(const GrideSettingsPtr& s);
+        // these keys over what the file holds now; false when it could not be written
+        static bool Save(const GrideSettingsPtr& s);
+        // whether a settings object holds these settings ("gride" or "environment")
+        static bool Holds(const Core::JsonPtr& o);
     };
 }}

@@ -1,5 +1,5 @@
 // =============================================================================
-//  SettingsTests.mm - toolchain.json as GRIDEm ships it, gride.settings.json
+//  SettingsTests.mm - toolchain.json as GRIDEm ships it, settings.json
 //  round-trips, RIDE's Compiler Options store.
 // =============================================================================
 #import "TestSupport.h"
@@ -99,6 +99,50 @@ using namespace GRIDEm::Settings;
     s->KeySet = "macos";
     std::string text = JsonWriter::Write(s->ToJson());
     GRAssertEq(GrideSettings::FromJson(JsonParser::Parse(text))->KeySet, "macos");
+}
+
+// GRIDEd's keys since GRIDEx3: buildJobs, windowsDebugger, windowsRuntime, and "gride" in place of
+// "ride" in the paths and the key set; the former names are still read
+- (void)testSettingsNewKeysAndFormerNames
+{
+    GrideSettingsPtr s = GrideSettings::FromJson(Core::JsonValue::MakeObject());
+    s->Env->BuildJobs = 3;
+    s->Env->WindowsDebugger = "cdb";
+    s->Env->WindowsRuntime = "grt";
+    s->Env->RideRoot = "/opt/gride";
+    JsonPtr env = s->ToJson()->GetObject("environment");
+    XCTAssertTrue(env->Has("grideRoot"));
+    XCTAssertFalse(env->Has("rideRoot"));
+    XCTAssertFalse(env->Has("helpDirectory"));          // this copy's own docs folder is no setting
+    GrideSettingsPtr back = GrideSettings::FromJson(JsonParser::Parse(JsonWriter::Write(s->ToJson())));
+    GRAssertEq(back->Env->BuildJobs, 3);
+    GRAssertEq(back->Env->EffectiveWindowsDebugger(), "cdb");
+    GRAssertEq(back->Env->RideRoot, "/opt/gride");
+
+    JsonPtr former = JsonParser::Parse("{ \"environment\": { \"rideRoot\": \"/opt/ride\", \"buildJobs\": -2,"
+                                       " \"windowsRuntime\": \"other\" }, \"keySet\": \"ride\" }");
+    GrideSettingsPtr old = GrideSettings::FromJson(former);
+    GRAssertEq(old->Env->RideRoot, "/opt/ride");
+    GRAssertEq(old->Env->BuildJobs, 0);
+    GRAssertEq(old->KeySet, "gride");
+    if (getenv("GRIDE_WINDOWS_RUNTIME") == nullptr) GRAssertEq(old->Env->EffectiveWindowsRuntime(), "auto");
+}
+
+// settings.json is shared with the other outlooks: a save keeps the keys it does not own
+- (void)testSettingsSaveKeepsTheOtherOutlooksKeys
+{
+    GRAssertEq(std::string(SettingsManager::FileName), "settings.json");
+    GRAssertEq(Platform::Paths::FileName(SettingsManager::UserPath()), "settings.json");
+    std::string path = GRTempDir() + "/settings.json";
+    GRWrite(path, "{ \"white\": { \"theme\": \"Light\" } }\n");
+    XCTAssertFalse(SettingsManager::Holds(JsonParser::ParseFile(path)));
+    GrideSettingsPtr s = GrideSettings::FromJson(Core::JsonValue::MakeObject());
+    s->FilePath = path;
+    XCTAssertTrue(SettingsManager::Save(s));
+    JsonPtr doc = JsonParser::ParseFile(path);
+    XCTAssertTrue(SettingsManager::Holds(doc));
+    XCTAssertTrue(doc->GetObject("white") != nullptr);
+    XCTAssertTrue(doc->GetObject("environment") != nullptr);
 }
 
 - (void)testSettingsDefaults

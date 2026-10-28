@@ -395,6 +395,19 @@ namespace GRIDEm { namespace Settings {
         return nullptr;
     }
 
+    LibraryDefinitionPtr ToolchainDefinitions::LibraryByKind(const std::string& arch, const std::string& kind,
+                                                             const std::string& crt) const
+    {
+        LibraryDefinitionPtr either;
+        for (const LibraryDefinitionPtr& l : Libraries)
+        {
+            if (l->Kind != kind || (!arch.empty() && !StringUtil::EqualsIgnoreCase(l->Target, arch))) continue;
+            if (StringUtil::EqualsIgnoreCase(l->Crt, crt)) return l;
+            if (l->Crt.empty() && !either) either = l;
+        }
+        return either;
+    }
+
     LibraryDefinitionPtr ToolchainDefinitions::RuntimeOf(Target target) const
     {
         TargetDefinitionPtr t = TargetOf(target);
@@ -480,9 +493,6 @@ namespace GRIDEm { namespace Settings {
             {
                 PathUtil::EnsureDirectory(Paths::DirectoryName(UserFile));
                 if (!UserJson->Has("format")) UserJson->SetNumber("format", Format > 0 ? Format : 1);
-                if (!UserJson->Has("description"))
-                    UserJson->SetString("description", std::string("the user's overrides of the shipped ") + FileName
-                                        + ": a field named here wins, every other field keeps the shipped value");
                 JsonWriter::WriteFile(UserFile, UserJson);
             }
             return true;
@@ -493,7 +503,7 @@ namespace GRIDEm { namespace Settings {
     std::vector<std::string> ToolchainDefinitions::Roles()
     {
         const char* r[] = { "cCompiler", "cppCompiler", "shalimarCompiler", "hostCompiler", "hostCxx", "assembler", "linker",
-                            "debugAssembler", "debugLinker", "nativeAssembler", "nativeLinker", "simulator", "emulator", "debugger",
+                            "debugAssembler", "debugLinker", "nativeAssembler", "nativeLinker", "simulator", "emulator", "ownDebugger", "debugger",
                             "converter" };
         return std::vector<std::string>(r, r + sizeof r / sizeof r[0]);
     }
@@ -1087,6 +1097,7 @@ namespace GRIDEm { namespace Settings {
                 d->Description = l->GetString("description", "");
                 d->Kind = l->GetString("kind", "");
                 d->Target = l->GetString("target", "");
+                d->Crt = l->GetString("crt", "");
                 d->Directory = l->GetString("directory", "");
                 d->DirectoryEnv = l->GetString("directoryEnv", "");
                 d->Marker = l->GetString("marker", "");

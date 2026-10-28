@@ -5,10 +5,13 @@
 //      Project1/Project1.pro        <- this file
 //      Project1/src/*.c             <- sources, stored as "src/main.c"
 //      Project1/inc/*.h
-//  A read-only project imported from Code Composer Studio (Kind "ccs7") or
-//  Visual Studio (Kind "vs") uses the same class - see CcsProjectReader.h and
-//  VsProjectReader.h. A .pro written by GRIDEd opens here and is written back
-//  byte for byte as GRIDEd writes it. (GRIDEd's Model/GrideProject.h)
+//  One .pro format for the three outlooks, RIDE's: "groups", "include",
+//  "libraries", "arch", "build" { target, groups, args }, with GRIDEd's own keys
+//  beside them (configurations, excludeFromBuild, dependsOn, language, template,
+//  targets). A .pro of GRIDE's older form ("gride", "folders") is read and saved
+//  in the one format. A project imported from Code Composer Studio (Kind "ccs7")
+//  or Visual Studio (Kind "vs") uses the same class - see CcsProjectReader.h and
+//  VsProjectReader.h. (GRIDEd's Model/GrideProject.h)
 // =============================================================================
 #pragma once
 #include "../Core/Json.h"
@@ -84,6 +87,14 @@ namespace GRIDEm { namespace Model {
         std::vector<std::pair<std::string, std::string> > items;
     };
 
+    // the source that defines main, as GRIDE 1.0 reads it: C and C++ `main(` not after an identifier
+    // character, not a declaration ending in ';', not in a comment; Shalimar `fun <> = main()`
+    class MainSource
+    {
+    public:
+        static bool Find(const std::vector<std::string>& files, std::string& found);
+    };
+
     class GrideProject;
     typedef std::shared_ptr<GrideProject> GrideProjectPtr;
 
@@ -97,7 +108,7 @@ namespace GRIDEm { namespace Model {
         std::string Name;
         Core::Language Lang;
         std::string Template;
-        std::string Kind;              // "gride", "ccs7", "vs" or "ride"
+        std::string Kind;              // "ride" (the one format), "gride" (the older form), "ccs7" or "vs"
         bool IsReadOnly;
         bool IsDirty;
         CcsInfoPtr Ccs;
@@ -121,6 +132,23 @@ namespace GRIDEm { namespace Model {
         std::vector<std::string> ProgramArgs;
         // RIDE's Compiler Options, per configuration (the .pro's "options")
         Settings::CompilerOptionStorePtr Options;
+        // header folders and libraries for every configuration ("include", "libraries")
+        std::vector<std::string> Includes;
+        std::vector<std::string> Libraries;
+        // the folders the program is built from ("build" "groups"); not said: every folder
+        bool BuildGroupsSaid;
+        std::vector<std::string> BuildGroups;
+        // the program's name ("build" "target"; empty: the project's)
+        std::string TargetName;
+        // the "arch" the file said, written back as it was while the target is still the one it reads as
+        std::string ArchWritten;
+
+        std::string ProgramName() const;
+        // a file goes into the program when its folder is one the build names
+        bool IsBuilt(const std::string& abs) const;
+        // the file brought to the front when the project opens: the .pro's "open", else the first that
+        // defines main, else the first there is; false for none
+        bool FileToOpen(std::string& path) const;
 
         // the compiler word in force for a file in a folder: the folder's, else the project's
         std::string ToolchainFor(const std::string& folderName) const;
@@ -129,7 +157,7 @@ namespace GRIDEm { namespace Model {
         std::string ProjectDir() const;
         bool IsCcs() const { return Kind == "ccs7"; }
         bool IsVs() const { return Kind == "vs"; }
-        // RIDE's own .pro ("groups", "build"), as GRIDE 1.0 (RIDE 5.17) and RIDE 4.7 write it
+        // the one .pro format ("groups", "build"), as GRIDE 1.0, RIDE and GRIDEd write it
         bool IsRide() const { return Kind == "ride"; }
         // a project read from another IDE's files, shown and built but never written (a RIDE .pro is
         // written back, in RIDE's own form - see Save)
@@ -177,13 +205,19 @@ namespace GRIDEm { namespace Model {
         // the Visual Studio solution a GRIDE 2.0 .pro stands for ("visualStudio"), else ""
         static std::string GreySolution(const std::string& path);
         static GrideProjectPtr FromGrey(const std::string& path, const Core::JsonPtr& j);
-        // RIDE's own .pro: none of GRIDE's keys (gride, folders, formatVersion, sourceFiles) - the test
-        // GRIDE 1.0 makes the other way round. Read here and written back as RIDE writes it (new in
-        // GRIDEm: GRIDEd reads only GRIDE's forms)
+        // the one format: none of the older keys (gride, folders, formatVersion, sourceFiles)
         static bool IsRideForm(const Core::JsonPtr& j);
         static GrideProjectPtr FromRide(const std::string& path, const Core::JsonPtr& j);
+        // the one format's words for the four targets
+        static std::string ArchOf(Core::Target t);
+        static Core::Target TargetOfArch(const std::string& arch);
+        // another machine's host arch means this machine's (macOS); tms6747 stays
+        static Core::Target TargetOfProjectArch(const std::string& arch);
+        // C++ when a file is C++, else Shalimar when one is, else C
+        static Core::Language LanguageOfFiles(const std::vector<ProjectFolderPtr>& folders);
         // throws std::runtime_error (Core::JsonException for a malformed file)
         static GrideProjectPtr Load(const std::string& path);
+        // the one format, from the file as loaded (the older form's keys said in its words)
         Core::JsonPtr ToJson();
         // throws std::runtime_error when the file cannot be written
         void Save();

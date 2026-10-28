@@ -137,6 +137,7 @@ namespace GRIDEm { namespace Settings {
         std::string Description;
         std::string Kind;             // runtime / printf / shalimarRuntime / hostCrt
         std::string Target;           // arch
+        std::string Crt;              // host C runtime it belongs to: "grt", "msvc", "" either
         std::string Directory;
         std::string DirectoryEnv;
         std::string Marker;
@@ -357,6 +358,8 @@ namespace GRIDEm { namespace Settings {
         ToolDefinitionPtr CompilerOf(const std::string& languageWord) const;
         LibraryDefinitionPtr Library(const std::string& id) const;
         LibraryDefinitionPtr LibraryByKind(const std::string& arch, const std::string& kind) const;
+        // the one of that kind for a host C runtime ("grt" / "msvc"): an entry naming it, else one naming none
+        LibraryDefinitionPtr LibraryByKind(const std::string& arch, const std::string& kind, const std::string& crt) const;
         LibraryDefinitionPtr RuntimeOf(Core::Target target) const;
         LinkerCommandFileDefinitionPtr LinkerCommandFile(const std::string& id) const;
         LinkerCommandFileDefinitionPtr LinkerCommandFileOf(Core::Target target) const;

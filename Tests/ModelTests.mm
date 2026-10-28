@@ -52,9 +52,21 @@ using namespace GRIDEm::Model;
     std::vector<std::string> pros;
     for (const GrideProjectPtr& p : w->Projects) pros.push_back(GRRead(p->FilePath));
     XCTAssertTrue(first.find("\r\n") != std::string::npos);                    // CRLF, as GRIDEd writes
+    // the older form ("gride", "folders") is saved in the one format
+    for (const std::string& text : pros)
+    {
+        XCTAssertTrue(text.find("\"gride\"") == std::string::npos);
+        XCTAssertTrue(text.find("\"folders\"") == std::string::npos);
+        XCTAssertTrue(text.find("\"groups\"") != std::string::npos);
+    }
 
     WorkspacePtr again = Workspace::Load(grws, std::string());
     XCTAssertFalse(again->HasChanges());
+    for (size_t i = 0; i < again->Projects.size() && i < w->Projects.size(); i++)
+    {
+        XCTAssertTrue(again->Projects[i]->IsRide());
+        GRAssertEq(again->Projects[i]->AllFiles().size(), w->Projects[i]->AllFiles().size());
+    }
     again->Save();
     for (const GrideProjectPtr& p : again->Projects) p->Save();
     GRAssertEq(GRRead(grws), first);
@@ -108,9 +120,11 @@ using namespace GRIDEm::Model;
     XCTAssertTrue(p->Lang == Core::Language::Cpp11);
     XCTAssertTrue(!p->Targets.empty());
     XCTAssertTrue(p->SupportsTarget(Core::Target::C6747));
-    // the Input group is not in build.groups: shown, never compiled
-    XCTAssertTrue(p->IsExcluded(p->ToAbsolute("sample.cpp")));
-    XCTAssertFalse(p->IsExcluded(p->ToAbsolute("main.cpp")));
+    // the Input group is not in build.groups: shown, never compiled, and not excluded either
+    XCTAssertFalse(p->IsBuilt(p->ToAbsolute("sample.cpp")));
+    XCTAssertTrue(p->IsBuilt(p->ToAbsolute("main.cpp")));
+    XCTAssertFalse(p->IsExcluded(p->ToAbsolute("sample.cpp")));
+    GRAssertEq(p->ProgramName(), "compilerpp");
     GRAssertEq(p->ProgramArgs.size(), (size_t)2);
     // saved with nothing changed: the same bytes RIDE wrote
     p->IsDirty = true;
@@ -159,6 +173,8 @@ using namespace GRIDEm::Model;
     XCTAssertTrue(back->ContainsFile(back->ToAbsolute("Vector.h")));
     XCTAssertTrue(back->ContainsFile(back->ToAbsolute("Quat.cpp")));
     XCTAssertFalse(back->IsExcluded(back->ToAbsolute("Quat.cpp")));
+    XCTAssertTrue(back->IsBuilt(back->ToAbsolute("Quat.cpp")));
+    XCTAssertFalse(back->IsBuilt(back->ToAbsolute("Vector.h")));
     GRAssertEq(back->ProgramArgs.size(), (size_t)1);
     XCTAssertTrue(back->EmulateOnly);
     GRAssertEq(back->ToolchainFor("Sources"), "cpp11");
@@ -167,6 +183,46 @@ using namespace GRIDEm::Model;
     back->IsDirty = true;
     back->Save();
     GRAssertEq(GRRead(pro), text);
+}
+
+// a .pro naming another machine's host arch builds for this one: x86_64-windows reads as macOS, and
+// the arch is written back as the file said it (regression: a Windows .pro reached only -S on the Mac)
+- (void)testAnotherHostsArchReadsAsMacOSAndIsWrittenBack
+{
+    std::string dir = GRTempDir();
+    std::string pro = dir + "/Win.pro";
+    GRWrite(pro, "{\n  \"name\": \"Win\",\n  \"arch\": \"x86_64-windows\",\n"
+                 "  \"groups\": {\n    \"Sources\": [\n      \"main.c\"\n    ]\n  }\n}\n");
+    GrideProjectPtr p = GrideProject::Load(pro);
+    XCTAssertTrue(p->IsRide());
+    XCTAssertFalse(p->Targets.empty());
+    if (!p->Targets.empty()) XCTAssertTrue(p->Targets[0] == Core::Target::MacOS);
+    XCTAssertTrue(GrideProject::TargetOfProjectArch("x86_64-linux") == Core::Target::MacOS);
+    XCTAssertTrue(GrideProject::TargetOfProjectArch("tms6747") == Core::Target::C6747);
+    // no "build": the program is named after the project, and every group builds
+    GRAssertEq(p->ProgramName(), "Win");
+    XCTAssertTrue(p->IsBuilt(p->ToAbsolute("main.c")));
+
+    XCTAssertTrue(p->AddFile(p->ToAbsolute("util.c"), "Sources"));
+    p->IsDirty = true;
+    p->Save();
+    std::string text = GRRead(pro);
+    XCTAssertTrue(text.find("\"arch\": \"x86_64-windows\"") != std::string::npos);
+    XCTAssertTrue(text.find("\"util.c\"") != std::string::npos);
+}
+
+// the file a project opens with: its "open", else the source that defines main
+- (void)testFileToOpenIsTheMainSource
+{
+    std::string dir = GRTempDir();
+    std::string pro = dir + "/two.pro";
+    GRWrite(pro, "{\n  \"name\": \"two\",\n  \"groups\": {\n    \"Sources\": [\n      \"util.c\",\n      \"app.c\"\n    ]\n  }\n}\n");
+    GRWrite(dir + "/util.c", "/* int main(void) { } */\nint twice(int x) { return 2 * x; }\n");
+    GRWrite(dir + "/app.c", "int twice(int x);\nint main(void) { return twice(0); }\n");
+    GrideProjectPtr p = GrideProject::Load(pro);
+    std::string open;
+    XCTAssertTrue(p->FileToOpen(open));
+    GRAssertEq(Platform::Paths::FileName(open), "app.c");
 }
 
 // an imported project's lock is on its structure, never on the text of its files: a Visual Studio

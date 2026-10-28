@@ -252,10 +252,18 @@ namespace GRIDEm { namespace Services {
         return debug && d && StringUtil::EqualsIgnoreCase(d->DebugInfo, "codeview") && UsesArch(t);
     }
 
+    bool RideToolchain::OwnCodeView(RideTool t, Target target, bool debug)
+    {
+        if (!DebugsWithCodeView(t, target, debug)) return false;
+        ToolDefinitionPtr d = Definition(t);
+        return d && !d->AsmSyntaxFlag("ownCodeView").empty();
+    }
+
     std::string RideToolchain::AssemblerFlag(RideTool t, Target target, bool debug, bool assemblerNamed)
     {
         ToolDefinitionPtr d = Definition(t);
         if (!d) return std::string();
+        if (OwnCodeView(t, target, debug)) return d->AsmSyntaxFlag("ownCodeView");
         if (DebugsWithCodeView(t, target, debug)) return d->AsmSyntaxFlag("codeview");
         TargetDefinitionPtr td = TargetDef(target);
         if (td && td->Host && assemblerNamed) return d->AsmSyntaxFlag("assemblerNamed");
@@ -916,7 +924,13 @@ namespace GRIDEm { namespace Services {
 
     std::string RideToolchain::HostShalimarRuntime(Target target, bool debug, const std::string& toolDir, const std::string& rideRoot)
     {
-        LibraryDefinitionPtr lib = Defs()->LibraryByKind(Arch(target), "shalimarRuntime");
+        return HostShalimarRuntime(target, debug, toolDir, rideRoot, std::string());
+    }
+
+    std::string RideToolchain::HostShalimarRuntime(Target target, bool debug, const std::string& toolDir, const std::string& rideRoot,
+                                                   const std::string& crt)
+    {
+        LibraryDefinitionPtr lib = Defs()->LibraryByKind(Arch(target), "shalimarRuntime", crt);
         if (!lib || lib->FileFor(debug).empty()) return std::string();
         std::string dir = FindLibraryDir(lib, toolDir, rideRoot);
         if (dir.empty()) return std::string();
@@ -936,6 +950,39 @@ namespace GRIDEm { namespace Services {
         TargetDefinitionPtr win = Defs()->TargetOf(Target::Windows);
         if (!win) return std::string();
         return CrtLibraries(Target::Windows, debug);
+    }
+
+    LibraryDefinitionPtr RideToolchain::HostCrt(Target target, const std::string& crt)
+    {
+        return Defs()->LibraryByKind(Arch(target), "hostCrt", crt);
+    }
+
+    bool RideToolchain::CrtLibraries(Target target, bool debug, const std::string& crt, const std::string& toolDir,
+                                     const std::string& rideRoot, std::string& libraries)
+    {
+        libraries.clear();
+        LibraryDefinitionPtr lib = HostCrt(target, crt);
+        if (!lib) return true;
+        if (lib->Directory.empty()) { libraries = lib->FileFor(debug); return true; }
+        std::string dir = FindLibraryDir(lib, toolDir, rideRoot);
+        if (dir.empty()) return false;
+        std::vector<std::string> paths;
+        for (const std::string& f : StringUtil::SplitNonEmpty(lib->FileFor(debug), " "))
+        {
+            std::string full = Paths::Combine(dir, f);
+            if (!Paths::IsFile(full)) return false;
+            paths.push_back(Quote(full));
+        }
+        libraries = StringUtil::Join(" ", paths);
+        return true;
+    }
+
+    std::string RideToolchain::CrtDirectory(Target target, const std::string& crt, const std::string& toolDir, const std::string& rideRoot)
+    {
+        LibraryDefinitionPtr lib = HostCrt(target, crt);
+        if (!lib || lib->Directory.empty()) return std::string();
+        std::string dir = FindLibraryDir(lib, toolDir, rideRoot);
+        return dir.empty() ? lib->Directory : dir;
     }
 
     // ---- private ------------------------------------------------------------------------

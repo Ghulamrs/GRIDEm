@@ -785,7 +785,7 @@ namespace GRIDEm { namespace Model {
                     AddUnique(out.Includes, d);
                 }
                 out.Mapped.push_back(flag + " -> -I" + JoinWith(" -I", out.Includes)
-                    + (dropped.empty() ? std::string() : " (" + JoinWith(", ", dropped) + " is the compiler's own: RIDE's headers instead)"));
+                    + (dropped.empty() ? std::string() : " (" + JoinWith(", ", dropped) + " is the compiler's own: GRIDE's headers instead)"));
             }
             else if (t == "compilerID.NO_COMPRESS")
             {
@@ -806,7 +806,7 @@ namespace GRIDEm { namespace Model {
             if (level == "off" || level == "0") out.Opt = "-O0";
             else if (level == "1") out.Opt = "-O1";
             else if (level == "2" || level == "3") out.Opt = "-O2";
-            out.Mapped.push_back(level.empty() ? "optimization not set in CCS -> RIDE's default"
+            out.Mapped.push_back(level.empty() ? "optimization not set in CCS -> GRIDE's default"
                                                : "-O" + level + " (CCS's default for " + out.Name + ") -> " + out.Opt);
         }
 
@@ -829,7 +829,7 @@ namespace GRIDEm { namespace Model {
                     AddUnique(out.Link.SearchPaths, d);
                 }
                 out.Mapped.push_back(flag + " -> -i " + JoinWith(" -i ", out.Link.SearchPaths)
-                    + (dropped.empty() ? std::string() : " (" + JoinWith(", ", dropped) + " is the compiler's own: RIDE's runtime directory instead)"));
+                    + (dropped.empty() ? std::string() : " (" + JoinWith(", ", dropped) + " is the compiler's own: GRIDE's runtime directory instead)"));
             }
             else if (t == "linkerID.LIBRARY")
             {
@@ -910,7 +910,7 @@ namespace GRIDEm { namespace Model {
         for (const XmlNodePtr& r : project.SelectNodes("/projectDescription/projects/project"))
             if (!StringUtil::Trim(r->InnerText()).empty()) out->References.push_back(StringUtil::Trim(r->InnerText()));
         for (const std::string& r : out->References)
-            out->Notes.push_back("depends on project " + r + ", which RIDE does not build - build it in CCS, or open it in RIDE first");
+            out->Notes.push_back("depends on project " + r + ", which GRIDE does not build - build it in CCS, or open it in GRIDE first");
 
         out->Device = Attr(ccsproject.SelectSingleNode("//deviceVariant"), "value");
         out->Family = Attr(ccsproject.SelectSingleNode("//deviceFamily"), "value");
@@ -924,14 +924,14 @@ namespace GRIDEm { namespace Model {
         if (out->Family != cd.DeviceFamily || !StringUtil::Contains(out->Device, cd.DeviceVariant))
             out->Refusals.push_back(out->Name + " is for " + (out->Device.empty() ? std::string("an unnamed device") : out->Device)
                 + (out->Family.empty() ? std::string() : " (" + out->Family + ")")
-                + ", and RIDE builds only C6000 C674x/C6747 projects");
-        if (!out->Elf) out->Refusals.push_back(out->Name + " builds COFF, and RIDE's C6000 toolchain makes ELF only");
-        if (endianness == "big") out->Refusals.push_back(out->Name + " is big-endian, and RIDE's C6000 toolchain is little-endian only");
+                + ", and GRIDE builds only C6000 C674x/C6747 projects");
+        if (!out->Elf) out->Refusals.push_back(out->Name + " builds COFF, and GRIDE's C6000 toolchain makes ELF only");
+        if (endianness == "big") out->Refusals.push_back(out->Name + " is big-endian, and GRIDE's C6000 toolchain is little-endian only");
 
         out->CgToolRoot = CgToolRootFor(ccsRootSetting, out->CgtVersion);
         CcsOptionDefs defs;
         std::string why;
-        if (!defs.Load(out->CgtVersion, why)) out->Notes.push_back(why + "; options CCS left unstored take RIDE's defaults");
+        if (!defs.Load(out->CgtVersion, why)) out->Notes.push_back(why + "; options CCS left unstored take GRIDE's defaults");
         out->DefinitionsFile = defs.File;
 
         // .project: the linked resources - a file, or a folder walked like the project's own
@@ -965,7 +965,7 @@ namespace GRIDEm { namespace Model {
             std::string parent = Attr(configuration, "parent");
             if (StringUtil::EndsWith(parent, ".Debug") || (parent.empty() && config->Name == "Debug")) config->IsDebug = true;
             else if (StringUtil::EndsWith(parent, ".Release") || (parent.empty() && config->Name == "Release")) config->IsDebug = false;
-            else { out->Notes.push_back("configuration " + config->Name + " is neither Debug nor Release, and RIDE builds those two"); continue; }
+            else { out->Notes.push_back("configuration " + config->Name + " is neither Debug nor Release, and GRIDE builds those two"); continue; }
             if (out->Config(config->IsDebug))
             {
                 out->Notes.push_back("configuration " + config->Name + " is a second " + (config->IsDebug ? "Debug" : "Release")
@@ -989,11 +989,11 @@ namespace GRIDEm { namespace Model {
                 for (const std::string& tag : tags->Items)
                 {
                     if (tag == "OUTPUT_FORMAT=COFF")
-                        out->Refusals.push_back(out->Name + " (" + config->Name + ") builds COFF, and RIDE's C6000 toolchain makes ELF only");
+                        out->Refusals.push_back(out->Name + " (" + config->Name + ") builds COFF, and GRIDE's C6000 toolchain makes ELF only");
                     else if (tag == "DEVICE_ENDIANNESS=big")
-                        out->Refusals.push_back(out->Name + " (" + config->Name + ") is big-endian, and RIDE's C6000 toolchain is little-endian only");
+                        out->Refusals.push_back(out->Name + " (" + config->Name + ") is big-endian, and GRIDE's C6000 toolchain is little-endian only");
                     else if (StringUtil::StartsWith(tag, "OUTPUT_TYPE=") && tag != "OUTPUT_TYPE=executable")
-                        out->Notes.push_back(config->Name + " builds " + tag.substr(12) + ", and RIDE builds an executable of it");
+                        out->Notes.push_back(config->Name + " builds " + tag.substr(12) + ", and GRIDE builds an executable of it");
                 }
             XmlNodePtr compilerTool = ToolNamed(toolChain, ".compiler");
             XmlNodePtr linkerTool = ToolNamed(toolChain, ".linker");
@@ -1006,14 +1006,14 @@ namespace GRIDEm { namespace Model {
                 std::string core = StringUtil::StartsWith(silicon->Value, "com.ti.") ? CcsOptionDefs::EnumSuffix("", silicon->Value) : silicon->Value;
                 if (core != cd.SiliconVersion)
                     out->Refusals.push_back(out->Name + " (" + config->Name + ") is built for -mv" + core
-                                            + ", and RIDE's C6000 toolchain is the C674x's (-mv" + cd.SiliconVersion + ")");
+                                            + ", and GRIDE's C6000 toolchain is the C674x's (-mv" + cd.SiliconVersion + ")");
             }
             const Stored* abi = FindStored(compiler, "compilerID.ABI");
             if (abi != nullptr && CcsOptionDefs::EnumSuffix("", abi->Value) == "coffabi")
-                out->Refusals.push_back(out->Name + " (" + config->Name + ") uses the COFF ABI, and RIDE's C6000 toolchain makes ELF only");
+                out->Refusals.push_back(out->Name + " (" + config->Name + ") uses the COFF ABI, and GRIDE's C6000 toolchain makes ELF only");
             const Stored* big = FindStored(compiler, "compilerID.BIG_ENDIAN");
             if (big != nullptr && big->Value == "true")
-                out->Refusals.push_back(out->Name + " (" + config->Name + ") is big-endian, and RIDE's C6000 toolchain is little-endian only");
+                out->Refusals.push_back(out->Name + " (" + config->Name + ") is big-endian, and GRIDE's C6000 toolchain is little-endian only");
 
             out->MapConfig(compiler, linker, defs, *config);
             for (const XmlNodePtr& fi : configuration->SelectNodes(".//fileInfo")) PerFileOptions(fi, compiler, defs, *config);
@@ -1058,8 +1058,8 @@ namespace GRIDEm { namespace Model {
         head += " (" + config->Name + "): ";
         std::string said = config->Unsupported.empty() ? std::string("no unsupported options")
             : std::to_string(config->Unsupported.size()) + " " + (config->Unsupported.size() == 1 ? "option" : "options")
-              + " not supported, using RIDE's defaults: " + JoinWith(", ", config->Unsupported);
-        if (!config->OwnInstead.empty()) said += "; RIDE's own instead of: " + JoinWith(", ", config->OwnInstead);
+              + " not supported, using GRIDE's defaults: " + JoinWith(", ", config->Unsupported);
+        if (!config->OwnInstead.empty()) said += "; GRIDE's own instead of: " + JoinWith(", ", config->OwnInstead);
         return head + said;
     }
 
@@ -1070,7 +1070,7 @@ namespace GRIDEm { namespace Model {
             if (!Paths::IsFile(l)) gone.push_back(l);
         std::string said;
         if (!gone.empty()) said += std::string("linked ") + (gone.size() == 1 ? "file" : "files") + " not on this machine: " + JoinWith(", ", gone);
-        if (!NotBuilt.empty()) said += (said.empty() ? std::string() : "; ") + "not built by RIDE: " + JoinWith(", ", NotBuilt);
+        if (!NotBuilt.empty()) said += (said.empty() ? std::string() : "; ") + "not built by GRIDE: " + JoinWith(", ", NotBuilt);
         for (const std::string& n : Notes) said += (said.empty() ? std::string() : "; ") + n;
         return said.empty() ? said : "CCS project " + Name + ": " + said;
     }
@@ -1081,19 +1081,19 @@ namespace GRIDEm { namespace Model {
         std::string text;
         text += "CCS project " + Name + ", read from " + Dir + "\n";
         text += "device " + Device + ", compiler " + CgtVersion + (CcsVersion.empty() ? std::string(" (CCS 5.5)") : " (CCS " + CcsVersion + ")") + "\n";
-        for (const std::string& r : Refusals) text += "RIDE would refuse this project: " + r + "\n";
+        for (const std::string& r : Refusals) text += "GRIDE would refuse this project: " + r + "\n";
         if (!config) return text + "no " + (debug ? "Debug" : "Release") + " configuration\n";
-        text += "\n" + config->Name + " - what CCS set, and what RIDE builds with:\n";
+        text += "\n" + config->Name + " - what CCS set, and what GRIDE builds with:\n";
         for (const std::string& m : config->Mapped) text += "  " + m + "\n";
         if (!config->Link.CmdFiles.empty()) text += "  linker command file: " + JoinWith(", ", config->Link.CmdFiles) + "\n";
         if (!config->Unsupported.empty())
         {
-            text += "\nnot supported, RIDE's defaults instead:\n";
+            text += "\nnot supported, GRIDE's defaults instead:\n";
             for (const std::string& u : config->Unsupported) text += "  " + u + "\n";
         }
         if (!config->OwnInstead.empty())
         {
-            text += "\nRIDE's own instead of:\n";
+            text += "\nGRIDE's own instead of:\n";
             for (const std::string& o : config->OwnInstead) text += "  " + o + "\n";
         }
         if (!config->Excluded.empty()) text += "\nexcluded from the build: " + JoinWith(", ", config->Excluded) + "\n";

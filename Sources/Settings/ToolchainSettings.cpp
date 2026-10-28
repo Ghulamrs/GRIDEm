@@ -93,7 +93,7 @@ namespace GRIDEm { namespace Settings {
         if (!StringUtil::IsNullOrWhiteSpace(RuntimeDir))
         {
             std::string r = Resolve(RuntimeDir);
-            if (Paths::IsDirectory(r)) return r;
+            if (Paths::IsRooted(r) && Paths::IsDirectory(r)) return r;
         }
         std::string found = RideToolchain::FindRuntimeDir(ToolDir, RideRoot);
         if (!found.empty()) return found;
@@ -305,8 +305,10 @@ namespace GRIDEm { namespace Settings {
         }
         s->Assembler = Upgrade(o->GetString("assembler", s->Assembler), old->Assembler, s->Assembler);
         s->Linker = Upgrade(o->GetString("linker", s->Linker), old->Linker, s->Linker);
-        s->DebugAssembler = o->GetString("debugAssembler", s->DebugAssembler);
-        s->DebugLinker = o->GetString("debugLinker", s->DebugLinker);
+        std::string debugAs = o->GetString("debugAssembler", s->DebugAssembler);
+        if (!StringUtil::IsNullOrWhiteSpace(debugAs)) s->DebugAssembler = debugAs;
+        std::string debugLd = o->GetString("debugLinker", s->DebugLinker);
+        if (!StringUtil::IsNullOrWhiteSpace(debugLd)) s->DebugLinker = debugLd;
         s->Runtime = Upgrade(o->GetString("runtime", s->Runtime), old->Runtime, s->Runtime);
         s->RuntimeDir = o->GetString("runtimeDir", s->RuntimeDir);
         s->Simulator = Upgrade(o->GetString("simulator", s->Simulator), old->Simulator, s->Simulator);

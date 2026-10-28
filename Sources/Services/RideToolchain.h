@@ -66,6 +66,8 @@ namespace GRIDEm { namespace Services {
         // ---- debug information ----------------------------------------------
         static bool EmitsDebugInfo(RideTool t, Core::Target target);
         static bool DebugsWithCodeView(RideTool t, Core::Target target, bool debug);
+        // a Debug build of a compiler that writes its CodeView in the MASM spelling itself (asmSyntaxFlags.ownCodeView)
+        static bool OwnCodeView(RideTool t, Core::Target target, bool debug);
         static std::string AssemblerFlag(RideTool t, Core::Target target, bool debug, bool assemblerNamed);
         static std::string ConfigFlags(RideTool t, bool debug, Core::Target target);
         static std::string ConfigFlags(RideTool t, bool debug, Core::Target target, const Settings::CompilerOptionStorePtr& store);
@@ -139,8 +141,19 @@ namespace GRIDEm { namespace Services {
         static bool IsRtsAlias(const std::string& lib);
         static std::string ShalimarRtsLibrary(bool debug);
         static std::string HostShalimarRuntime(Core::Target target, bool debug, const std::string& toolDir, const std::string& rideRoot);
+        // the one built for that C runtime ("grt" / "msvc")
+        static std::string HostShalimarRuntime(Core::Target target, bool debug, const std::string& toolDir, const std::string& rideRoot,
+                                               const std::string& crt);
         static std::string CrtLibraries(Core::Target target, bool debug);
         static std::string WindowsCrtLibraries(bool debug);
+        // the host C runtime's entry for a choice ("grt" GRIDE's, "msvc" Microsoft's)
+        static Settings::LibraryDefinitionPtr HostCrt(Core::Target target, const std::string& crt);
+        // its libraries as the link takes them: full paths where the entry names a directory, else the names;
+        // false where the entry's directory or a file in it is not there
+        static bool CrtLibraries(Core::Target target, bool debug, const std::string& crt, const std::string& toolDir,
+                                 const std::string& rideRoot, std::string& libraries);
+        // where GRIDE's runtime lies, for the messages: its directory, or the one it is looked for in
+        static std::string CrtDirectory(Core::Target target, const std::string& crt, const std::string& toolDir, const std::string& rideRoot);
 
         // ---- small helpers others use ---------------------------------------
         // one space between words, none at the ends

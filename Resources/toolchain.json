@@ -7,10 +7,8 @@
 // each name without it. The reader takes // line comments; the format is in TOOLCHAIN-FORMAT.md.
 {
   "format": 1,
-  "description": "RIDE 5.17's toolchain as GRIDE drives it: c90, cpp11 and shalimar compile to assembly for four targets; masm and link (or clang and Microsoft's link.exe for a Debug build) make the Windows program, asm6x and lnk6x the TMS320C6747 program against RTS6x; sim6747 runs it, vm6747 emulates the assembly and debugs; cdb, gdb and lldb debug the host programs; c2s converts between C and Shalimar.",
 
   "installation": {
-    "description": "Where the toolchain is installed. A tool whose lookup says installDir is looked for under <root>\\<binDir>; the root is Tools > Options > Projects > 'RIDE root or bin' when set, else each defaultRoots entry (environment variables expanded) that holds one of the markers in its binDir, else the folder of GRIDE.exe itself. includeDir and libDir are the installation's header directories the compilers are given (see each tool's installIncludeDirs).",
     "defaultRoots": ["%ProgramFiles%\\RIDE", "%ProgramFiles(x86)%\\RIDE", "%ProgramW6432%\\RIDE"],
     "binDir": "bin",
     "markers": ["c90.exe", "cpp11.exe"],
@@ -19,7 +17,6 @@
   },
 
   "ccs": {
-    "description": "Reading Code Composer Studio 7.4 / 5.5 projects for the C6747, as RIDE reads them: definitionsDir holds TI's own option definitions (one TSV per compiler major version, keyed by it; CCS stores in .cproject only what differs from the definition's default, so an unstored option's meaning and an enumerated value's spelling come from here); the directory is looked for beside GRIDE.exe, above it, and under the installation. deviceFamily / deviceVariant / siliconVersion say which projects the toolchain builds (others are read, with a note saying why RIDE would refuse them); compilerDirs name the compiler directory under <CCS root>/tools/compiler per major version; tiRuntime maps TI's library index to the runtime a linker reads.",
     "definitionsDir": "lib\\ccs",
     "definitions": { "8": "options-ccs74-C6000_8.2.tsv", "7": "options-ccs55-C6000_7.4.tsv" },
     "deviceFamily": "C6000",
@@ -28,7 +25,6 @@
     "compilerDirs": { "8": "ti-cgt-c6000_", "7": "c6000_" },
     "tiRuntime": { "index": "libc.a", "library": "rts6740_elf_eh.lib", "fallback": "rts6740_elf.lib" },
     "tiCompiler": {
-      "description": "TI's C6000 compiler directory (the one with bin\\lnk6x), named under Tools > Options > Projects > RIDE Paths, else the newest one found as CCS's installer leaves them: under each of roots (environment variables expanded), at each of the layouts in under (a trailing * names any folder starting so; an empty entry is the root itself), a folder named as compilerDirs says; bin holds the linker, lib the runtime. A named directory makes a tms6747 build link against TI's runtime instead of RTS6x, as in RIDE.",
       "roots": ["%SystemDrive%\\ti"],
       "under": ["", "ccs*\\tools\\compiler", "ccs*\\ccs\\tools\\compiler"],
       "bin": "bin",
@@ -37,7 +33,6 @@
   },
 
   "compilerOptions": {
-    "description": "RIDE's Compiler Options (options.cpp): the table Tools > Options > Projects > Compiler Options and Project > Properties draw, one entry per option in the order each tab shows them, keyed by id (<tool word>.<option>; general.* serve several compilers). tab, label and hint are the dialog's. control is check (the value is 1 or 0), choice (one of choices; the first is the compiler's own default and is never written) or text (';' between the entries). default is one value, or one per configuration as { Debug, Release }. What an option becomes: flagOn / flagOff for a check (written when the value is 1 / 0), flag for a choice ($(Value) filled in; silent names the choice that writes nothing - the first when absent), flagEach for a text list ($(Item) filled in once per entry, an entry holding a space quoted), environment names a variable the compiler is given instead of a flag (its value 1, or empty). needs says when the option means something: lineTable (the compiler writes a line table for the target), emulated (the emulated target only), notEmulated - with unavailable the sentence said otherwise ($(Arch) filled in); an option that does not apply writes nothing. Each compiler's options field lists the ids it takes, in the order the flags are written; a compiler without one takes its configFlags.",
     "tabs": ["General", "C (c90)", "C++ (cpp11)", "Shalimar"],
     "options": {
       "general.nologo": { "tab": "General", "label": "Hide the compiler's banner (-nologo)", "control": "check", "default": "0", "flagOn": "-nologo", "hint": "c90, cpp11 and shalimar" },
@@ -61,7 +56,6 @@
   },
 
   "visualStudio": {
-    "description": "Where Visual Studio's tools are (cl, ml64, Microsoft's link.exe, clang) and the directories their environment needs, found without cmd.exe: vswhere names the newest installation (any edition, prerelease and Build Tools included), else the defaultRoots are tried; under the installation, msvcTools holds one folder per compiler version with hostBin, lib and include below it - the newest is taken, or the one msvcVersion names (\"14.44\" takes the newest 14.44.*, Visual Studio 2022's v143; a whole folder name takes that one; empty, or a version not there, the newest) for cl, link.exe, INCLUDE and LIB alike; llvmBin holds clang; the Windows SDK (windowsKits: the registry value, else the roots; the newest version folder) gives the libDirs and includeDirs, $(Version) filled in. environment names the variables set for a tool run: each entry's value is the list of directories joined with ';', followed by the variable's old value.",
     "msvcVersion": "",
     "vswhere": "%ProgramFiles(x86)%\\Microsoft Visual Studio\\Installer\\vswhere.exe",
     "vswhereArgs": "-latest -prerelease -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath",
@@ -86,7 +80,6 @@
   },
 
   "placeholders": {
-    "description": "The names an argument template may use; GRIDE fills them in when a tool runs. A path placeholder is written without quotes, so a template quotes it where the tool wants quotes.",
     "$(Compiler)": "full path of the compiler chosen for the file",
     "$(Assembler)": "full path of the target's assembler (role assembler)",
     "$(Linker)": "full path of the target's linker (role linker)",
@@ -119,7 +112,7 @@
     "$(DefineFlags)": "the configuration's defines, each with the compiler's defineFlag",
     "$(LibDirFlags)": "the library directories, each with the target's libraryDirFlag",
     "$(LibFlags)": "the project's libraries, each with the target's libraryFlag",
-    "$(CrtLibs)": "the host C runtime libraries of the configuration (the hostCrt library entry)",
+    "$(CrtLibs)": "the host C runtime libraries of the configuration (the hostCrt library entry of the Windows C runtime in force: GRIDE's by their paths, Microsoft's by name)",
     "$(Optimise)": "the configuration's optimisation word (O0 .. O3)",
     "$(CompileFlags)": "the configuration's extra compile flags (Project > Properties)",
     "$(LinkFlags)": "the configuration's extra link flags",
@@ -134,11 +127,9 @@
   },
 
   "targets": {
-    "description": "The four targets, keyed by the arch word c90, cpp11 and shalimar take. ideTarget names the IDE's target; host says the programs run on this machine; emulated says the program runs on the emulator or simulator; debugInfo is what a Debug build carries (codeview, dwarf, dwpsn, or empty for none); roles names, per role, the tool id that plays it for this target (nativeAssembler / nativeLinker are the vendor's tools offered when the project's own fail); runtime names the libraries entry linked as the C runtime; run and debug say how a program is started here: program (the program itself), simulator (the simulator's simulate / debug operations), debugger (the debugger's debug operation), none (the target only reaches assembly on this machine).",
     "x86_64-windows": {
       "ideTarget": "Windows",
       "name": "x86_64-windows",
-      "description": "Windows on x86-64: the programs are native and run here; a Debug build carries CodeView through clang and link.exe /DEBUG, a Release build goes through masm and link.",
       "host": false,
       "emulated": false,
       "debugInfo": "codeview",
@@ -148,16 +139,15 @@
       "emulatedProgramExtension": "",
       "libraryDirFlag": "/LIBPATH:",
       "libraryFlag": "",
-      "roles": { "cCompiler": "c90", "cppCompiler": "cpp11", "shalimarCompiler": "shalimar", "hostCompiler": "cl", "assembler": "masm", "linker": "link", "debugAssembler": "clang", "debugLinker": "mslink", "nativeAssembler": "ml64", "nativeLinker": "mslink", "debugger": "cdb", "fallbackDebugger": "lldbWindows" },
+      "roles": { "cCompiler": "c90", "cppCompiler": "cpp11", "shalimarCompiler": "shalimar", "hostCompiler": "cl", "assembler": "masm", "linker": "link", "debugAssembler": "clang", "debugLinker": "mslink", "nativeAssembler": "ml64", "nativeLinker": "mslink", "ownDebugger": "grideDbg", "debugger": "cdb", "fallbackDebugger": "lldbWindows" },
       "runtime": "hostCrt",
       "run": "none",
       "debug": "debugger",
-      "shownRun": "$(Compiler) $(Source) -o ride-run $(ConfigFlags) $(AsmSyntaxFlag) $(IncludeFlags)"
+      "shownRun": "$(Compiler) $(Source) -o gride-run $(ConfigFlags) $(AsmSyntaxFlag) $(IncludeFlags)"
     },
     "x86_64-linux": {
       "ideTarget": "Linux",
       "name": "x86_64-linux",
-      "description": "Linux on x86-64: the compilers reach assembly here; assembling, linking and running need a Linux machine (as, cc, gdb).",
       "host": false,
       "emulated": false,
       "debugInfo": "dwarf",
@@ -171,12 +161,11 @@
       "runtime": "",
       "run": "none",
       "debug": "debugger",
-      "shownRun": "$(Compiler) $(Source) -o ride-run $(ConfigFlags) $(AsmSyntaxFlag) $(IncludeFlags)"
+      "shownRun": "$(Compiler) $(Source) -o gride-run $(ConfigFlags) $(AsmSyntaxFlag) $(IncludeFlags)"
     },
     "arm64-darwin": {
       "ideTarget": "macOS",
       "name": "arm64-darwin",
-      "description": "macOS on Apple silicon: the compilers reach assembly here; assembling, linking and running need a Mac (as, cc, lldb).",
       "host": true,
       "emulated": false,
       "debugInfo": "dwarf",
@@ -190,12 +179,11 @@
       "runtime": "",
       "run": "program",
       "debug": "debugger",
-      "shownRun": "$(Compiler) $(Source) -o ride-run $(ConfigFlags) $(AsmSyntaxFlag) $(IncludeFlags)"
+      "shownRun": "$(Compiler) $(Source) -o gride-run $(ConfigFlags) $(AsmSyntaxFlag) $(IncludeFlags)"
     },
     "tms6747": {
       "ideTarget": "TMS320C6747",
       "name": "tms6747",
-      "description": "The TMS320C6747 DSP: the compilers write C6000 assembly, asm6x and lnk6x make the .out against RTS6x, sim6747 runs it, vm6747 runs the assembly straight and is the debugger (through sim6747 --run --debug).",
       "host": false,
       "emulated": true,
       "debugInfo": "dwpsn",
@@ -210,24 +198,23 @@
       "linkerCommandFile": "ti-link",
       "run": "simulator",
       "debug": "simulator",
-      "shownRun": "$(Compiler) -S $(ArchFlag) $(Source) -o ride-run.s $(ConfigFlags) $(IncludeFlags) && $(Assembler) && $(Linker) -o ride-run.out && $(Simulator) --run ride-run.out",
-      "shownEmulate": "$(Compiler) -S $(ArchFlag) $(Source) -o ride-run.s $(ConfigFlags) $(IncludeFlags) && $(Emulator) ride-run.s $(ShalimarRuntimeDir)"
+      "shownRun": "$(Compiler) -S $(ArchFlag) $(Source) -o gride-run.s $(ConfigFlags) $(IncludeFlags) && $(Assembler) && $(Linker) -o gride-run.out && $(Simulator) --run gride-run.out",
+      "shownEmulate": "$(Compiler) -S $(ArchFlag) $(Source) -o gride-run.s $(ConfigFlags) $(IncludeFlags) && $(Emulator) gride-run.s $(ShalimarRuntimeDir)"
     }
   },
 
   "tools": {
-    "description": "Every program, keyed by a stable id the code uses. name is what GRIDE prints; role classifies it (cCompiler, cppCompiler, shalimarCompiler, hostCompiler, hostCxx, assembler, linker, debugAssembler, debugLinker, simulator, emulator, debugger, converter); languages (C, C++, Shalimar) and targets (arch words) say what it serves; exe is the program's file name and aliases the other names tried in order; words are what a project file may call it; lookup says where it is looked for, in order: the environment variable env when set, Tools > Options' tool folder, beside GRIDE.exe, the installation's installDir, then PATH when path is true (vcvars true: Visual Studio's, reached through vcvars64.bat); version is the query that prints its version; outputEncoding is how its output is read (utf-8, or oem for the console's code page); diagnostics names the shape of its error lines (gnu, msvc, shalimar, masm, ti, none); environment lists the variables the tool itself reads; archFlag spells the target ($(Arch) filled in; empty for a tool that builds for the machine it is on); includeFlag / defineFlag are its -I / -D spellings (empty: the tool takes none); installIncludeDirs names the installation directories it is given as includes (include, lib); languageFlags the switch per language; configFlags the flags per configuration, configFlagsByTarget the exceptions per arch - both stand in where the tool lists no options; options names the compilerOptions entries the tool takes, in the order their flags are written (RIDE's Compiler Options then make its configuration flags); session, for a tool that debugs, says how it is driven on its standard input: dialect (gdb, lldb, cdb - the shapes its answers are read in), preamble (the commands sent at start), marker and markerCommand (what is asked for after every command, and the text that then ends the answer), commands (the spelling of each thing the IDE asks: break, clearBreakpoints, run, continue, stepOver, stepInto, stepOut, runToLine, args, locals, evaluate, address, type, set, frames, frame, registers, memory, afterMove, where, quit - with $(File), $(Line), $(Expr), $(Name), $(Value), $(N), $(Count), $(Address) filled in); like names a tool whose session this one starts from, its own fields over it; asmSyntaxFlags.codeview is added to a Debug build whose target carries CodeView, asmSyntaxFlags.assemblerNamed when an assembler is named for a host build; operations hold the argument templates, one per thing the tool does, each with the meaning of every argument.",
     "c90": {
       "name": "c90",
-      "description": "RIDE's ISO C 90 compiler. Compiles C to assembly for every target (-S); without -S it assembles and links itself through C90_AS and C90_LD (Visual Studio's ml64 and link.exe on Windows, or the masm and link beside it).",
+      "description": "GRIDE's ISO C 90 compiler",
       "role": "cCompiler",
       "languages": ["C"],
       "targets": ["x86_64-windows", "x86_64-linux", "arm64-darwin", "tms6747"],
       "exe": "c90.exe",
       "aliases": ["c90", "cc1.exe", "cc1"],
       "words": ["c90", "cc1"],
-      "lookup": { "env": "C90", "installDir": "bin", "path": true, "vcvars": false, "description": "$C90 names it outright; else the tool folder, beside GRIDE.exe, the installation's bin, PATH" },
-      "version": { "args": "--version", "description": "prints the banner line with the version" },
+      "lookup": { "env": "C90", "installDir": "bin", "path": true, "vcvars": false },
+      "version": { "args": "--version" },
       "outputEncoding": "utf-8",
       "diagnostics": "gnu",
       "environment": {
@@ -242,7 +229,7 @@
       "configFlags": { "Debug": "-g -D_DEBUG=1", "Release": "-O2 -DNDEBUG=1" },
       "configFlagsByTarget": {},
       "options": ["c90.opt", "c90.g", "c90.defines", "c90.undefines", "general.nologo", "general.jobs", "general.time"],
-      "asmSyntaxFlags": { "codeview": "-masm=gnu", "assemblerNamed": "" },
+      "asmSyntaxFlags": { "codeview": "-masm=gnu", "assemblerNamed": "", "ownCodeView": "-masm=masm" },
       "operations": {
         "compileToAssembly": {
           "description": "C to assembly, the step every GRIDE build runs",
@@ -262,31 +249,31 @@
           }
         },
         "compileToObject": {
-          "description": "C to an object through the compiler's own assembler (a project of several compilers)",
+          "description": "C to an object through the compiler's own assembler",
           "args": "-c \"$(Source)\" -o \"$(ObjFile)\" $(ArchFlag) $(ConfigFlags) $(AsmSyntaxFlag) $(IncludeFlags) $(DefineFlags) $(CompileFlags)",
           "output": "$(ObjFile)",
           "arguments": { "-c": "stop after the object", "-o": "the object file to write" }
         },
         "compileAndLink": {
-          "description": "C to a program: the compiler assembles and links itself (C90_AS, C90_LD)",
+          "description": "C to a program, assembled and linked by c90 itself",
           "args": "\"$(Source)\" -o \"$(Program)\" $(ConfigFlags) $(AsmSyntaxFlag) $(IncludeFlags) $(DefineFlags) $(CompileFlags)",
           "output": "$(Program)",
-          "shown": "$(Source) -o ride-run $(ConfigFlags) $(AsmSyntaxFlag) $(IncludeFlags)",
+          "shown": "$(Source) -o gride-run $(ConfigFlags) $(AsmSyntaxFlag) $(IncludeFlags)",
           "arguments": { "-o": "the program to write" }
         }
       }
     },
     "cpp11": {
       "name": "cpp11",
-      "description": "RIDE's C++ compiler (C++03 with C++11 extensions). Compiles C++ to assembly for every target; without -S it assembles and links itself through CPP11_AS and CPP11_LD.",
+      "description": "GRIDE's C++ compiler (C++03 with C++11 extensions)",
       "role": "cppCompiler",
       "languages": ["C++"],
       "targets": ["x86_64-windows", "x86_64-linux", "arm64-darwin", "tms6747"],
       "exe": "cpp11.exe",
       "aliases": ["cpp11", "cxx1.exe", "cxx1"],
       "words": ["cpp11", "cxx1"],
-      "lookup": { "env": "CPP11", "installDir": "bin", "path": true, "vcvars": false, "description": "$CPP11 names it outright; else the tool folder, beside GRIDE.exe, the installation's bin, PATH" },
-      "version": { "args": "--version", "description": "prints the banner, the version and the build date" },
+      "lookup": { "env": "CPP11", "installDir": "bin", "path": true, "vcvars": false },
+      "version": { "args": "--version" },
       "outputEncoding": "utf-8",
       "diagnostics": "gnu",
       "environment": {
@@ -302,7 +289,7 @@
       "configFlags": { "Debug": "-g -D_DEBUG=1", "Release": "-O2 -DNDEBUG=1" },
       "configFlagsByTarget": {},
       "options": ["cpp11.opt", "cpp11.g", "cpp11.compress", "cpp11.defines", "cpp11.undefines", "general.nologo", "general.jobs", "general.time", "cpp11.declines"],
-      "asmSyntaxFlags": { "codeview": "-masm=gnu", "assemblerNamed": "-masm=masm" },
+      "asmSyntaxFlags": { "codeview": "-masm=gnu", "assemblerNamed": "-masm=masm", "ownCodeView": "-masm=masm" },
       "operations": {
         "compileToAssembly": {
           "description": "C++ to assembly",
@@ -330,25 +317,25 @@
           "arguments": { "-c": "stop after the object", "-o": "the object file to write" }
         },
         "compileAndLink": {
-          "description": "C++ to a program: the compiler assembles and links itself (CPP11_AS, CPP11_LD)",
+          "description": "C++ to a program, assembled and linked by cpp11 itself",
           "args": "\"$(Source)\" -o \"$(Program)\" $(ConfigFlags) $(AsmSyntaxFlag) $(IncludeFlags) $(DefineFlags) $(CompileFlags)",
           "output": "$(Program)",
-          "shown": "$(Source) -o ride-run $(ConfigFlags) $(AsmSyntaxFlag) $(IncludeFlags)",
+          "shown": "$(Source) -o gride-run $(ConfigFlags) $(AsmSyntaxFlag) $(IncludeFlags)",
           "arguments": { "-o": "the program to write" }
         }
       }
     },
     "shalimar": {
       "name": "shalimar",
-      "description": "The Shalimar 1.3 compiler. Compiles Shalimar to assembly for every target (--target=); takes no -I and no -D; a host program links its runtime with --with=.",
+      "description": "The Shalimar 1.3 compiler",
       "role": "shalimarCompiler",
       "languages": ["Shalimar"],
       "targets": ["x86_64-windows", "x86_64-linux", "arm64-darwin", "tms6747"],
       "exe": "shalimar.exe",
       "aliases": ["shalimar", "shc.exe", "shc"],
       "words": ["shalimar", "shc"],
-      "lookup": { "env": "SHALIMAR", "installDir": "bin", "path": true, "vcvars": false, "description": "$SHALIMAR names it outright; else the tool folder, beside GRIDE.exe, the installation's bin, PATH" },
-      "version": { "args": "--version", "description": "prints the banner line with the version" },
+      "lookup": { "env": "SHALIMAR", "installDir": "bin", "path": true, "vcvars": false },
+      "version": { "args": "--version" },
       "outputEncoding": "utf-8",
       "diagnostics": "shalimar",
       "environment": {
@@ -357,7 +344,6 @@
         "SHM_DEBUG": "1 starts the debugging session protocol (#file / #ready / #stop / #exit on stderr)"
       },
       "session": {
-        "description": "the Shalimar session, RIDE's shalimar::Session: a Debug build stops itself. The compiler calls shm_line before every statement, and the debugging runtime (--debug on a host; shmrt6xd.lib on tms6747), started with SHM_DEBUG=1, talks on its standard error while the program prints on its standard output: a protocol line for every source (file <unit> <leaf>), one when it is ready, one at every stop (stop <unit> <line> <depth>), one to a where (at <unit> <line> <depth>) and one at the end (exit <status>). The commands are a letter each: b and d take a unit and a line, c / n / s / o move, w asks where, q quits. afterReady names the command sent first: the shipped runtime reads and discards the first line after its ready line, and a where costs nothing either way. On tms6747 the .out runs under the simulator's session operation where no emulator debugs it.",
         "dialect": "shalimar",
         "environment": { "SHM_DEBUG": "1" },
         "protocol": { "file": "#file", "ready": "#ready", "stop": "#stop", "at": "#at", "exit": "#exit" },
@@ -375,10 +361,10 @@
       "configFlags": { "Debug": "--debug -g", "Release": "" },
       "configFlagsByTarget": { "tms6747": { "Debug": "-g", "Release": "" } },
       "options": ["shc.opt", "shc.debugrt", "shc.g", "shc.search", "general.nologo"],
-      "asmSyntaxFlags": { "codeview": "", "assemblerNamed": "" },
+      "asmSyntaxFlags": { "codeview": "", "assemblerNamed": "", "ownCodeView": "-masm=masm" },
       "operations": {
         "compileToAssembly": {
-          "description": "Shalimar to assembly: a program is one compilation - the file with main() and the files it calls into, which shalimar compiles as one - so every file of the build goes in one command ($(Sources)) and one assembly file comes out, named after the program",
+          "description": "Shalimar to assembly",
           "args": "-S $(Sources) -o \"$(AsmFile)\" $(ArchFlag) $(ConfigFlags) $(AsmSyntaxFlag) $(IncludeFlags) $(DefineFlags) $(CompileFlags)",
           "output": "$(AsmFile)",
           "shown": "-S $(Source) $(ArchFlag) $(ConfigFlags)",
@@ -396,22 +382,22 @@
           "description": "Shalimar to a host program with its runtime",
           "args": "\"$(Source)\" -o \"$(Program)\" $(ConfigFlags) $(LibFlags)",
           "output": "$(Program)",
-          "shown": "$(Source) -o ride-run $(ConfigFlags)",
+          "shown": "$(Source) -o gride-run $(ConfigFlags)",
           "arguments": { "-o": "the program to write", "--with=": "a library linked with the program" }
         }
       }
     },
     "cl": {
       "name": "cl",
-      "description": "Microsoft's C/C++ compiler, the machine's own: builds for the machine it is on whatever the target says, found in Visual Studio's folders (the visualStudio section) with INCLUDE / LIB / PATH from there, or through vcvars64.bat (Tools > Options > Toolchains > Setup script). It writes the object itself; Microsoft's link.exe (the debugLinker / nativeLinker) links cl's objects. A project read from Visual Studio gives it its own ClCompile settings through projectSettings.",
+      "description": "Microsoft's C/C++ compiler, the machine's own",
       "role": "hostCompiler",
       "languages": ["C", "C++"],
       "targets": ["x86_64-windows"],
       "exe": "cl.exe",
       "aliases": ["cl"],
       "words": ["msvc", "cl", "c++", "cxx", "g++", "clang++"],
-      "lookup": { "env": "", "installDir": "", "path": true, "vcvars": true, "description": "Visual Studio's VC\\Tools\\MSVC\\<version>\\bin\\Hostx64\\x64, or PATH after vcvars64.bat" },
-      "version": { "args": "", "description": "cl prints its version with no arguments" },
+      "lookup": { "env": "", "installDir": "", "path": true, "vcvars": true },
+      "version": { "args": "" },
       "outputEncoding": "oem",
       "diagnostics": "msvc",
       "environment": { "INCLUDE": "set by vcvars64.bat", "LIB": "set by vcvars64.bat" },
@@ -424,7 +410,6 @@
       "configFlagsByTarget": {},
       "asmSyntaxFlags": { "codeview": "", "assemblerNamed": "" },
       "projectSettings": {
-        "description": "A Visual Studio project's own ClCompile settings (MSBuild's names and values, as its .vcxproj writes them) and the switch cl takes for each. Given to cl, in this order, for a project read from Visual Studio, after the configuration's flags ($(CompileFlags)); a value mapped to \"\" is read and given nothing; \"*\" stands for any other value ($(Value) filled in); a setting not named here is said in the Output pane and given nothing.",
         "WarningLevel": { "TurnOffAllWarnings": "/W0", "Level1": "/W1", "Level2": "/W2", "Level3": "/W3", "Level4": "/W4", "EnableAllWarnings": "/Wall" },
         "TreatWarningAsError": { "true": "/WX", "false": "" },
         "ConformanceMode": { "true": "/permissive-", "false": "" },
@@ -471,15 +456,15 @@
     },
     "hostCxx": {
       "name": "c++",
-      "description": "The machine's own C++ compiler on Linux and macOS (clang++ or g++): builds for the machine it is on. Not used on Windows, where the host compiler is cl.",
+      "description": "The machine's own C++ compiler on Linux and macOS (clang++ or g++)",
       "role": "hostCxx",
       "languages": ["C", "C++"],
       "targets": ["x86_64-linux", "arm64-darwin"],
       "exe": "c++",
       "aliases": ["clang++", "g++", "c++.exe", "clang++.exe", "g++.exe"],
       "words": [],
-      "lookup": { "env": "CXX", "installDir": "", "path": true, "vcvars": false, "description": "$CXX, else PATH" },
-      "version": { "args": "--version", "description": "" },
+      "lookup": { "env": "CXX", "installDir": "", "path": true, "vcvars": false },
+      "version": { "args": "--version" },
       "outputEncoding": "utf-8",
       "diagnostics": "gnu",
       "environment": {},
@@ -493,20 +478,20 @@
       "asmSyntaxFlags": { "codeview": "", "assemblerNamed": "" },
       "operations": {
         "compileToAssembly": { "description": "to assembly", "args": "-S $(LangFlags) \"$(Source)\" -o \"$(AsmFile)\" $(ConfigFlags) $(IncludeFlags) $(DefineFlags) $(CompileFlags)", "output": "$(AsmFile)", "shown": "-S $(LangFlags) $(Source) $(ConfigFlags) $(IncludeFlags)", "arguments": { "-S": "stop after the assembly", "-x": "the language" } },
-        "compileAndLink": { "description": "to a program", "args": "$(LangFlags) \"$(Source)\" -o \"$(Program)\" $(ConfigFlags) $(IncludeFlags) $(DefineFlags) $(CompileFlags) $(LibFlags)", "output": "$(Program)", "shown": "$(Source) -o ride-run $(ConfigFlags) $(IncludeFlags)", "arguments": { "-o": "the program to write" } }
+        "compileAndLink": { "description": "to a program", "args": "$(LangFlags) \"$(Source)\" -o \"$(Program)\" $(ConfigFlags) $(IncludeFlags) $(DefineFlags) $(CompileFlags) $(LibFlags)", "output": "$(Program)", "shown": "$(Source) -o gride-run $(ConfigFlags) $(IncludeFlags)", "arguments": { "-o": "the program to write" } }
       }
     },
     "masm": {
       "name": "masm",
-      "description": "RIDE's x86-64 assembler (MASM spelling): the assembly of a Release build to a COFF object. Also takes ml64's spelling (/c /nologo /Fo).",
+      "description": "GRIDE's x86-64 assembler (MASM spelling)",
       "role": "assembler",
       "languages": [],
       "targets": ["x86_64-windows"],
       "exe": "masm.exe",
       "aliases": ["masm"],
       "words": [],
-      "lookup": { "env": "", "installDir": "bin", "path": true, "vcvars": false, "description": "the tool folder, beside GRIDE.exe, the installation's bin, PATH" },
-      "version": { "args": "", "description": "no version switch: with no arguments it prints its usage" },
+      "lookup": { "env": "", "installDir": "bin", "path": true, "vcvars": false },
+      "version": { "args": "" },
       "outputEncoding": "utf-8",
       "diagnostics": "masm",
       "environment": {},
@@ -529,18 +514,18 @@
     },
     "link": {
       "name": "link",
-      "description": "RIDE's Windows linker: objects and the C runtime to a console program (Release). The CRT libraries come from the hostCrt entry; link finds them through LIB, as vcvars64.bat sets it.",
+      "description": "GRIDE's Windows linker",
       "role": "linker",
       "languages": [],
       "targets": ["x86_64-windows"],
       "exe": "link.exe",
       "aliases": ["link"],
       "words": [],
-      "lookup": { "env": "", "installDir": "bin", "path": false, "vcvars": false, "description": "the tool folder, beside GRIDE.exe, the installation's bin - not PATH, where Microsoft's link.exe would be taken for it" },
-      "version": { "args": "", "description": "no version switch" },
+      "lookup": { "env": "", "installDir": "bin", "path": false, "vcvars": false },
+      "version": { "args": "" },
       "outputEncoding": "utf-8",
       "diagnostics": "none",
-      "environment": { "LIB": "the library directories (vcvars64.bat)" },
+      "environment": { "LIB": "the library directories (vcvars64.bat) - read for Microsoft's CRT and a project's own libraries; GRIDE's runtime is named by its paths" },
       "archFlag": "",
       "includeFlag": "",
       "defineFlag": "",
@@ -560,15 +545,15 @@
     },
     "ml64": {
       "name": "ml64",
-      "description": "Microsoft's x86-64 assembler, offered in place of the project's masm when that fails and the output names no fault in the source (the native-tools question). Reached through Visual Studio.",
+      "description": "Microsoft's x86-64 assembler",
       "role": "nativeAssembler",
       "languages": [],
       "targets": ["x86_64-windows"],
       "exe": "ml64.exe",
       "aliases": ["ml64"],
       "words": [],
-      "lookup": { "env": "", "installDir": "", "path": true, "vcvars": true, "description": "Visual Studio's VC\\Tools\\MSVC\\<version>\\bin\\Hostx64\\x64, or PATH after vcvars64.bat" },
-      "version": { "args": "", "description": "ml64 prints its version with no arguments" },
+      "lookup": { "env": "", "installDir": "", "path": true, "vcvars": true },
+      "version": { "args": "" },
       "outputEncoding": "oem",
       "diagnostics": "msvc",
       "environment": {},
@@ -586,15 +571,15 @@
     },
     "clang": {
       "name": "clang",
-      "description": "clang as the Debug build's assembler on Windows: the GNU spelling of the compilers' assembly (-masm=gnu) to a COFF object with CodeView, which a native debugger reads.",
+      "description": "clang as the Debug build's assembler on Windows",
       "role": "debugAssembler",
       "languages": [],
       "targets": ["x86_64-windows"],
       "exe": "clang.exe",
       "aliases": ["clang"],
       "words": [],
-      "lookup": { "env": "", "installDir": "", "path": true, "vcvars": true, "description": "PATH (Visual Studio's LLVM after vcvars64.bat, or LLVM's own installer)" },
-      "version": { "args": "--version", "description": "" },
+      "lookup": { "env": "", "installDir": "", "path": true, "vcvars": true },
+      "version": { "args": "--version" },
       "outputEncoding": "utf-8",
       "diagnostics": "gnu",
       "environment": {},
@@ -612,15 +597,15 @@
     },
     "mslink": {
       "name": "link.exe",
-      "description": "Microsoft's linker, the Debug build's: writes the PDB cdb reads. Also the linker of cl's objects in every configuration (they are Microsoft's, with its CRT). Found in Visual Studio's folders or through vcvars64.bat; C90_LD names it for c90's own link.",
+      "description": "Microsoft's linker, the Debug build's",
       "role": "debugLinker",
       "languages": [],
       "targets": ["x86_64-windows"],
       "exe": "link.exe",
       "aliases": [],
       "words": [],
-      "lookup": { "env": "C90_LD", "installDir": "", "path": true, "vcvars": true, "description": "$C90_LD, else PATH after vcvars64.bat" },
-      "version": { "args": "", "description": "link.exe prints its version with no arguments" },
+      "lookup": { "env": "C90_LD", "installDir": "", "path": true, "vcvars": true },
+      "version": { "args": "" },
       "outputEncoding": "oem",
       "diagnostics": "msvc",
       "environment": { "LIB": "the library directories (vcvars64.bat)" },
@@ -638,15 +623,15 @@
     },
     "as": {
       "name": "as",
-      "description": "The GNU assembler of a Linux or macOS machine; not on this one, where those targets only reach assembly.",
+      "description": "The GNU assembler of a Linux or macOS machine",
       "role": "assembler",
       "languages": [],
       "targets": ["x86_64-linux", "arm64-darwin"],
       "exe": "as",
       "aliases": ["as.exe"],
       "words": [],
-      "lookup": { "env": "", "installDir": "", "path": true, "vcvars": false, "description": "PATH" },
-      "version": { "args": "--version", "description": "" },
+      "lookup": { "env": "", "installDir": "", "path": true, "vcvars": false },
+      "version": { "args": "--version" },
       "outputEncoding": "utf-8",
       "diagnostics": "gnu",
       "environment": {},
@@ -664,15 +649,15 @@
     },
     "cc": {
       "name": "cc",
-      "description": "The C compiler driver of a Linux or macOS machine, as the linker (it adds the runtime and -lm).",
+      "description": "The C compiler driver of a Linux or macOS machine",
       "role": "linker",
       "languages": [],
       "targets": ["x86_64-linux", "arm64-darwin"],
       "exe": "cc",
       "aliases": ["cc.exe"],
       "words": [],
-      "lookup": { "env": "", "installDir": "", "path": true, "vcvars": false, "description": "PATH" },
-      "version": { "args": "--version", "description": "" },
+      "lookup": { "env": "", "installDir": "", "path": true, "vcvars": false },
+      "version": { "args": "--version" },
       "outputEncoding": "utf-8",
       "diagnostics": "gnu",
       "environment": {},
@@ -690,15 +675,15 @@
     },
     "asm6x": {
       "name": "asm6x",
-      "description": "RIDE's TMS320C6000 assembler, writing TI ELF objects: the compilers' C6000 assembly to objects for lnk6x.",
+      "description": "GRIDE's TMS320C6000 assembler, writing TI ELF objects",
       "role": "assembler",
       "languages": [],
       "targets": ["tms6747"],
       "exe": "asm6x.exe",
       "aliases": ["asm6x", "ASM6x.exe"],
       "words": [],
-      "lookup": { "env": "ASM6X", "installDir": "bin", "path": true, "vcvars": false, "description": "$ASM6X, the tool folder, beside GRIDE.exe, the installation's bin, PATH" },
-      "version": { "args": "--version", "description": "prints the banner line with the version" },
+      "lookup": { "env": "ASM6X", "installDir": "bin", "path": true, "vcvars": false },
+      "version": { "args": "--version" },
       "outputEncoding": "utf-8",
       "diagnostics": "ti",
       "environment": {},
@@ -711,20 +696,20 @@
       "configFlagsByTarget": {},
       "asmSyntaxFlags": { "codeview": "", "assemblerNamed": "" },
       "operations": {
-        "assemble": { "description": "one assembly file to one TI ELF object (several files at once write one object beside each)", "args": "\"$(AsmFile)\" -o \"$(ObjFile)\"", "output": "$(ObjFile)", "arguments": { "-o": "the object file to write" } }
+        "assemble": { "description": "one assembly file to one TI ELF object", "args": "\"$(AsmFile)\" -o \"$(ObjFile)\"", "output": "$(ObjFile)", "arguments": { "-o": "the object file to write" } }
       }
     },
     "lnk6x": {
       "name": "lnk6x",
-      "description": "RIDE's TMS320C6000 linker: TI ELF objects, a linker command file and the runtime libraries to a .out for sim6747. TI's own lnk6x may be named instead (Tools > Options).",
+      "description": "GRIDE's TMS320C6000 linker",
       "role": "linker",
       "languages": [],
       "targets": ["tms6747"],
       "exe": "lnk6x.exe",
       "aliases": ["lnk6x"],
       "words": [],
-      "lookup": { "env": "", "installDir": "bin", "path": false, "vcvars": false, "description": "the tool folder, beside GRIDE.exe, the installation's bin - not PATH, where TI's lnk6x would be taken for it" },
-      "version": { "args": "--version", "description": "prints the banner line with the version" },
+      "lookup": { "env": "", "installDir": "bin", "path": false, "vcvars": false },
+      "version": { "args": "--version" },
       "outputEncoding": "utf-8",
       "diagnostics": "ti",
       "environment": {},
@@ -738,7 +723,7 @@
       "asmSyntaxFlags": { "codeview": "", "assemblerNamed": "" },
       "operations": {
         "link": {
-          "description": "objects to a .out against RTS6x (or TI's runtime): the C6747, EABI, the runtime directory, the command file, the objects, the libraries in order (the Shalimar runtime before the C runtime it calls)",
+          "description": "objects to a .out against RTS6x (or TI's runtime)",
           "args": "-mv6740 --abi=eabi -i \"$(RuntimeDir)\" $(LibDirFlags) \"$(LinkerCmd)\" $(LinkFlags) $(Objects) $(LibFlags) -o \"$(Output)\"",
           "output": "$(Output)",
           "arguments": {
@@ -746,7 +731,7 @@
             "--abi=eabi": "the ELF ABI",
             "-i": "a library search directory (the runtime's first)",
             "--heap_size= / --stack_size=": "the sizes a CCS project asks for",
-            "--rom_model / --ram_model": "the initialisation model (RIDE's command file says --rom_model)",
+            "--rom_model / --ram_model": "the initialisation model (GRIDE's command file says --rom_model)",
             "-l": "a library: shmrt6x[d].lib for a Shalimar program, then rts6x.lib / rts6xd.lib",
             "-o": "the .out to write"
           }
@@ -755,15 +740,15 @@
     },
     "tilnk6x": {
       "name": "TI's lnk6x",
-      "description": "Texas Instruments' C6000 linker from a CCS or ti-cgt-c6000 installation, offered in place of RIDE's lnk6x when that fails and the output names no fault in the program (the native-tools question); Tools > Options names TI's compiler directory (the one with bin\\lnk6x). Listed after RIDE's lnk6x, which a bare lnk6x.exe therefore names.",
+      "description": "Texas Instruments' C6000 linker from a CCS or ti-cgt-c6000 installation",
       "role": "nativeLinker",
       "languages": [],
       "targets": ["tms6747"],
       "exe": "lnk6x.exe",
       "aliases": ["lnk6x"],
       "words": [],
-      "lookup": { "env": "", "installDir": "", "path": false, "vcvars": false, "description": "TI's compiler directory's bin (Tools > Options); never PATH, never RIDE's bin" },
-      "version": { "args": "", "description": "TI's lnk6x prints its banner with no arguments" },
+      "lookup": { "env": "", "installDir": "", "path": false, "vcvars": false },
+      "version": { "args": "" },
       "outputEncoding": "oem",
       "diagnostics": "ti",
       "environment": {},
@@ -776,24 +761,24 @@
       "configFlagsByTarget": {},
       "asmSyntaxFlags": { "codeview": "", "assemblerNamed": "" },
       "operations": {
-        "link": { "description": "objects to a .out against TI's runtime (rts6740_elf_eh.lib where it exists, else rts6740_elf.lib), --rom_model unless the project says otherwise", "args": "-mv6740 --abi=eabi -i \"$(RuntimeDir)\" $(LibDirFlags) \"$(LinkerCmd)\" $(LinkFlags) $(Objects) $(LibFlags) -o \"$(Output)\"", "output": "$(Output)", "arguments": { "-mv6740": "the C674x core", "--abi=eabi": "the ELF ABI", "-i": "a library search directory", "-l": "a library", "-o": "the .out to write" } }
+        "link": { "description": "objects to a .out against TI's runtime", "args": "-mv6740 --abi=eabi -i \"$(RuntimeDir)\" $(LibDirFlags) \"$(LinkerCmd)\" $(LinkFlags) $(Objects) $(LibFlags) -o \"$(Output)\"", "output": "$(Output)", "arguments": { "-mv6740": "the C674x core", "--abi=eabi": "the ELF ABI", "-i": "a library search directory", "-l": "a library", "-o": "the .out to write" } }
       }
     },
     "sim6747": {
       "name": "sim6747",
-      "description": "RIDE's C6747 simulator: runs a linked .out (Run) and is the tms6747 debugging back end (--run --debug, a gdb-shaped session on its pipes). Prints CYCLES count=... on stderr at the end; the program's status is its exit code.",
+      "description": "GRIDE's C6747 simulator",
       "role": "simulator",
       "languages": [],
       "targets": ["tms6747"],
       "exe": "sim6747.exe",
       "aliases": ["sim6747"],
       "words": [],
-      "lookup": { "env": "SIM6747", "installDir": "bin", "path": true, "vcvars": false, "description": "$SIM6747, the tool folder, beside GRIDE.exe, the installation's bin, PATH" },
-      "version": { "args": "--version", "description": "prints the banner line with the version" },
+      "lookup": { "env": "SIM6747", "installDir": "bin", "path": true, "vcvars": false },
+      "version": { "args": "--version" },
       "outputEncoding": "utf-8",
       "diagnostics": "none",
-      "environment": { "RIDE_DEBUG_SIM6747": "set by GRIDE for a debugging session, as RIDE sets it" },
-      "session": { "like": "gdb", "description": "sim6747 --run --debug speaks gdb's words and answers in gdb's shapes (VM6747 src/Debug.h); run takes no redirection", "commands": { "run": "run" } },
+      "environment": { "GRIDE_DEBUG_SIM6747": "set by GRIDE for a debugging session, as White sets it" },
+      "session": { "like": "gdb", "commands": { "run": "run" } },
       "archFlag": "",
       "includeFlag": "",
       "defineFlag": "",
@@ -803,26 +788,26 @@
       "configFlagsByTarget": {},
       "asmSyntaxFlags": { "codeview": "", "assemblerNamed": "" },
       "operations": {
-        "simulate": { "description": "run a .out to the end; the simulator takes no command line for the program", "args": "--run -c \"$(Program)\"", "output": "", "shown": "--run $(Program)", "arguments": { "--run": "run the program", "-c": "the console: the program's output on the simulator's stdout" } },
+        "simulate": { "description": "run a .out to the end", "args": "--run -c \"$(Program)\"", "output": "", "shown": "--run $(Program)", "arguments": { "--run": "run the program", "-c": "the console: the program's output on the simulator's stdout" } },
         "debug": { "description": "run a .out under the debugger protocol", "args": "--run --debug \"$(Program)\"", "output": "", "shown": "--run --debug $(Program)", "arguments": { "--debug": "the gdb-shaped debugging session on stdin/stdout" } },
-        "session": { "description": "run a Debug Shalimar program's .out for the program's own session (RIDE's sessionCommand): the simulator carries SHM_DEBUG=1 to the program through getenv and its standard streams through to the program's, so the protocol lines come out on the simulator's standard error", "args": "--run \"$(Program)\"", "output": "", "shown": "--run $(Program)", "arguments": { "--run": "run the program" } }
+        "session": { "description": "run a Debug Shalimar program's .out for its own session", "args": "--run \"$(Program)\"", "output": "", "shown": "--run $(Program)", "arguments": { "--run": "run the program" } }
       }
     },
     "vm6747": {
       "name": "vm6747",
-      "description": "RIDE's C6000 emulator: runs the compilers' assembly straight (Emulate: a .s, or a .vm directory of them, with the Shalimar runtime's assembly directory for a Shalimar program), and debugs it (--debug). Takes the program's command line after the runtime directory.",
+      "description": "GRIDE's C6000 emulator",
       "role": "emulator",
       "languages": [],
       "targets": ["tms6747"],
       "exe": "vm6747.exe",
       "aliases": ["vm6747"],
       "words": [],
-      "lookup": { "env": "VM6747", "installDir": "bin", "path": true, "vcvars": false, "description": "$VM6747, the tool folder, beside GRIDE.exe, the installation's bin, PATH" },
-      "version": { "args": "--version", "description": "prints the banner line with the version" },
+      "lookup": { "env": "VM6747", "installDir": "bin", "path": true, "vcvars": false },
+      "version": { "args": "--version" },
       "outputEncoding": "utf-8",
       "diagnostics": "none",
-      "environment": { "RIDE_DEBUG_VM6747": "set by GRIDE for a debugging session, as RIDE sets it" },
-      "session": { "like": "gdb", "description": "vm6747 --debug speaks gdb's words and answers in gdb's shapes (VM6747 src/Debug.h); run takes no redirection; the registers are the C6000's (A0..B15, pc last)", "commands": { "run": "run" } },
+      "environment": { "GRIDE_DEBUG_VM6747": "set by GRIDE for a debugging session, as White sets it" },
+      "session": { "like": "gdb", "commands": { "run": "run" } },
       "archFlag": "",
       "includeFlag": "",
       "defineFlag": "",
@@ -833,21 +818,21 @@
       "asmSyntaxFlags": { "codeview": "", "assemblerNamed": "" },
       "operations": {
         "emulate": { "description": "run the build's assembly files (Build > Emulate)", "args": "$(AsmFiles)", "output": "", "shown": "$(Program)", "arguments": { "file.s ...": "the assembly files, in order" } },
-        "launch": { "description": "run a .s or .vm program with its arguments: the program, the Shalimar runtime's assembly directory when it is a Shalimar program, then the arguments - the order vm6747 reads them in", "args": "\"$(Program)\" $(ShalimarRuntimeDir) $(Arguments)", "output": "", "shown": "$(Program)", "arguments": { "program": "the .s or the .vm directory", "runtime dir": "lib\\shmrt-tms6747[-debug] for a Shalimar program", "arguments": "the program's own" } },
+        "launch": { "description": "run a .s or .vm program with its arguments", "args": "\"$(Program)\" $(ShalimarRuntimeDir) $(Arguments)", "output": "", "shown": "$(Program)", "arguments": { "program": "the .s or the .vm directory", "runtime dir": "lib\\shmrt-tms6747[-debug] for a Shalimar program", "arguments": "the program's own" } },
         "debug": { "description": "debug a .s or .vm program (the gdb-shaped session)", "args": "--debug \"$(Program)\" $(ShalimarRuntimeDir)", "output": "", "shown": "--debug $(Program)", "arguments": { "--debug": "the debugging session on stdin/stdout" } }
       }
     },
     "c2s": {
       "name": "c2s",
-      "description": "RIDE's converter between C and Shalimar, either way. Exit 1 means written with BEYOND marks, or refused; the output is moved into place only when written.",
+      "description": "GRIDE's converter between C and Shalimar, either way",
       "role": "converter",
       "languages": ["C", "Shalimar"],
       "targets": [],
       "exe": "c2s.exe",
       "aliases": ["c2s"],
       "words": [],
-      "lookup": { "env": "C2S", "installDir": "bin", "path": true, "vcvars": false, "description": "$C2S, the tool folder, beside GRIDE.exe, the installation's bin, PATH" },
-      "version": { "args": "--version", "description": "prints the banner line with the version" },
+      "lookup": { "env": "C2S", "installDir": "bin", "path": true, "vcvars": false },
+      "version": { "args": "--version" },
       "outputEncoding": "utf-8",
       "diagnostics": "none",
       "environment": {},
@@ -864,22 +849,61 @@
         "convertToC": { "description": "Shalimar to C", "args": "--to-c \"$(Source)\" -o \"$(Output)\"", "output": "$(Output)", "arguments": { "--to-c": "the direction", "-o": "the file to write (.c)" } }
       }
     },
+    "grideDbg": {
+      "name": "gride-dbg",
+      "description": "GRIDE's own console debugger: breakpoints, steps into, over and out, locals, watches and the call stack from the PDB GRIDE's link writes (the Win32 debug API and dbghelp); it answers in cdb's words",
+      "role": "ownDebugger",
+      "languages": [],
+      "targets": ["x86_64-windows"],
+      "exe": "gride-dbg.exe",
+      "aliases": ["gride-dbg"],
+      "words": [],
+      "lookup": { "env": "GRIDE_DBG", "installDir": "bin", "path": false, "vcvars": false },
+      "version": { "args": "--version" },
+      "outputEncoding": "utf-8",
+      "diagnostics": "none",
+      "environment": {},
+      "session": {
+        "dialect": "cdb",
+        "console": false,
+        "preamble": [".step_filter \"*!shm_*;*!shm::*;*!std::*\""],
+        "marker": "<<gride-done>>",
+        "markerCommand": ".printf \"<<gride%cdone>>\\n\", 0x2d",
+        "commands": {
+          "break": "bp `$(File):$(Line)`", "clearBreakpoints": "bc *", "run": "g", "continue": "g", "stepOver": "p", "stepInto": "t", "stepOut": "gu",
+          "afterMove": ".lastevent", "where": "ln", "runToLine": "bp /1 `$(File):$(Line)`",
+          "locals": "dv /t /V", "evaluate": "?? $(Expr)", "address": "?? &($(Expr))", "type": "?? $(Expr)", "set": "?? $(Name) = $(Value)",
+          "frames": "k", "frame": ".frame $(N)", "registers": "r", "memory": "db $(Address) L$(Count)", "quit": "q",
+          "input": ".input $(Text)"
+        }
+      },
+      "archFlag": "",
+      "includeFlag": "",
+      "defineFlag": "",
+      "installIncludeDirs": [],
+      "languageFlags": {},
+      "configFlags": { "Debug": "", "Release": "" },
+      "configFlagsByTarget": {},
+      "asmSyntaxFlags": { "codeview": "", "assemblerNamed": "" },
+      "operations": {
+        "debug": { "description": "start the program under gride-dbg, its PDB found through the program", "args": "-y \"$(OutDir)\" \"$(Program)\"", "output": "", "shown": "$(Program)", "arguments": { "-y": "where else to look for the PDB (the output folder)" } }
+      }
+    },
     "cdb": {
       "name": "cdb",
-      "description": "Microsoft's console debugger (Debugging Tools for Windows / the Windows SDK): debugs the Windows programs through their PDB. GRIDE drives it on a pseudo-console.",
+      "description": "Microsoft's console debugger (Debugging Tools for Windows / the Windows SDK)",
       "role": "debugger",
       "languages": [],
       "targets": ["x86_64-windows"],
       "exe": "cdb.exe",
       "aliases": ["cdb"],
       "words": [],
-      "lookup": { "env": "RIDE_CDB", "installDir": "", "dirs": ["%ProgramFiles(x86)%\\Windows Kits\\10\\Debuggers\\x64", "%ProgramFiles%\\Windows Kits\\10\\Debuggers\\x64"], "path": true, "vcvars": false, "description": "$RIDE_CDB, the Windows SDK's Debuggers\\x64, PATH" },
-      "version": { "args": "-version", "description": "" },
+      "lookup": { "env": "GRIDE_CDB", "installDir": "", "dirs": ["%ProgramFiles(x86)%\\Windows Kits\\10\\Debuggers\\x64", "%ProgramFiles%\\Windows Kits\\10\\Debuggers\\x64"], "path": true, "vcvars": false },
+      "version": { "args": "-version" },
       "outputEncoding": "oem",
       "diagnostics": "none",
       "environment": { "_NT_SYMBOL_PATH": "where cdb looks for symbols; GRIDE gives -y" },
       "session": {
-        "description": "cdb on a pseudo-console (console: true - RIDE's startOnConsole; cdb flushes its prompt only to a console, and the console's escape sequences and echoes are taken out as it is read): source lines with .lines -e, l+t and l+s so a step lands on a statement, n 10 for decimal, Shalimar's runtime helpers stepped over; the marker printed in pieces so the echo of the command is not the marker; after every move .lastevent says whether the program ended and ln where it stands",
         "dialect": "cdb",
         "console": true,
         "preamble": [".lines -e", "l+t", "l+s", "n 10", ".step_filter \"*!shm_*;*!shm::*\""],
@@ -906,7 +930,7 @@
     },
     "gdb": {
       "name": "gdb",
-      "description": "The GNU debugger, for the Linux programs (on a Linux machine).",
+      "description": "The GNU debugger, for the Linux programs (on a Linux machine)",
       "role": "debugger",
       "languages": [],
       "targets": ["x86_64-linux"],
@@ -914,7 +938,6 @@
       "aliases": ["gdb.exe"],
       "words": [],
       "session": {
-        "description": "gdb on a pipe, as RIDE drives it: no confirmations or paging, pending breakpoints allowed; every command is followed by the marker command, and the answer is what came before the marker. The emulator and the simulator share this session (their 'like')",
         "dialect": "gdb",
         "preamble": ["set confirm off", "set pagination off", "set width unlimited", "set breakpoint pending on"],
         "marker": "<<gride-done>>",
@@ -926,8 +949,8 @@
           "frames": "backtrace", "frame": "frame $(N)", "registers": "info registers", "memory": "x/$(Count)xb $(Address)", "quit": "quit"
         }
       },
-      "lookup": { "env": "", "installDir": "", "path": true, "vcvars": false, "description": "the tool folder, PATH" },
-      "version": { "args": "--version", "description": "" },
+      "lookup": { "env": "", "installDir": "", "path": true, "vcvars": false },
+      "version": { "args": "--version" },
       "outputEncoding": "utf-8",
       "diagnostics": "none",
       "environment": {},
@@ -940,12 +963,12 @@
       "configFlagsByTarget": {},
       "asmSyntaxFlags": { "codeview": "", "assemblerNamed": "" },
       "operations": {
-        "debug": { "description": "start the program under gdb (the session's own commands follow in the debugger revision)", "args": "\"$(Program)\"", "output": "", "shown": "$(Program)", "arguments": { "program": "the program to debug" } }
+        "debug": { "description": "start the program under gdb", "args": "\"$(Program)\"", "output": "", "shown": "$(Program)", "arguments": { "program": "the program to debug" } }
       }
     },
     "lldb": {
       "name": "lldb",
-      "description": "LLVM's debugger, for the macOS programs (on a Mac).",
+      "description": "LLVM's debugger, for the macOS programs (on a Mac)",
       "role": "debugger",
       "languages": [],
       "targets": ["arm64-darwin"],
@@ -953,7 +976,6 @@
       "aliases": ["lldb.exe"],
       "words": [],
       "session": {
-        "description": "lldb on a pipe, as RIDE drives it: synchronous, no confirmations, the program's input the null device; the marker printed by a script line so the echo of the command is not the marker",
         "dialect": "lldb",
         "preamble": ["script lldb.debugger.SetAsync(False)", "settings set auto-confirm true", "settings set target.input-path /dev/null"],
         "marker": "<<gride-done>>",
@@ -965,8 +987,8 @@
           "frames": "thread backtrace", "frame": "frame select $(N)", "registers": "register read", "memory": "memory read -c $(Count) -f x -s 1 $(Address)", "quit": "quit"
         }
       },
-      "lookup": { "env": "", "installDir": "", "path": true, "vcvars": false, "description": "the tool folder, PATH" },
-      "version": { "args": "--version", "description": "" },
+      "lookup": { "env": "", "installDir": "", "path": true, "vcvars": false },
+      "version": { "args": "--version" },
       "outputEncoding": "utf-8",
       "diagnostics": "none",
       "environment": {},
@@ -979,12 +1001,12 @@
       "configFlagsByTarget": {},
       "asmSyntaxFlags": { "codeview": "", "assemblerNamed": "" },
       "operations": {
-        "debug": { "description": "start the program under lldb; its session drives it", "args": "\"$(Program)\"", "output": "", "shown": "$(Program)", "arguments": { "program": "the program to debug" } }
+        "debug": { "description": "start the program under lldb", "args": "\"$(Program)\"", "output": "", "shown": "$(Program)", "arguments": { "program": "the program to debug" } }
       }
     },
     "lldbWindows": {
       "name": "lldb",
-      "description": "LLVM's debugger on Windows (Visual Studio's 'C++ Clang tools' ship one, with its own python beside it): reads a Debug build's PDB as cdb does, and stands in for cdb when cdb is not installed (role fallbackDebugger). Not RIDE's: RIDE debugs a Windows program through cdb alone. Untested here: the lldb.exe of this machine's Visual Studio does not start.",
+      "description": "LLVM's debugger on Windows (from Visual Studio's C++ Clang tools)",
       "role": "fallbackDebugger",
       "languages": [],
       "targets": ["x86_64-windows"],
@@ -993,11 +1015,10 @@
       "words": [],
       "session": {
         "like": "lldb",
-        "description": "lldb's session, with the program's input the null device as Windows spells it",
         "preamble": ["script lldb.debugger.SetAsync(False)", "settings set auto-confirm true", "settings set target.input-path NUL"]
       },
-      "lookup": { "env": "RIDE_LLDB", "installDir": "", "path": true, "vcvars": false, "description": "$RIDE_LLDB names it outright; else the tool folder, PATH" },
-      "version": { "args": "--version", "description": "" },
+      "lookup": { "env": "GRIDE_LLDB", "installDir": "", "path": true, "vcvars": false },
+      "version": { "args": "--version" },
       "outputEncoding": "utf-8",
       "diagnostics": "none",
       "environment": {},
@@ -1010,16 +1031,15 @@
       "configFlagsByTarget": {},
       "asmSyntaxFlags": { "codeview": "", "assemblerNamed": "" },
       "operations": {
-        "debug": { "description": "start the program under lldb; its session drives it", "args": "\"$(Program)\"", "output": "", "shown": "$(Program)", "arguments": { "program": "the program to debug" } }
+        "debug": { "description": "start the program under lldb", "args": "\"$(Program)\"", "output": "", "shown": "$(Program)", "arguments": { "program": "the program to debug" } }
       }
     }
   },
 
   "libraries": {
-    "description": "The runtime libraries, as named entries: kind says what each is (runtime, printf, shalimarRuntime, hostCrt); target the arch it belongs to; directory the installation-relative directory holding the files (looked for under the tool folder, beside GRIDE.exe and the installation, in that order; directoryEnv names it outright) and marker the file that proves the directory is the right one; files names the library per configuration (a space-separated list where the link takes several); aliases are the names a project file may use for it, each read as the configuration's file ('*' matches any ending); assemblyDirectories / assemblyDirectoryEnv are where the runtime's assembly is, per configuration, for the emulator; when says when the library is linked: always, shalimar (a Shalimar program), printf (a program calling printf), never.",
     "rts6x": {
       "name": "RTS6x",
-      "description": "RIDE's C runtime for the C6747: rts6x.lib built at -O2 for a Release build, rts6xd.lib at -O0 with _DEBUG for a Debug build. A project naming libc.a, rts6740*, rts6747.lib, rts6x.lib or rts6xd.lib gets the configuration's one.",
+      "description": "GRIDE's C runtime for the C6747",
       "kind": "runtime",
       "target": "tms6747",
       "directory": "lib\\rts6x-tms6747",
@@ -1031,7 +1051,7 @@
     },
     "printf6x": {
       "name": "printf6x",
-      "description": "RTS6x's printf family in its own library, beside rts6x.lib; linked when a project names it.",
+      "description": "RTS6x's printf family in its own library, beside rts6x.lib",
       "kind": "printf",
       "target": "tms6747",
       "directory": "lib\\rts6x-tms6747",
@@ -1043,7 +1063,7 @@
     },
     "shmrt6x": {
       "name": "shmrt6x",
-      "description": "The Shalimar runtime for the C6747: as a library beside RTS6x (shmrt6x.lib, shmrt6xd.lib for a Debug build) linked before the C runtime it calls into, and as assembly directories the emulator takes (lib\\shmrt-tms6747, -debug for Debug).",
+      "description": "The Shalimar runtime for the C6747",
       "kind": "shalimarRuntime",
       "target": "tms6747",
       "directory": "lib\\rts6x-tms6747",
@@ -1057,8 +1077,9 @@
     },
     "shmrtWindows": {
       "name": "the Shalimar runtime (Windows)",
-      "description": "The Shalimar runtime for x86_64-windows, which RIDE's shalimar links itself and GRIDE links with the objects: shmrt-x86_64-windows.lib, and shmrt-x86_64-windows-debug.lib for a Debug build - the runtime with the session in it (SHM_DEBUG=1). Linked first, before the C runtime it calls into.",
+      "description": "The Shalimar runtime for x86_64-windows over Microsoft's CRT, built by cl",
       "kind": "shalimarRuntime",
+      "crt": "msvc",
       "target": "x86_64-windows",
       "directory": "lib",
       "directoryEnv": "",
@@ -1067,10 +1088,24 @@
       "aliases": ["shmrt-x86_64-windows.lib", "shmrt-x86_64-windows-debug.lib"],
       "when": "shalimar"
     },
+    "shmrtWindowsGrt": {
+      "name": "the Shalimar runtime (Windows, GRIDE's runtime)",
+      "description": "The Shalimar runtime for x86_64-windows over GRIDE's runtime, built by cpp11, masm and link",
+      "kind": "shalimarRuntime",
+      "crt": "grt",
+      "target": "x86_64-windows",
+      "directory": "lib",
+      "directoryEnv": "",
+      "marker": "shmrt-x86_64-windows-grt.lib",
+      "files": { "Debug": "shmrt-x86_64-windows-grt-debug.lib", "Release": "shmrt-x86_64-windows-grt.lib" },
+      "aliases": ["shmrt-x86_64-windows-grt.lib", "shmrt-x86_64-windows-grt-debug.lib"],
+      "when": "shalimar"
+    },
     "hostCrt": {
-      "name": "the Windows CRT",
-      "description": "The C runtime the Windows link names, since the compilers' objects carry no /DEFAULTLIB: the static CRT of the configuration, kernel32 and the legacy stdio definitions. link finds them through LIB (vcvars64.bat). cl's objects do name theirs (/MT, /MTd, /MD ...): a link of cl's objects alone adds none.",
+      "name": "Microsoft's CRT",
+      "description": "Microsoft's C runtime: Visual Studio's libcmt and vcruntime and the Windows SDK's UCRT, found through LIB",
       "kind": "hostCrt",
+      "crt": "msvc",
       "target": "x86_64-windows",
       "directory": "",
       "directoryEnv": "LIB",
@@ -1078,16 +1113,27 @@
       "files": { "Debug": "libcmtd.lib libucrtd.lib libvcruntimed.lib kernel32.lib legacy_stdio_definitions.lib", "Release": "libcmt.lib libucrt.lib libvcruntime.lib kernel32.lib legacy_stdio_definitions.lib" },
       "aliases": [],
       "when": "always"
+    },
+    "grt": {
+      "name": "GRIDE's runtime",
+      "description": "GRIDE's own C and C++ runtime for Windows (no exceptions yet): five layered libraries - start-up, compatibility names, C++ support, the C library, the Windows layer - and the import library for kernel32.dll, built by GRIDE's toolchain: no Visual Studio or SDK library",
+      "kind": "hostCrt",
+      "crt": "grt",
+      "target": "x86_64-windows",
+      "directory": "lib",
+      "directoryEnv": "GRT",
+      "marker": "grtc.lib",
+      "files": { "Debug": "grtstart.lib grtcompat.lib grtcxx.lib grtc.lib grtwin.lib kernel32.lib", "Release": "grtstart.lib grtcompat.lib grtcxx.lib grtc.lib grtwin.lib kernel32.lib" },
+      "aliases": ["grtstart.lib", "grtcompat.lib", "grtcxx.lib", "grtc.lib", "grtwin.lib"],
+      "when": "always"
     }
   },
 
   "linkerCommandFiles": {
-    "description": "Linker command files GRIDE writes into the build directory when the project brings none: name is the file name, lines its text.",
     "ti-link": {
       "name": "ti-link.cmd",
-      "description": "RIDE's own command file for lnk6x: one flat memory for the C6747 with every section the compilers and the runtime write placed in it (--rom_model, a 16 KB stack, a 1 MB heap).",
       "lines": [
-        "/* one flat memory for the C6747 and every section in it - written by GRIDE, as RIDE writes it */",
+        "/* one flat memory for the C6747 and every section in it - written by GRIDE, as White writes it */",
         "--rom_model",
         "--stack_size=0x4000",
         "--heap_size=0x100000",

@@ -123,7 +123,7 @@ namespace GRIDEm { namespace Model {
                 for (const std::string& u : c->Undefines) extra.push_back("-U" + u);
                 if (!c->AdditionalOptions.empty())
                     p->Vs->ReportLines.push_back("VS project " + r->Name + " (" + c->Name
-                        + "): cl's additional options are given to cl only (Project > Properties > Compiler), not to RIDE's compilers: "
+                        + "): cl's additional options are given to cl only (Project > Properties > Compiler), not to GRIDE's compilers: "
                         + c->AdditionalOptions);
                 b->ExtraCompileFlags = StringUtil::Join(" ", extra);
                 if (!c->TargetName.empty() && !VsProject::HasMacro(c->TargetName) && !StringUtil::EqualsIgnoreCase(c->TargetName, r->Name))

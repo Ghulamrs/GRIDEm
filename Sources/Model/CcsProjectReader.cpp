@@ -165,7 +165,7 @@ namespace GRIDEm { namespace Model {
         std::string sources = r->SourceReport();
         if (!sources.empty()) p->Ccs->ReportLines.push_back(sources);
         for (const std::string& refusal : r->Refusals)
-            p->Ccs->ReportLines.push_back("CCS project " + r->Name + ": RIDE would refuse it - " + refusal
+            p->Ccs->ReportLines.push_back("CCS project " + r->Name + ": GRIDE would refuse it - " + refusal
                                           + "; read all the same, the build stands on what was read");
         p->IsDirty = false;
         p->ImportedBaseline = p->ImportedSettings();      // what the file says, before the workspace's own
