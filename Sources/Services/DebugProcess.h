@@ -48,12 +48,16 @@ namespace GRIDEm { namespace Services {
         bool StartOnConsole(const std::string& commandLine, const std::string& workDir,
                             const std::vector<std::string>& environment, std::string& why);
 
-        // a line to the child, with its line end: a newline on a pipe, Enter ("\r") on a terminal
+        // a line to the child, with its line end: a newline on a pipe, Enter ("\r") on a terminal; one line
+        // at a time, since the program's input may be said while a move waits on another thread
         bool Say(const std::string& line);
         // what the child printed up to the marker (the marker and its line end taken out); found
         // says whether the marker came. When the time runs out, or the child ends, what is
         // pending is answered and found is false.
-        std::string ReadUntil(const std::string& marker, int timeoutMs, bool& found);
+        std::string ReadUntil(const std::string& marker, int timeoutMs, bool& found) { return ReadUntil(marker, timeoutMs, found, false); }
+        // the same; wholeLines: a wait that runs out answers only the lines that have ended (the rest, a
+        // marker on its way among it, is kept for the next read), so a move can be read a little at a time
+        std::string ReadUntil(const std::string& marker, int timeoutMs, bool& found, bool wholeLines);
         // the next line said on standard error (StartApart): false when none came in the time;
         // alive is false once the child has ended with nothing left to hear
         bool Hear(int timeoutMs, bool& alive, std::string& line);
@@ -78,6 +82,7 @@ namespace GRIDEm { namespace Services {
         std::unique_ptr<Platform::Process> proc;
         std::thread waiter;
         std::mutex lock;
+        std::mutex sayGate;
         std::condition_variable gotData;
         std::string pending;
         std::deque<std::string> heard;

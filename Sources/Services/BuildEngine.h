@@ -30,6 +30,7 @@
 #include "../Model/Workspace.h"
 #include "../Settings/GrideSettings.h"
 #include <atomic>
+#include <condition_variable>
 #include <functional>
 #include <map>
 #include <memory>
@@ -115,7 +116,7 @@ namespace GRIDEm { namespace Services {
         bool StartBatchAsync(const std::vector<BuildRequestPtr>& requests);
         // the same on the calling thread (GRIDEm-build); the summary when done, nullptr when busy
         BuildSummaryPtr RunBatch(const std::vector<BuildRequestPtr>& requests);
-        void Cancel() { runner.Cancel(); }
+        void Cancel();
         // waits for a build running on its thread to end
         void Wait();
 
@@ -142,6 +143,9 @@ namespace GRIDEm { namespace Services {
         static std::string ProgramStem(const Model::GrideProjectPtr& p, const Model::BuildConfigurationPtr& cfg);
         // RIDE's refusal before any compiler runs: the program's directory must take a file; "" when it does
         static std::string Unwritable(const std::string& dir);
+        // a tool's line as the Output pane shows it: a path under projectDir from the project's folder
+        static std::string Shown(const std::string& line, const std::string& projectDir);
+        static const int MaxToolLines = 40;
 
     private:
         // one step's tool: the path, the template and the name, chosen by RIDE's rules
@@ -150,14 +154,50 @@ namespace GRIDEm { namespace Services {
             std::string Path, Cmd, Name, Macro, Role;
         };
 
+        // one tool run of a compile step: decided before any tool runs, run on a worker, read back in project order
+        struct ToolPass
+        {
+            ToolPass() : Code(0), Ran(false) {}
+            std::vector<std::string> Before;   // said before it: the "$ group (compiler)" line, "[cpp11]  a.cpp  ->  obj/a.s"
+            std::string Command;
+            ToolRunOptions Options;
+            std::string Source, ToolName, TargetName;
+            std::string Echo;                  // the file a compiler writes: its echo of the path is not shown
+            std::string Writes;                // removed when the pass fails: half an object would look up to date
+            std::string Step;                  // compile / assemble
+            std::string Refused;               // said after it fails, or ""
+            std::vector<std::string> Lines;
+            int Code;
+            bool Ran;
+        };
+        // a source's compile and the assembly of what it wrote, one after the other on a worker
+        struct CompileStep
+        {
+            CompileStep() : Size(0), Started(false), Done(false) {}
+            std::vector<ToolPass> Passes;
+            long long Size;                    // its sources' bytes: the largest start first
+            bool Started;
+            std::atomic<bool> Done;
+        };
+        typedef std::shared_ptr<CompileStep> CompileStepPtr;
+
         void ThreadMain(std::vector<BuildRequestPtr> requests);
         void Say(const std::string& s);
         void Keep(const std::string& s);
         bool OutputHas(const std::string& part);
         void BeginTool(const std::string& source, const std::string& toolName);
+        static ToolRunOptions ToolOptions(const ToolRunOptions& options, bool rideTool);
         int RunTool(const std::string& command, const std::string& workDir, const ToolRunOptions& options,
                     const std::string& source, const std::string& toolName, const std::string& targetName, bool rideTool);
+        void EndTool(int rc, const std::string& source, const std::string& toolName, const std::string& targetName);
         void OnToolLine(const std::string& line);
+        int Jobs() const;
+        int RunSteps(const std::vector<CompileStepPtr>& steps, const std::string& workDir);
+        void RunStep(const CompileStepPtr& step, const std::string& workDir);
+        int ReadBack(CompileStep& step);
+        void StopWorkers();
+        bool NeedsClang(const Model::GrideProjectPtr& p, const Model::BuildConfigurationPtr& cfg, Core::Target t) const;
+        std::string WindowsRuntime(bool clObjects) const;
         void Report(Severity sev, const std::string& file, const std::string& text);
 
         int NativeFallback(const Model::GrideProjectPtr& p, const BuildRequestPtr& r);
@@ -175,7 +215,7 @@ namespace GRIDEm { namespace Services {
         int BuildProject(const Model::GrideProjectPtr& p, const BuildRequestPtr& r, bool native);
         int HostLink(const Model::GrideProjectPtr& p, const Settings::ToolchainSettingsPtr& tc, MacroExpander& mx,
                      const ToolRunOptions& run, const Step& ld, std::vector<std::string>& objects,
-                     const std::string& program, bool shalimarProgram, bool debug);
+                     const std::string& program, bool shalimarProgram, bool debug, const std::string& crt);
         int TiLink(const Model::GrideProjectPtr& p, const Model::BuildConfigurationPtr& cfg,
                    const Settings::ToolchainSettingsPtr& tc, MacroExpander& mx, const ToolRunOptions& run, Step ld,
                    std::vector<std::string>& objects, const std::string& program, bool debug, bool shalimarProgram,
@@ -207,8 +247,18 @@ namespace GRIDEm { namespace Services {
         std::string failedStep;             // compile / assemble / link, when the project failed
         bool placedError;                   // a diagnostic naming a file and line was seen
         bool codeViewWarned;
+        bool codeViewMissing;               // a Debug build with no clang: built the Release way, no line table
+        bool ownCodeView;                   // a file of this build wrote its own CodeView: GRIDE's link /DEBUG writes the PDB
         bool clSettingsSaid;
         bool rideHeadersSaid;
+        bool crtSaid;                       // the Windows C runtime of the link was named (once a project build)
+        std::string writes;                 // the file the tool being read writes: its echo is not shown
+        int toolLines;                      // lines the tool being read wrote
+        int toolHidden;                     // of them, the ones past MaxToolLines
+        std::mutex workersLock;
+        std::vector<ToolRunner*> workers;   // the runners of the compile steps running now, which Cancel stops too
+        std::mutex stepLock;
+        std::condition_variable stepDone;
         std::atomic<bool> busy;
     };
 }}

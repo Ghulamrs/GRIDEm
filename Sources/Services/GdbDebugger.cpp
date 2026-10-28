@@ -3,10 +3,15 @@
 // =============================================================================
 #include "GdbDebugger.h"
 #include "../Core/StringUtil.h"
+#include "../Core/PathUtil.h"
+#include "../Core/TextFile.h"
 #include "../Platform/Paths.h"
+#include <chrono>
+#include <cctype>
 #include <cstdio>
 #include <cstring>
 #include <ctime>
+#include <regex>
 
 namespace GRIDEm { namespace Services {
 
@@ -23,6 +28,18 @@ namespace GRIDEm { namespace Services {
     static std::string From(const std::string& s, size_t at) { return at >= s.size() ? std::string() : s.substr(at); }
     // the first of any of chars at or after from, or npos (String::IndexOfAny)
     static size_t IndexOfAny(const std::string& s, const char* chars, size_t from = 0) { return s.find_first_of(chars, from); }
+    // a path written from the root, on either system ("/usr/include/string", "C:\\...\\include\\string")
+    static bool Rooted(const std::string& s)
+    {
+        if (!s.empty() && (s[0] == '/' || s[0] == '\\')) return true;
+        return s.size() > 2 && std::isalpha((unsigned char)s[0]) && s[1] == ':' && (s[2] == '\\' || s[2] == '/');
+    }
+    static bool HasExtensionIn(const std::string& path)
+    {
+        std::string leaf = DebugTranscript::LeafName(path);
+        size_t dot = leaf.rfind('.');
+        return dot != std::string::npos && dot + 1 < leaf.size();
+    }
 
     // =========================================================================
     //  DebugTranscript
@@ -158,10 +175,9 @@ namespace GRIDEm { namespace Services {
             // ln says "path\file.c(9)" or "path\file.c(9)+0x2c"; the program's own "greet(4) is 10" is not a place
             std::string after = From(line, close + 1);
             if (!after.empty() && !Starts(after, "+0x")) continue;
+            // a source has an extension, or is a standard header named by its full path (include\string)
             std::string where = line.substr(0, open);
-            std::string leaf = LeafName(where);
-            size_t dot = leaf.rfind('.');
-            if (dot == std::string::npos || dot + 1 >= leaf.size()) continue;
+            if (!HasExtensionIn(where) && !Rooted(where)) continue;
             stop->File = where;
             stop->Line = ParseInt(number, 10);
             stop->Stopped = true;
@@ -312,11 +328,11 @@ namespace GRIDEm { namespace Services {
             {
                 if (line[0] == '?') continue;
                 if (CdbRefused(line)) return std::string();
-                size_t space = line.rfind(' ');
-                if (space == std::string::npos || space + 1 >= line.size()) continue;
-                std::string value = From(line, space + 1);
+                size_t at = CdbValueAt(line);
+                if (at == std::string::npos || at == 0 || at >= line.size()) continue;
+                std::string value = From(line, at);
                 if (Starts(value, "0n")) value = From(value, 2);
-                if (!HasDigit(value)) continue;
+                if (!CdbValue(value)) continue;
                 return value;
             }
             size_t dollar = line.find('$');
@@ -338,11 +354,10 @@ namespace GRIDEm { namespace Services {
             {
                 if (line[0] == '?') continue;
                 if (CdbRefused(line)) return std::string();
-                size_t space = line.rfind(' ');
-                if (space == std::string::npos) continue;
-                std::string value = From(line, space + 1);
-                if (!HasDigit(value)) continue;
-                return Trim(line.substr(0, space));
+                size_t at = CdbValueAt(line);
+                if (at == std::string::npos || at == 0) continue;
+                if (!CdbValue(From(line, at))) continue;
+                return Trim(line.substr(0, at));
             }
             if (GdbLike(kind))
             {
@@ -357,6 +372,42 @@ namespace GRIDEm { namespace Services {
             }
         }
         return std::string();
+    }
+
+    size_t DebugTranscript::CdbValueAt(const std::string& line)
+    {
+        char lastChar = line.empty() ? '\0' : line[line.size() - 1];
+        if (lastChar == '"' || lastChar == '}')
+        {
+            char open = lastChar == '"' ? '"' : '{';
+            for (size_t i = 1; i < line.size(); i++)
+                if (line[i] == open && line[i - 1] == ' ') return i;
+        }
+        size_t space = line.rfind(' ');
+        return space == std::string::npos ? std::string::npos : space + 1;
+    }
+
+    bool DebugTranscript::CdbValue(const std::string& value)
+    {
+        return HasDigit(value) || value == "true" || value == "false" ||
+               (value.size() >= 2 && ((value[0] == '"' && Ends(value, "\"")) || (value[0] == '{' && Ends(value, "}"))));
+    }
+
+    std::string DebugTranscript::Friendly(const std::string& complaint, const std::string& expression)
+    {
+        if (complaint.empty() || expression.empty()) return complaint;
+        const std::string head = "Couldn't resolve error at '";
+        size_t at = complaint.find(head);
+        if (at == std::string::npos) return complaint;
+        size_t from = at + head.size();
+        size_t end = complaint.find('\'', from);
+        if (end == std::string::npos) return complaint;
+        std::string name = complaint.substr(from, end - from);
+        size_t i = 0;
+        while (i < expression.size() && (expression[i] == '*' || expression[i] == '&' || expression[i] == '(' || expression[i] == ' ')) i++;
+        size_t j = i;
+        while (j < expression.size() && (std::isalnum((unsigned char)expression[j]) || expression[j] == '_' || expression[j] == ':')) j++;
+        return !name.empty() && expression.substr(i, j - i) == name ? std::string("not in scope here") : complaint;
     }
 
     std::string DebugTranscript::AddressIn(const std::string& said)
@@ -675,6 +726,10 @@ namespace GRIDEm { namespace Services {
         if (Starts(bare, "(") && Has(bare, "!")) return true;
         if (Has(bare, "`") && !bare.empty() && IsHex(bare[0])) return true;
         if (Ends(bare, ")") && (Has(bare, ".c(") || Has(bare, ".cpp(") || Has(bare, ".h("))) return true;
+        // ln's place for any source ("matrix.shl(12)", "list.hpp(40)"): a path with an extension and a line number
+        size_t open = bare.rfind('(');
+        if (open != std::string::npos && open > 0 && Ends(bare, ")") && Digits(bare.substr(open + 1, bare.size() - open - 2)) &&
+            (HasExtensionIn(bare.substr(0, open)) || Rooted(bare.substr(0, open)))) return true;
         return false;
     }
 
@@ -949,7 +1004,10 @@ namespace GRIDEm { namespace Services {
                     return l;
                 }
                 if (own) return OwnSession(l, shc, own, arch, dbgName + " is not installed", false, ToolDefinitionPtr(), std::string(), program);
-                if (dk == DebuggerKind::Cdb)
+                ToolDefinitionPtr ownDbg = defs->ToolFor(t, "ownDebugger");
+                if (dk == DebuggerKind::Cdb && ownDbg)
+                    l->WhyNot = RideToolchain::Name(tool) + " writes a .pdb and " + ownDbg->Name + " or cdb reads one, but both are Windows only - debug the program on Windows";
+                else if (dk == DebuggerKind::Cdb)
                     l->WhyNot = RideToolchain::Name(tool) + " writes a .pdb and cdb reads one, but cdb is Windows only - debug the program on Windows";
                 else
                     l->WhyNot = RideToolchain::Name(tool) + " writes DWARF and " + dbgName + " reads it, but " + dbgName
@@ -970,6 +1028,25 @@ namespace GRIDEm { namespace Services {
         l->WhyNot = "the program is built for " + arch + " - debug it there" + (theirs ? ", with " + theirs->Name : std::string())
                     + "; here " + arch + " only reaches assembly";
         return l;
+    }
+
+    bool DebuggerChoice::EntryOf(const GrideProjectPtr& p, std::string& file, int& line)
+    {
+        file.clear(); line = 0;
+        if (!p) return false;
+        static const std::regex c("^\\s*(int|void)?\\s*main\\s*\\(");
+        static const std::regex shalimar("^\\s*fun\\s*<[^>]*>\\s*=\\s*main\\s*\\(");
+        for (const std::string& f : p->AllFiles())
+        {
+            if (!Paths::IsFile(f) || Core::PathUtil::HasExtension(f, ".h")) continue;
+            std::string text, error;
+            Core::FileEncoding enc;
+            if (!Core::TextFile::Read(f, text, enc, error)) continue;
+            std::vector<std::string> lines = DebugTranscript::Lines(text);
+            for (size_t i = 0; i < lines.size(); i++)
+                if (std::regex_search(lines[i], c) || std::regex_search(lines[i], shalimar)) { file = f; line = (int)i + 1; return true; }
+        }
+        return false;
     }
 
     DebugLaunchPtr DebuggerChoice::OwnSession(const DebugLaunchPtr& l, const ToolDefinitionPtr& shc,
@@ -1054,7 +1131,7 @@ namespace GRIDEm { namespace Services {
     //  ProcessDebugger
     // =========================================================================
     ProcessDebugger::ProcessDebugger(const DebugLaunchPtr& l)
-        : launch(l), kind(l->Kind), dialect(DebuggerKind::None), moving(false), onConsole(false)
+        : launch(l), kind(l->Kind), dialect(DebuggerKind::None), moving(false), onConsole(false), entryLine(0)
     {
         session = launch->Session;
         dialect = session ? DebugTranscript::DialectOf(session->Dialect) : DebuggerKind::None;
@@ -1121,9 +1198,11 @@ namespace GRIDEm { namespace Services {
 
     bool ProcessDebugger::Start(const std::string& program, Core::Target target, const std::string& entryFile, int entryLine)
     {
-        (void)program; (void)target; (void)entryFile; (void)entryLine;
+        (void)program; (void)target;
         if (!StartSession()) return false;
-        BeginMove("run", false);
+        this->entryFile = entryFile;
+        this->entryLine = entryLine;
+        BeginMove(StopAtEntry && !entryFile.empty() && entryLine > 0 ? "runToEntry" : "run", false);
         return true;
     }
 
@@ -1357,7 +1436,7 @@ namespace GRIDEm { namespace Services {
         std::string answer = Ask(Rep(session->Command("evaluate"), "$(Expr)", expression));
         std::string value = DebugTranscript::ReadValue(dialect, answer, session->Marker);
         if (!value.empty()) { ok = true; return value; }
-        std::string why = DebugTranscript::ComplaintIn(answer);
+        std::string why = DebugTranscript::Friendly(DebugTranscript::ComplaintIn(answer), expression);
         return why.empty() ? std::string("no answer") : why;
     }
 
@@ -1380,7 +1459,7 @@ namespace GRIDEm { namespace Services {
         complaint.clear();
         if (state != DebugState::Break || StringUtil::IsNullOrWhiteSpace(name) || StringUtil::IsNullOrWhiteSpace(value)) return false;
         std::string answer = Ask(Rep(Rep(session->Command("set"), "$(Name)", name), "$(Value)", value));
-        std::string why = DebugTranscript::ComplaintIn(answer);
+        std::string why = DebugTranscript::Friendly(DebugTranscript::ComplaintIn(answer), name);
         if (!why.empty()) { complaint = why; return false; }
         ReadWatches();
         return true;
@@ -1399,6 +1478,13 @@ namespace GRIDEm { namespace Services {
         std::snprintf(hex, sizeof hex, "0x%llx", address);
         std::string answer = Ask(Rep(Rep(session->Command("memory"), "$(Count)", std::to_string(length)), "$(Address)", hex));
         return DebugTranscript::ReadMemoryBytes(dialect, answer, session->Marker, length);
+    }
+
+    bool ProcessDebugger::SendInput(const std::string& line)
+    {
+        DebugProcessPtr p = Proc();
+        if (!p || !p->Running() || !TakesInput()) return false;
+        return p->Say(Rep(session->Command("input"), "$(Text)", line));
     }
 
     void ProcessDebugger::BreakpointsChanged()
@@ -1457,11 +1543,56 @@ namespace GRIDEm { namespace Services {
         moving = true;
         if (state != DebugState::Running) state = DebugState::Running;
         DebugStopPtr origin = last;
-        DebugStopPtr stop = commandId == "stepInto" && dialect == DebuggerKind::Cdb ? CdbStepInto(origin)
+        DebugStopPtr stop = commandId == "runToEntry" ? ToEntry()
+                          : commandId == "stepInto" && dialect == DebuggerKind::Cdb ? CdbStepInto(origin)
                           : stepping ? AfterStepping(commandId) : AfterMoving(commandId);
         Announce(stop);
         moving = false;
         return stop;
+    }
+
+    // Step Over / Step Into with nothing debugged: a breakpoint for once on main's line, the run to it, and on
+    // past main's prologue to its first statement when the stop is main's entry (as a step into a function goes)
+    DebugStopPtr ProcessDebugger::ToEntry()
+    {
+        if (session->Has("runToLine") && !entryFile.empty() && entryLine > 0)
+        {
+            std::string answer = Ask(Fill(session->Command("runToLine"), entryFile, entryLine));
+            bool ok = dialect != DebuggerKind::Cdb || (!Has(answer, "Couldn't resolve") && !Has(answer, "Bp expression"));
+            if (!ok) Print("no stop at main's line " + DebugTranscript::LeafName(entryFile) + ":" + std::to_string(entryLine) + " - running on");
+        }
+        DebugStopPtr stop = AfterMoving("run");
+        if (dialect == DebuggerKind::Cdb && stop->Stopped && stop->Function == "main" && AtFunctionEntry(stop->Said)) stop = AfterStepping("stepOver");
+        return stop;
+    }
+
+    // a move's answer read a little at a time, the program's lines in it told as they come - the prompt of a
+    // program waiting for its input among them - not when the move ends; told: how much of the answer has
+    // been looked through for them
+    std::string ProcessDebugger::ReadMoving(const DebugProcessPtr& p, bool& found, size_t& told)
+    {
+        std::string all;
+        std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+        found = false;
+        told = 0;
+        for (;;)
+        {
+            bool got = false;
+            std::string part = p->ReadUntil(session->Marker, 150, got, true);
+            all += part;
+            AppendSaid(part);
+            if (got) { found = true; break; }
+            size_t nl = all.rfind('\n');
+            size_t ended = nl == std::string::npos ? 0 : nl + 1;
+            if (ended > told)
+            {
+                for (const std::string& line : DebugTranscript::ProgramOutput(dialect, all.substr(told, ended - told), MarkerStart())) PrintProgram(line);
+                told = ended;
+            }
+            long long waited = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
+            if (!p->Running() || waited > MoveTimeoutMs) break;
+        }
+        return all;
     }
 
     DebugStopPtr ProcessDebugger::AfterMoving(const std::string& commandId)
@@ -1475,23 +1606,35 @@ namespace GRIDEm { namespace Services {
             return gone;
         }
         std::string answer;
+        size_t told = 0;        // how much of answer was looked through for the program's lines while the move went on
         {
             std::lock_guard<std::mutex> hold(gate);
             p->Say(command);
             p->Say(session->MarkerCommand);
             bool found = false;
-            answer = p->ReadUntil(session->Marker, MoveTimeoutMs, found);
-            AppendSaid(answer);
-            if (onConsole) answer = DebugTranscript::WithoutEcho(DebugTranscript::WithoutEscapes(answer), command, session->MarkerCommand);
+            if (onConsole)
+            {
+                answer = p->ReadUntil(session->Marker, MoveTimeoutMs, found);
+                AppendSaid(answer);
+                answer = DebugTranscript::WithoutEcho(DebugTranscript::WithoutEscapes(answer), command, session->MarkerCommand);
+            }
+            else answer = ReadMoving(p, found, told);
             if (!found && p->Running()) { Print("the debugger stopped answering"); p->Stop(std::string()); }
         }
+        std::string untold = From(answer, told);
         if (dialect == DebuggerKind::Cdb && session->Has("afterMove"))
         {
             std::string ev = Ask(session->Command("afterMove"));
             answer += "\n" + ev;
-            if (!Has(ev, "Exit process") && session->Has("where")) answer += "\n" + Ask(session->Command("where"));
+            untold += "\n" + ev;
+            if (!Has(ev, "Exit process") && session->Has("where"))
+            {
+                std::string where = Ask(session->Command("where"));
+                answer += "\n" + where;
+                untold += "\n" + where;
+            }
         }
-        for (const std::string& line : DebugTranscript::ProgramOutput(dialect, answer, MarkerStart())) PrintProgram(line);
+        for (const std::string& line : DebugTranscript::ProgramOutput(dialect, untold, MarkerStart())) PrintProgram(line);
         DebugStopPtr stop = DebugTranscript::ReadStop(dialect, answer);
         if (!Running()) { if (!stop->Exited) stop->Stopped = false; }
         if (stop->Stopped)
@@ -1619,7 +1762,6 @@ namespace GRIDEm { namespace Services {
         if (stop->Stopped)
         {
             std::string file = ResolveFile(stop->File);
-            ReadWatches();
             Print(DebugTranscript::StopLine(file, stop->Line, stop->Function));
             StopAt(file, stop->Line, Has(stop->Said, "Breakpoint") || Has(stop->Said, "breakpoint") ? "breakpoint" : "step", stop->Function);
             return;
@@ -1628,8 +1770,9 @@ namespace GRIDEm { namespace Services {
         if (!stop->Exited && dialect == DebuggerKind::Cdb && Running())
         {
             Print("stopped where there is no source to show - Continue carries on, Step Out steps out");
-            ReadWatches();
             location.reset();
+            state = DebugState::Break;
+            ReadWatches();
             SetState(DebugState::Break);
             return;
         }

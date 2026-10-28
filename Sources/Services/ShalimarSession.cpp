@@ -399,7 +399,6 @@ namespace GRIDEm { namespace Services {
         {
             std::string file = ResolveFile(stop->File);
             last = stop;
-            ReadWatches();
             Print(DebugTranscript::StopLine(file, stop->Line, std::string()));
             StopAt(file, stop->Line, ran ? "breakpoint" : "step");
             return;

@@ -88,8 +88,17 @@ namespace GRIDEm { namespace Services {
         static std::string ReadType(DebuggerKind kind, const std::string& said, const std::string& marker);
         // the first "0x..." in an answer, cdb's backtick taken out, or ""
         static std::string AddressIn(const std::string& said);
+        // where the value starts in cdb's answer to "?? x", after the type: the last word, or the whole of a
+        // quoted text or a braced list ending the line, which may hold spaces ("char [12] "Alice Smith"",
+        // "int[] {5, 7, 13}"); npos when there is no type before it
+        static size_t CdbValueAt(const std::string& line);
+        // whether the words after the type are a value: a number, true or false, a quoted text, a braced list
+        static bool CdbValue(const std::string& value);
         // the complaint in an answer, or "" (RIDE's complaintIn)
         static std::string ComplaintIn(const std::string& answer);
+        // a complaint as GRIDEm's panes say it: cdb's "Couldn't resolve error at 'count'" about the
+        // expression's own first name is a name not in scope where the program stopped
+        static std::string Friendly(const std::string& complaint, const std::string& expression);
         static bool StoppedWithNoSource(const std::string& said);
 
         // ---- the program's own output (dbg_programOutput): the debugger's lines dropped, unknown lines kept ----
@@ -195,6 +204,9 @@ namespace GRIDEm { namespace Services {
                                          const Settings::ToolDefinitionPtr& simDef, const std::string& simulator,
                                          const std::string& program);
         // RIDE's dbg_c6xBackend with GRIDE's setting over it: auto, sim6747, vm6747; why says what decided it
+        // where main() starts, for a stop there (Step Over / Step Into with nothing debugged): C's and C++'s
+        // "int main(", Shalimar's "fun <> = main("; false when no source of the project has one
+        static bool EntryOf(const Model::GrideProjectPtr& p, std::string& file, int& line);
         static std::string C6xBackend(const std::string& assembly, const std::string& out, const std::string& simulator,
                                       const std::string& simName, const std::string& vmName, const std::string& setting,
                                       std::string& why);
@@ -238,6 +250,7 @@ namespace GRIDEm { namespace Services {
 
         // ---- the moves, synchronous (the tests' way in; the overrides above run these on a worker) ----
         DebugStopPtr RunNow()      { return MoveNow("run", false); }
+        DebugStopPtr RunToEntryNow(const std::string& file, int line) { entryFile = file; entryLine = line; return MoveNow("runToEntry", false); }
         DebugStopPtr ContinueNow() { return MoveNow("continue", false); }
         DebugStopPtr StepOverNow() { return MoveNow("stepOver", true); }
         DebugStopPtr StepIntoNow() { return MoveNow("stepInto", true); }
@@ -256,6 +269,10 @@ namespace GRIDEm { namespace Services {
         std::vector<RegisterValue> Registers() override;
         std::vector<unsigned char> ReadMemory(unsigned long long address, int length) override;
         void BreakpointsChanged() override;
+        // the program's input, where the session can hand it over (its "input" command): at once, even
+        // while a move waits for the program, which may be waiting for this very line
+        bool TakesInput() const override { return session && session->Has("input"); }
+        bool SendInput(const std::string& line) override;
 
         // one command, then the marker, then what came before it (RIDE's ask)
         std::string Ask(const std::string& command);
@@ -277,6 +294,8 @@ namespace GRIDEm { namespace Services {
         void SetEveryBreakpoint();
         void BeginMove(const std::string& command, bool stepping);
         DebugStopPtr MoveNow(const std::string& commandId, bool stepping);
+        DebugStopPtr ToEntry();
+        std::string ReadMoving(const DebugProcessPtr& p, bool& found, size_t& told);
         DebugStopPtr AfterMoving(const std::string& commandId);
         DebugStopPtr AfterStepping(const std::string& commandId);
         bool HasSource(const DebugStopPtr& stop) const;
@@ -301,5 +320,7 @@ namespace GRIDEm { namespace Services {
         std::atomic<bool> moving;
         std::thread mover;
         bool onConsole;
+        std::string entryFile;      // where main() starts (Start's), for the stop there
+        int entryLine;
     };
 }}

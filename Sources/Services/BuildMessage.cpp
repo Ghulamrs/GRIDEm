@@ -24,9 +24,15 @@ namespace GRIDEm { namespace Services {
         }
     }
 
+    std::string BuildMessage::Leaf(const std::string& name)
+    {
+        size_t slash = name.find_last_of("/\\");
+        return slash == std::string::npos ? name : name.substr(slash + 1);
+    }
+
     std::string BuildMessage::ToString() const
     {
-        return Paths::FileName(StringUtil::ReplaceChar(File, '\\', '/')) + "(" + std::to_string(Line) + "): "
+        return Leaf(File) + "(" + std::to_string(Line) + "): "
             + StringUtil::ToLower(SeverityName(Sev)) + " " + Code + ": " + Text;
     }
 
@@ -163,7 +169,7 @@ namespace GRIDEm { namespace Services {
     static const MessagePattern& BannerPattern()
     {
         static const MessagePatternPtr p = Make(
-            "^(c90|cpp11|shalimar|shc|cc1|cxx1): compilation completed successfully", true);
+            "^(c90|cpp11|shalimar|shc|cc1|cxx1): (compilation completed successfully|also compiled )", true);
         return *p;
     }
 
@@ -327,7 +333,15 @@ namespace GRIDEm { namespace Services {
             m = BuildMessageParser::TryParse(line, workDir, custom);
             if (!m) m = BuildMessageParser::TryParseShalimar(line, source);
             if (!m && hasPrevious) m = BuildMessageParser::TryParseCaret(previous, line, workDir);
-            if (!m) m = OwnLine(line);
+            if (!m)
+            {
+                BuildMessagePtr own = OwnLine(line);
+                if (own)
+                {
+                    std::lock_guard<std::mutex> hold(itselfLock);
+                    itself.push_back(own);
+                }
+            }
         }
         previous = line;
         hasPrevious = true;
@@ -349,14 +363,28 @@ namespace GRIDEm { namespace Services {
         }
         size_t at = line.find(": ");
         if (at == std::string::npos || at == 0) return nullptr;
-        std::string who = StringUtil::ToLower(Paths::FileName(StringUtil::ReplaceChar(StringUtil::Trim(line.substr(0, at)), '\\', '/')));
+        std::string who = StringUtil::ToLower(BuildMessage::Leaf(StringUtil::Trim(line.substr(0, at))));
         if (who != toolName && who != toolName + ".exe") return nullptr;
         std::string text = StringUtil::Trim(line.substr(at + 2));
         if (text.empty()) return nullptr;
         BuildMessagePtr b = std::make_shared<BuildMessage>();
-        // shalimar names the other files of the program it compiled along ("also compiled linalg.shl"): a note
-        b->Sev = StringUtil::StartsWith(text, "also compiled ") ? Severity::Info : Severity::Error;
+        b->Sev = Severity::Error;
         b->Text = text;
         return b;
+    }
+
+    std::vector<BuildMessagePtr> DiagnosticReader::TakeItself(bool failed)
+    {
+        std::vector<BuildMessagePtr> r;
+        {
+            std::lock_guard<std::mutex> hold(itselfLock);
+            r.swap(itself);
+        }
+        for (const BuildMessagePtr& m : r)
+        {
+            m->Sev = failed ? Severity::Error : Severity::Info;
+            if (failed && !First) First = m;
+        }
+        return r;
     }
 }}

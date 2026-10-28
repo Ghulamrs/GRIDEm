@@ -104,16 +104,22 @@ namespace GRIDEm { namespace Services {
 
     // ---- BuildEngine: public -------------------------------------------------------
     BuildEngine::BuildEngine(const Settings::GrideSettingsPtr& s)
-        : settings(s), placedError(false), codeViewWarned(false), clSettingsSaid(false), rideHeadersSaid(false),
-          busy(false)
+        : settings(s), placedError(false), codeViewWarned(false), codeViewMissing(false), ownCodeView(false),
+          clSettingsSaid(false), rideHeadersSaid(false), crtSaid(false), toolLines(0), toolHidden(0), busy(false)
     {
         runner.OnLine = [this](const std::string& line) { OnToolLine(line); };
     }
 
     BuildEngine::~BuildEngine()
     {
-        runner.Cancel();
+        Cancel();
         if (worker.joinable()) worker.join();
+    }
+
+    void BuildEngine::Cancel()
+    {
+        runner.Cancel();
+        StopWorkers();
     }
 
     bool BuildEngine::StartAsync(const BuildRequestPtr& r)
@@ -148,7 +154,7 @@ namespace GRIDEm { namespace Services {
 
     std::string BuildEngine::ProgramPath(const GrideProjectPtr& p, const BuildConfigurationPtr& cfg)
     {
-        std::string name = cfg->OutputName.empty() ? p->Name : cfg->OutputName;
+        std::string name = cfg->OutputName.empty() ? p->ProgramName() : cfg->OutputName;
         return Paths::Combine(p->ToAbsolute(cfg->OutDir), name + TargetInfo::ProgramExtension(cfg->TargetKind));
     }
 
@@ -169,7 +175,7 @@ namespace GRIDEm { namespace Services {
         NameSet seen;
         for (const std::string& f : p->AllFiles())
         {
-            if (p->IsExcludedIn(f, configName) || IsHeader(f)) continue;
+            if (p->IsExcludedIn(f, configName) || IsHeader(f) || !p->IsBuilt(f)) continue;
             Language l = settings->DetectLanguage(f, p->Lang);
             if ((LanguageInfo::IsCompiled(l) || l == Language::Assembly) && seen.insert(f).second) r.push_back(f);
         }
@@ -244,7 +250,7 @@ namespace GRIDEm { namespace Services {
 
     std::string BuildEngine::ProgramStem(const GrideProjectPtr& p, const BuildConfigurationPtr& cfg)
     {
-        return cfg->OutputName.empty() ? p->Name : cfg->OutputName;
+        return cfg->OutputName.empty() ? p->ProgramName() : cfg->OutputName;
     }
 
     std::string BuildEngine::Unwritable(const std::string& dir)
@@ -255,6 +261,20 @@ namespace GRIDEm { namespace Services {
         if (Paths::IsDirectory(dir) && Paths::WriteFile(probe, std::string(), error) && Paths::DeleteFile(probe))
             return std::string();
         return dir + " cannot be written to, and the program would go there - copy the project to a folder of your own, such as Documents, and build it there";
+    }
+
+    std::string BuildEngine::Shown(const std::string& line, const std::string& projectDir)
+    {
+        if (line.empty() || projectDir.empty()) return line;
+        std::string dir = projectDir;
+        while (!dir.empty() && (dir[dir.size() - 1] == '/' || dir[dir.size() - 1] == '\\')) dir.erase(dir.size() - 1);
+        size_t lead = 0;
+        while (lead < line.size() && (line[lead] == ' ' || line[lead] == '\t')) lead++;
+        std::string t = line.substr(lead);
+        const std::string prefixes[] = { dir + "/", StringUtil::ReplaceChar(dir, '/', '\\') + "\\" };
+        for (const std::string& d : prefixes)
+            if (t.size() > d.size() && StringUtil::StartsWithIgnoreCase(t, d)) return line.substr(0, lead) + t.substr(d.size());
+        return line;
     }
 
     // ---- output --------------------------------------------------------------------
@@ -281,6 +301,16 @@ namespace GRIDEm { namespace Services {
     void BuildEngine::BeginTool(const std::string& source, const std::string& toolName)
     {
         reader = std::make_shared<DiagnosticReader>(currentWorkDir, currentPattern, source, toolName);
+        toolLines = 0;
+        toolHidden = 0;
+    }
+
+    // RIDE's own compilers write UTF-8 unless the toolchain names a code page
+    ToolRunOptions BuildEngine::ToolOptions(const ToolRunOptions& options, bool rideTool)
+    {
+        ToolRunOptions o = options;
+        if (rideTool && o.OutputCodePage == 0) o.OutputCodePage = 65001;
+        return o;
     }
 
     int BuildEngine::RunTool(const std::string& command, const std::string& workDir, const ToolRunOptions& options,
@@ -288,20 +318,44 @@ namespace GRIDEm { namespace Services {
                              bool rideTool)
     {
         BeginTool(source, toolName);
-        ToolRunOptions o = options;
-        if (rideTool && o.OutputCodePage == 0) o.OutputCodePage = 65001;
+        ToolRunOptions o = ToolOptions(options, rideTool);
         int rc = runner.Run(command, workDir, &o);
+        EndTool(rc, source, toolName, targetName);
+        return rc;
+    }
+
+    // after the run: the lines not shown counted, then the tool's lines about itself - errors only when it failed
+    void BuildEngine::EndTool(int rc, const std::string& source, const std::string& toolName, const std::string& targetName)
+    {
+        if (toolHidden > 0) Say("[" + toolName + ": " + std::to_string(toolHidden) + " more line(s) not shown]");
+        std::shared_ptr<DiagnosticReader> r = reader;
+        if (r)
+            for (const BuildMessagePtr& m : r->TakeItself(rc != 0 && rc != ToolRunner::ExitCancelled))
+            {
+                if (currentProject) m->Project = currentProject->Name;
+                summary->Count(m);
+                if (OnMessage) OnMessage(m);
+            }
         if (rc == ToolRunner::ExitStartFailed)
             Report(Severity::Error, source, toolName + " could not be run - name it under Settings > Toolchains > " + targetName + ", or put it on PATH");
-        return rc;
     }
 
     void BuildEngine::OnToolLine(const std::string& line)
     {
-        if (OnOutput) OnOutput(line);
         Keep(line);
         std::shared_ptr<DiagnosticReader> r = reader;
         BuildMessagePtr m = r ? r->Feed(line) : BuildMessageParser::TryParse(line, currentWorkDir, currentPattern);
+        // a tool failing on every line would bury the build: its first MaxToolLines are shown, the rest counted
+        if (++toolLines > MaxToolLines)
+        {
+            toolHidden++;
+            if (m) summary->Count(m);
+            return;
+        }
+        // the compilers' banner and their echo of the file written say nothing the step's line has not
+        std::string t = StringUtil::Trim(line);
+        bool quiet = !m && (StringUtil::StartsWith(t, "\xC2\xA9") || (!writes.empty() && StringUtil::EqualsIgnoreCase(t, writes)));
+        if (!quiet && OnOutput) OnOutput(Shown(line, currentWorkDir));
         if (!m) return;
         if (currentProject) m->Project = currentProject->Name;
         if (m->Sev == Severity::Error && m->Line > 0 && !m->File.empty()) placedError = true;
@@ -323,6 +377,147 @@ namespace GRIDEm { namespace Services {
         Say(prefix + ": " + text);
         if (OnMessage) OnMessage(m);
     }
+
+    // ---- compile steps on workers ------------------------------------------------------
+    // how many compile steps run at once (Settings > General): 0 is one per processor
+    int BuildEngine::Jobs() const
+    {
+        int n = settings->Env->BuildJobs;
+        if (n > 0) return n;
+        unsigned int cpus = std::thread::hardware_concurrency();
+        return cpus > 0 ? (int)cpus : 1;
+    }
+
+    void BuildEngine::StopWorkers()
+    {
+        std::lock_guard<std::mutex> hold(workersLock);
+        for (ToolRunner* r : workers) r->Cancel();
+    }
+
+    void BuildEngine::RunStep(const CompileStepPtr& step, const std::string& workDir)
+    {
+        ToolRunner r;
+        std::vector<std::string>* into = nullptr;
+        r.OnLine = [&into](const std::string& line) { if (into) into->push_back(line); };
+        {
+            std::lock_guard<std::mutex> hold(workersLock);
+            workers.push_back(&r);
+            if (runner.Cancelled()) r.Cancel();
+        }
+        for (ToolPass& pass : step->Passes)
+        {
+            into = &pass.Lines;
+            pass.Code = r.Run(pass.Command, workDir, &pass.Options);
+            pass.Ran = true;
+            if (pass.Code != 0)
+            {
+                if (!pass.Writes.empty() && Paths::IsFile(pass.Writes)) Paths::DeleteFile(pass.Writes);
+                break;
+            }
+        }
+        into = nullptr;
+        {
+            std::lock_guard<std::mutex> hold(workersLock);
+            workers.erase(std::remove(workers.begin(), workers.end(), &r), workers.end());
+        }
+        {
+            std::lock_guard<std::mutex> hold(stepLock);
+            step->Done = true;
+        }
+        stepDone.notify_all();
+    }
+
+    // The steps Jobs() at a time, the largest first, each read back in project order once it and those
+    // before it are done - so the output is what one tool after another gave. The first to fail stops
+    // the others. -1 when one failed or the build was cancelled, else 0.
+    int BuildEngine::RunSteps(const std::vector<CompileStepPtr>& steps, const std::string& workDir)
+    {
+        int jobs = Jobs();
+        std::vector<CompileStepPtr> order = steps;
+        std::stable_sort(order.begin(), order.end(),
+                         [](const CompileStepPtr& a, const CompileStepPtr& b) { return a->Size > b->Size; });
+        std::vector<std::thread> threads;
+        size_t started = 0, read = 0;
+        bool failed = false;
+        int result = 0;
+        for (;;)
+        {
+            while (!failed && read < steps.size() && steps[read]->Done)
+                if (ReadBack(*steps[read++]) != 0) { failed = true; StopWorkers(); }
+            int running = 0;
+            for (const CompileStepPtr& s : steps)
+                if (s->Started && !s->Done) running++;
+            if (failed || runner.Cancelled())
+            {
+                if (running == 0) { result = -1; break; }
+            }
+            else
+            {
+                if (read == steps.size()) break;
+                while (running < jobs && started < order.size())
+                {
+                    CompileStepPtr next = order[started++];
+                    next->Started = true;
+                    threads.push_back(std::thread([this, next, workDir]() { RunStep(next, workDir); }));
+                    running++;
+                }
+            }
+            std::unique_lock<std::mutex> wait(stepLock);
+            stepDone.wait_for(wait, std::chrono::milliseconds(100));
+        }
+        for (std::thread& t : threads) t.join();
+        return result;
+    }
+
+    // a finished step read as RunTool reads a tool while it runs; 0, or -1 with failedStep where it failed
+    int BuildEngine::ReadBack(CompileStep& step)
+    {
+        for (ToolPass& pass : step.Passes)
+        {
+            for (const std::string& s : pass.Before) Say(s);
+            if (!pass.Ran) return -1;
+            BeginTool(pass.Source, pass.ToolName);
+            writes = pass.Echo;
+            for (const std::string& line : pass.Lines) OnToolLine(line);
+            writes.clear();
+            EndTool(pass.Code, pass.Source, pass.ToolName, pass.TargetName);
+            if (pass.Code == 0) continue;
+            failedStep = pass.Step;
+            if (!pass.Refused.empty()) Say(pass.Refused);
+            return -1;
+        }
+        return 0;
+    }
+
+    // whether a Debug build has a file whose compiler cannot write its own CodeView, which clang must then carry
+    bool BuildEngine::NeedsClang(const GrideProjectPtr& p, const BuildConfigurationPtr& cfg, Target t) const
+    {
+        for (const std::string& src : BuildableFiles(p, cfg->Config))
+        {
+            Language lang = settings->DetectLanguage(src, p->Lang);
+            if (lang == Language::Assembly) continue;
+            RideTool tool = RideToolchain::Resolve(RideToolchain::FromWord(p->ToolchainFor(FolderOf(p, src))), lang);
+            if (RideToolchain::DebugsWithCodeView(tool, t, true) && !RideToolchain::OwnCodeView(tool, t, true)) return true;
+        }
+        return false;
+    }
+
+    // The Windows C runtime a link takes: "grt" (GRIDE's) or "msvc" (Microsoft's). Automatic is Microsoft's
+    // only where Visual Studio is found and cl's objects are among the inputs.
+    std::string BuildEngine::WindowsRuntime(bool clObjects) const
+    {
+        std::string choice = settings->Env->EffectiveWindowsRuntime();
+        if (choice != "auto") return choice;
+        return clObjects && VisualStudio::Find() ? "msvc" : "grt";
+    }
+
+    // Microsoft's runtime libraries, each refused to a link with GRIDE's runtime
+    static const char* const kMicrosoftRuntimeRefused =
+        " /NODEFAULTLIB:libcmt /NODEFAULTLIB:libcmtd /NODEFAULTLIB:msvcrt /NODEFAULTLIB:msvcrtd"
+        " /NODEFAULTLIB:libucrt /NODEFAULTLIB:libucrtd /NODEFAULTLIB:ucrt /NODEFAULTLIB:ucrtd"
+        " /NODEFAULTLIB:libvcruntime /NODEFAULTLIB:libvcruntimed /NODEFAULTLIB:vcruntime /NODEFAULTLIB:vcruntimed"
+        " /NODEFAULTLIB:libcpmt /NODEFAULTLIB:libcpmtd /NODEFAULTLIB:msvcprt /NODEFAULTLIB:msvcprtd"
+        " /NODEFAULTLIB:oldnames /NODEFAULTLIB:legacy_stdio_definitions";
 
     void BuildEngine::ThreadMain(std::vector<BuildRequestPtr> requests)
     {
@@ -348,6 +543,7 @@ namespace GRIDEm { namespace Services {
                     codeViewWarned = false;
                     clSettingsSaid = false;
                     rideHeadersSaid = false;
+                    crtSaid = false;
                     int result = BuildProject(p, r, false);
                     if (result == -1 && !runner.Cancelled()) result = NativeFallback(p, r);
                     if (result > 0) summary->Succeeded++;
@@ -639,6 +835,27 @@ namespace GRIDEm { namespace Services {
         ToolRunOptions run = RunOptions(tc, t);
         bool viaSetup = false;      // a setup script is Windows only: tools never come from its PATH here
 
+        // a Debug build's line table goes through clang; without it the compilers write MASM and masm and the
+        // linker make the program - said once, before anything runs. Only where the target is this machine's.
+        codeViewMissing = false;
+        ownCodeView = false;
+        TargetDefinitionPtr hostDef = ToolchainDefinitions::Current()->TargetOf(t);
+        if (debug && !native && !emulated && hostDef && hostDef->Host && r->Action != BuildAction::Clean &&
+            RideToolchain::DebugsWithCodeView(RideTool::C90, t, true) && NeedsClang(p, cfg, t))
+        {
+            std::string clang = StringUtil::IsNullOrWhiteSpace(tc->DebugAssembler) ? std::string()
+                                                                                    : tc->ResolveFor("debugAssembler", tc->DebugAssembler);
+            if (clang.empty() || !Paths::IsFile(clang) || StringUtil::IsNullOrWhiteSpace(tc->DebugAssembleCmd))
+            {
+                codeViewMissing = true;
+                codeViewWarned = true;
+                Report(Severity::Warning, std::string(), RoleName(t, "debugAssembler", tc->DebugAssembler) +
+                       " not found - this Debug build has no source line table: " + RoleName(t, "assembler", tc->Assembler) +
+                       " and " + RoleName(t, "linker", tc->Linker) + " make the program, the debugger shows no lines (looked in " +
+                       tc->LookedIn(tc->DebugAssembler) + ")");
+            }
+        }
+
         if (r->Action == BuildAction::Clean || r->Action == BuildAction::Rebuild)
         {
             // OutDir "." or "../" would otherwise empty the project (or a parent) folder
@@ -683,9 +900,11 @@ namespace GRIDEm { namespace Services {
         bool codeView = false;
         std::string lastFolder;
 
-        // ---- compile + assemble each source ----
+        // ---- compile + assemble each source: every step decided here, in project order, before any tool
+        // runs; then RunSteps runs them Jobs() at a time ----
         if (r->Action != BuildAction::LinkOnly)
         {
+            std::vector<CompileStepPtr> steps;
             for (const std::string& src : sources)
             {
                 if (runner.Cancelled()) return -1;
@@ -734,16 +953,26 @@ namespace GRIDEm { namespace Services {
                 mx.Set("AsmFile", asmFile);
                 mx.Set("ObjFile", objFile);
                 SetCompilerMacros(mx, tool, lang, p, cfg, tc);
+                CompileStepPtr step = std::make_shared<CompileStep>();
+                const std::vector<std::string> one(1, src);
+                for (const std::string& f : group != nullptr ? *group : one)
+                {
+                    long long size = Paths::FileSize(f);
+                    if (size > 0) step->Size += size;
+                }
+                steps.push_back(step);
 
                 if (lang != Language::Assembly && r->Action != BuildAction::AssembleOnly)
                 {
+                    ToolPass compile;
                     // RIDE's "$ group (compiler)" line as each part starts
                     std::string heading = (folder.empty() ? p->Name : folder) + " (" + RideToolchain::Name(tool) + ")";
-                    if (heading != lastFolder) { Say("$ " + heading); lastFolder = heading; }
+                    if (heading != lastFolder) { compile.Before.push_back("$ " + heading); lastFolder = heading; }
 
                     std::string compiler = tc->ResolveFor(RideToolchain::RoleOf(tool), tc->CompilerFor(tool));
                     if (!Paths::IsFile(compiler) && !viaSetup)
                     {
+                        for (const std::string& s : compile.Before) Say(s);
                         Report(Severity::Error, src, RideToolchain::Name(tool) + " not found: " + compiler +
                                "  (looked in " + tc->LookedIn(tc->CompilerFor(tool)) + "; set it in Settings > Toolchains > " + tc->Name() + ")");
                         return -1;
@@ -762,20 +991,25 @@ namespace GRIDEm { namespace Services {
                     ToolDefinitionPtr ran = ProgramDefinition(tool, compiler);
                     std::string ranName = ran ? ran->Name : Paths::FileNameWithoutExtension(compiler);
                     std::string shownSources = group != nullptr ? StringUtil::Join(" ", Leaves(*group)) : Paths::FileName(src);
-                    Say("[" + ranName + "]  " + shownSources + "  ->  " +
-                        PathUtil::MakeRelative(p->ProjectDir(), writesObject ? objFile : asmFile));
-                    bool cv = !writesObject && RideToolchain::DebugsWithCodeView(tool, t, debug);
+                    compile.Before.push_back("[" + ranName + "]  " + shownSources + "  ->  " +
+                                             PathUtil::MakeRelative(p->ProjectDir(), writesObject ? objFile : asmFile));
+                    bool own = !writesObject && RideToolchain::OwnCodeView(tool, t, debug);
+                    bool cv = !writesObject && !own && !codeViewMissing && RideToolchain::DebugsWithCodeView(tool, t, debug);
+                    if (own) ownCodeView = true;
                     std::vector<std::string> optionEnv = RideToolchain::OptionEnvironment(p->Options, RideToolchain::Definition(tool), cfg->Config);
                     // RIDE's own compilers write UTF-8; a program the definitions know is read as they say
                     bool utf8 = ran ? StringUtil::EqualsIgnoreCase(ran->OutputEncoding, "utf-8")
                                     : tool != RideTool::Cl && tool != RideTool::HostCxx;
-                    if (RunTool(mx.Expand(templ), p->ProjectDir(), CompileOptions(run, tc, cv, optionEnv), src, ranName,
-                                tc->Name(), utf8) != 0)
-                    {
-                        failedStep = "compile";
-                        return -1;
-                    }
-                    if (writesObject) continue;      // the compiler wrote the object itself: nothing to assemble
+                    compile.Command = mx.Expand(templ);
+                    compile.Options = ToolOptions(CompileOptions(run, tc, cv, optionEnv), utf8);
+                    compile.Source = src;
+                    compile.ToolName = ranName;
+                    compile.TargetName = tc->Name();
+                    compile.Echo = writesObject ? objFile : asmFile;
+                    compile.Writes = compile.Echo;
+                    compile.Step = "compile";
+                    step->Passes.push_back(compile);
+                    if (writesObject) continue;      // the compiler writes the object itself: nothing to assemble
                     if (cv) codeView = true;
                 }
 
@@ -791,14 +1025,22 @@ namespace GRIDEm { namespace Services {
                     return -1;
                 }
                 mx.Set(as.Macro, as.Path);
-                Say("[" + as.Name + "]  " + Paths::FileName(asmFile) + "  ->  " + PathUtil::MakeRelative(p->ProjectDir(), objFile));
-                if (RunTool(mx.Expand(as.Cmd), p->ProjectDir(), run, asmFile, as.Name, tc->Name(), false) != 0)
-                {
-                    failedStep = "assemble";
-                    if (emulated) Say(as.Name + " refused the assembly - the emulator would run it, but it is not a TI program");
-                    return -1;
-                }
+                ToolPass assemble;
+                assemble.Before.push_back("[" + as.Name + "]  " + Paths::FileName(asmFile) + "  ->  " +
+                                          PathUtil::MakeRelative(p->ProjectDir(), objFile));
+                assemble.Command = mx.Expand(as.Cmd);
+                assemble.Options = run;
+                assemble.Source = asmFile;
+                assemble.ToolName = as.Name;
+                assemble.TargetName = tc->Name();
+                assemble.Writes = objFile;
+                assemble.Step = "assemble";
+                if (emulated) assemble.Refused = as.Name + " refused the assembly - the emulator would run it, but it is not a TI program";
+                step->Passes.push_back(assemble);
             }
+            steps.erase(std::remove_if(steps.begin(), steps.end(),
+                                       [](const CompileStepPtr& s) { return s->Passes.empty(); }), steps.end());
+            if (RunSteps(steps, p->ProjectDir()) != 0) return -1;
         }
         else
         {
@@ -855,9 +1097,15 @@ namespace GRIDEm { namespace Services {
         // cl's objects (a part the project or a folder gives to cl) are Microsoft's: its link.exe links them
         bool clObjects = false, otherObjects = false;
         PartsOf(p, sources, clObjects, otherObjects);
-        Step ld = LinkerFor(tc, t, debug, native,
-                            codeView || (debug && !emulated && !native && RideToolchain::DebugsWithCodeView(RideTool::C90, t, debug)),
-                            clObjects && !emulated);
+        bool clangCodeView = codeView || (debug && !emulated && !native && !codeViewMissing && !ownCodeView &&
+                                          NeedsClang(p, cfg, t) && RideToolchain::DebugsWithCodeView(RideTool::C90, t, debug));
+        Step ld = LinkerFor(tc, t, debug, native, clangCodeView, clObjects && !emulated);
+        // the PDB of GRIDE's own link: /DEBUG, which it writes beside the program
+        if (ownCodeView && !clangCodeView && !emulated && ld.Role == "linker")
+        {
+            std::string flags = mx.Get("LinkFlags");
+            if (StringUtil::IndexOfIgnoreCase(flags, "/DEBUG", 0) < 0) mx.Set("LinkFlags", StringUtil::Trim(flags + " /DEBUG"));
+        }
         // Linux and macOS: the linker role is the C driver (cc), which leaves the C++ runtime out. C++ and
         // Shalimar objects are linked by the target's host C++ driver (c++) with the same arguments, as cpp11
         // and shalimar link their own programs on these hosts (new in GRIDEm: GRIDEd links only Windows and
@@ -893,6 +1141,40 @@ namespace GRIDEm { namespace Services {
             return -1;
         }
         mx.Set(ld.Macro, ld.Path);
+        // the Windows C runtime: GRIDE's own (its layered libraries and kernel32.lib, by their paths) or Microsoft's
+        std::string crt;
+        if (!emulated && RideToolchain::HostCrt(t, "grt"))
+        {
+            crt = WindowsRuntime(clObjects);
+            std::string libs;
+            bool found = RideToolchain::CrtLibraries(t, debug, crt, tc->ToolDir, ToolchainSettings::RideRoot, libs);
+            std::string where = RideToolchain::CrtDirectory(t, "grt", tc->ToolDir, ToolchainSettings::RideRoot);
+            if (!found && settings->Env->EffectiveWindowsRuntime() == "auto" && VisualStudio::Find())
+            {
+                Say("[GRIDE's C runtime is not in " + where + " - Microsoft's (Visual Studio's) is linked instead]");
+                crt = "msvc";
+                found = RideToolchain::CrtLibraries(t, debug, crt, tc->ToolDir, ToolchainSettings::RideRoot, libs);
+            }
+            if (!found)
+            {
+                Report(Severity::Error, std::string(), "GRIDE's C runtime is not there: grtstart.lib, grtcompat.lib, grtcxx.lib, grtc.lib, grtwin.lib and kernel32.lib are looked for in " +
+                       where + " inside GRIDEm");
+                failedStep = "link";
+                return -1;
+            }
+            if (crt == "grt") libs += kMicrosoftRuntimeRefused;
+            mx.Set("CrtLibs", libs);
+            if (crt == "grt" && clObjects)
+                Report(Severity::Warning, std::string(), "cl's objects name Microsoft's C runtime, and GRIDE's runtime is chosen (Settings > Projects > GRIDE Paths, Windows C runtime): they may not link");
+            if (!crtSaid)
+            {
+                crtSaid = true;
+                std::string named;
+                RideToolchain::CrtLibraries(t, debug, crt, tc->ToolDir, ToolchainSettings::RideRoot, named);
+                Say(crt == "grt" ? "[GRIDE's C runtime: grtstart, grtcompat, grtcxx, grtc, grtwin and kernel32.lib from " + where + "]"
+                                 : "[Microsoft's C runtime: " + named + ", found through LIB]");
+            }
+        }
         // every object cl's: they name their own C runtime, so no CRT list is added to theirs
         if (!emulated && clObjects && !otherObjects && ld.Role != "linker")
         {
@@ -900,7 +1182,7 @@ namespace GRIDEm { namespace Services {
             Say("[cl's objects name their own C runtime - " + ld.Name + " takes it from them, no CRT list is added]");
         }
         int linked = emulated ? TiLink(p, cfg, tc, mx, run, ld, objects, program, debug, shalimarProgram, native)
-                              : HostLink(p, tc, mx, run, ld, objects, program, shalimarProgram || !unit.empty(), debug);
+                              : HostLink(p, tc, mx, run, ld, objects, program, shalimarProgram || !unit.empty(), debug, crt);
         if (linked != 0) { failedStep = "link"; return -1; }
         summary->Program = program;
         return 1;
@@ -910,12 +1192,13 @@ namespace GRIDEm { namespace Services {
     // runtime library first, the configuration's one
     int BuildEngine::HostLink(const GrideProjectPtr& p, const ToolchainSettingsPtr& tc, MacroExpander& mx,
                               const ToolRunOptions& run, const Step& ld, std::vector<std::string>& objects,
-                              const std::string& program, bool shalimarProgram, bool debug)
+                              const std::string& program, bool shalimarProgram, bool debug, const std::string& crt)
     {
         if (shalimarProgram)
         {
-            LibraryDefinitionPtr lib = ToolchainDefinitions::Current()->LibraryByKind(RideToolchain::Arch(tc->TargetKind), "shalimarRuntime");
-            std::string shm = RideToolchain::HostShalimarRuntime(tc->TargetKind, debug, tc->ToolDir, ToolchainSettings::RideRoot);
+            // the Shalimar runtime built for the C runtime in force
+            LibraryDefinitionPtr lib = ToolchainDefinitions::Current()->LibraryByKind(RideToolchain::Arch(tc->TargetKind), "shalimarRuntime", crt);
+            std::string shm = RideToolchain::HostShalimarRuntime(tc->TargetKind, debug, tc->ToolDir, ToolchainSettings::RideRoot, crt);
             if (!shm.empty())
             {
                 std::string libs = mx.Get("LibFlags");
@@ -951,7 +1234,7 @@ namespace GRIDEm { namespace Services {
             LibraryDefinitionPtr rtsLib = defs->RuntimeOf(cfg->TargetKind);
             Report(Severity::Error, std::string(), made + "a tms6747 build links against RTS6x in " +
                    (rtsLib ? rtsLib->Directory : std::string("its directory")) +
-                   " inside GRIDEm, or TI's runtime when its compiler directory is named under Settings > Projects > RIDE Paths, and neither is here");
+                   " inside GRIDEm, or TI's runtime when its compiler directory is named under Settings > Projects > GRIDE Paths, and neither is here");
             return -1;
         }
         std::string tiLib = rts6x ? std::string() : Paths::Combine(tiDir, cd.TiLib);
@@ -963,7 +1246,7 @@ namespace GRIDEm { namespace Services {
         if (!eh && !tiNamed)
         {
             Report(Severity::Error, std::string(), made + tiDir + " has only " + cd.RuntimeFallback + " - these objects need " +
-                   cd.RuntimeLibrary + ", named under Settings > Projects > RIDE Paths (TI library directory)");
+                   cd.RuntimeLibrary + ", named under Settings > Projects > GRIDE Paths (TI library directory)");
             return -1;
         }
         // the C runtime in force, which every name a project has for it is read as
@@ -979,6 +1262,9 @@ namespace GRIDEm { namespace Services {
             if (!Contains(libs, l)) libs.push_back(l);
         }
         if (cfg->Libs.empty() && !rts.empty()) libs.push_back(rts);
+        for (const std::string& l : p->Libraries)
+            if (!StringUtil::IsNullOrWhiteSpace(l) && !Contains(libs, p->ToAbsolute(StringUtil::Trim(l))))
+                libs.push_back(p->ToAbsolute(StringUtil::Trim(l)));
         if (shalimarProgram)
         {
             std::string shm = RideToolchain::ShalimarRtsLibrary(debug);
@@ -1106,9 +1392,21 @@ namespace GRIDEm { namespace Services {
                                         const BuildConfigurationPtr& cfg, const ToolchainSettingsPtr& tc)
     {
         bool debug = cfg->IsDebug();
+        // no clang: the Release spelling (-masm=masm) and no -g, which only clang's assembly carries
+        bool noLineTable = debug && codeViewMissing && RideToolchain::DebugsWithCodeView(tool, cfg->TargetKind, true) &&
+                           !RideToolchain::OwnCodeView(tool, cfg->TargetKind, true);
+        std::string flags = RideToolchain::ConfigFlags(tool, debug, cfg->TargetKind, p->Options);
+        if (noLineTable)
+        {
+            std::vector<std::string> kept;
+            for (const std::string& f : StringUtil::SplitNonEmpty(flags, " "))
+                if (f != "-g") kept.push_back(f);
+            flags = StringUtil::Join(" ", kept);
+        }
         mx.Set("ArchFlag", RideToolchain::ArchFlag(tool, cfg->TargetKind));
-        mx.Set("ConfigFlags", RideToolchain::ConfigFlags(tool, debug, cfg->TargetKind, p->Options));
-        mx.Set("AsmSyntaxFlag", RideToolchain::AssemblerFlag(tool, cfg->TargetKind, debug, !StringUtil::IsNullOrWhiteSpace(tc->Assembler)));
+        mx.Set("ConfigFlags", flags);
+        mx.Set("AsmSyntaxFlag", RideToolchain::AssemblerFlag(tool, cfg->TargetKind, debug && !noLineTable,
+                                                             !StringUtil::IsNullOrWhiteSpace(tc->Assembler)));
         mx.Set("LangFlags", RideToolchain::LanguageFlags(tool, lang));
         // the compiler's own spellings; the target's settings stand for the C compiler's family,
         // and a compiler with no include flag (shalimar) takes no -I and no -D
@@ -1119,6 +1417,8 @@ namespace GRIDEm { namespace Services {
         std::string defineFlag = hostTool ? ownDefine : tc->DefineFlag;
         std::vector<std::string> inc;
         for (const std::string& d : cfg->IncludeDirs) inc.push_back(p->ToAbsolute(d));
+        for (const std::string& d : p->Includes)
+            if (!StringUtil::IsNullOrWhiteSpace(d)) inc.push_back(p->ToAbsolute(StringUtil::Trim(d)));
         inc.insert(inc.end(), tc->IncludeDirs.begin(), tc->IncludeDirs.end());
         for (const std::string& d : settings->Env->SharedIncludes)
             if (!StringUtil::IsNullOrWhiteSpace(d)) inc.push_back(Platform::Environment::Expand(StringUtil::Trim(d)));
@@ -1208,6 +1508,8 @@ namespace GRIDEm { namespace Services {
 
         std::vector<std::string> inc;
         for (const std::string& d : cfg->IncludeDirs) inc.push_back(p->ToAbsolute(d));
+        for (const std::string& d : p->Includes)
+            if (!StringUtil::IsNullOrWhiteSpace(d)) inc.push_back(p->ToAbsolute(StringUtil::Trim(d)));
         inc.insert(inc.end(), tc->IncludeDirs.begin(), tc->IncludeDirs.end());
         mx.Set("IncludeFlags", MacroExpander::JoinFlags(tc->IncludeFlag, inc));
         mx.Set("DefineFlags", MacroExpander::JoinDefines(tc->DefineFlag, cfg->Defines));
@@ -1228,6 +1530,8 @@ namespace GRIDEm { namespace Services {
             }
             libs.push_back(l);
         }
+        for (const std::string& l : p->Libraries)
+            if (!StringUtil::IsNullOrWhiteSpace(l)) libs.push_back(p->ToAbsolute(StringUtil::Trim(l)));
         if (!RideToolchain::IsEmulated(cfg->TargetKind))
             for (const std::string& l : settings->Env->SharedLibraries)
                 if (!StringUtil::IsNullOrWhiteSpace(l) && !Contains(libs, StringUtil::Trim(l)))

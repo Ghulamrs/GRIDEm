@@ -5,11 +5,14 @@
 // =============================================================================
 #import "TestSupport.h"
 #include <mutex>
+#include <stdlib.h>
+#include <sys/stat.h>
 #include "Settings/GrideSettings.h"
 #include "Services/BuildEngine.h"
 #include "Model/Workspace.h"
 #include "Core/LanguageTarget.h"
 #include "Services/BuildMessage.h"
+#include "Services/Debugger.h"
 #include "Services/GdbDebugger.h"
 #include "Services/MacroExpander.h"
 #include "Services/RideToolchain.h"
@@ -130,6 +133,101 @@ static BuildMessagePtr Parse(const std::string& line)
     if (r.First) GRAssertEq(r.First->Line, 5);
 }
 
+// a line a tool writes about itself is held until it exits: an error only when it failed
+// (regression: "c90: ..." from a tool that succeeded was counted as an error)
+- (void)testHeldToolLinesAreErrorsOnlyWhenTheToolFailed
+{
+    DiagnosticReader r("/w", nullptr, "/w/a.c", "c90");
+    XCTAssertTrue(r.Feed("c90: a note about itself") == nullptr);
+    std::vector<BuildMessagePtr> held = r.TakeItself(false);
+    GRAssertEq(held.size(), (size_t)1);
+    if (held.size() == 1) XCTAssertTrue(held[0]->Sev == Severity::Info);
+    XCTAssertTrue(r.First == nullptr);
+    XCTAssertTrue(r.Feed("c90.exe: gave up") == nullptr);
+    held = r.TakeItself(true);
+    GRAssertEq(held.size(), (size_t)1);
+    if (held.size() == 1) XCTAssertTrue(held[0]->Sev == Severity::Error);
+    XCTAssertTrue(r.First != nullptr);
+    XCTAssertTrue(r.TakeItself(true).empty());
+}
+
+- (void)testShownLinesAreRelativeToTheProject
+{
+    GRAssertEq(BuildEngine::Shown("/w/p/src/a.c:3:1: error: x", "/w/p"), "src/a.c:3:1: error: x");
+    GRAssertEq(BuildEngine::Shown("  /w/p/a.c", "/w/p/"), "  a.c");
+    GRAssertEq(BuildEngine::Shown("C:\\w\\p\\a.c(3): error", "C:/w/p"), "a.c(3): error");
+    GRAssertEq(BuildEngine::Shown("/w/other/a.c", "/w/p"), "/w/other/a.c");
+    GRAssertEq(BuildEngine::Shown("/w/p", "/w/p"), "/w/p");
+}
+
+// compile steps run on workers, the slow first one last to end, and are still read back in project
+// order; a tool's lines past MaxToolLines are counted, not shown, but every error is counted
+- (void)testParallelStepsKeepProjectOrderAndCountHiddenLines
+{
+    std::string dir = GRTempDir();
+    std::string tools = dir + "/tools";
+    mkdir(tools.c_str(), 0755);
+    mkdir((dir + "/p").c_str(), 0755);
+    mkdir((dir + "/p/src").c_str(), 0755);
+    GRWrite(tools + "/c90",
+            "#!/bin/sh\n"
+            "src=\"\"; out=\"\"\n"
+            "while [ $# -gt 0 ]; do case \"$1\" in -S) src=\"$2\"; shift;; -o) out=\"$2\"; shift;; esac; shift; done\n"
+            "case \"$src\" in\n"
+            "  *a.c) sleep 0.5; echo \"c90: a note about itself\"; : > \"$out\"; exit 0;;\n"
+            "  *b.c) : > \"$out\"; exit 0;;\n"
+            "  *c.c) i=1; while [ $i -le 60 ]; do echo \"$src:$i:1: error: bad $i\"; i=$((i+1)); done; echo \"c90: gave up\"; exit 1;;\n"
+            "esac\n");
+    GRWrite(tools + "/asm6x",
+            "#!/bin/sh\n"
+            "while [ $# -gt 0 ]; do case \"$1\" in -o) : > \"$2\"; shift;; esac; shift; done\n"
+            "exit 0\n");
+    chmod((tools + "/c90").c_str(), 0755);
+    chmod((tools + "/asm6x").c_str(), 0755);
+    GRWrite(dir + "/p/src/a.c", "int a;\n");
+    GRWrite(dir + "/p/src/b.c", "int b;\n" + std::string(4000, ' ') + "\n");
+    GRWrite(dir + "/p/src/c.c", "int c;\n");
+    GRWrite(dir + "/p/p.pro",
+            "{ \"gride\": \"1.0\", \"type\": \"project\", \"name\": \"p\", \"language\": \"C90\", \"template\": \"Empty\","
+            " \"targets\": [\"TMS320C6747\"], \"folders\": { \"src\": [\"src/a.c\", \"src/b.c\", \"src/c.c\"] },"
+            " \"configurations\": { \"Debug|TMS320C6747\": {} } }\n");
+    setenv("C90", (tools + "/c90").c_str(), 1);
+    setenv("ASM6X", (tools + "/asm6x").c_str(), 1);
+
+    Model::GrideProjectPtr p = Model::GrideProject::Load(dir + "/p/p.pro");
+    Settings::GrideSettingsPtr settings = Settings::GrideSettings::FromJson(Core::JsonValue::MakeObject());
+    settings->Env->BuildJobs = 3;
+    settings->PublishPaths();
+    Services::BuildRequestPtr r = std::make_shared<Services::BuildRequest>();
+    r->Projects.push_back(p);
+    r->Config = "Debug";
+    r->TargetKind = Core::Target::C6747;
+    r->Action = Services::BuildAction::Rebuild;
+    r->WorkspaceDir = dir + "/p";
+    std::mutex lock;
+    std::vector<std::string> output;
+    std::vector<BuildMessagePtr> messages;
+    Services::BuildEngine engine(settings);
+    engine.OnOutput = [&lock, &output](const std::string& line) { std::lock_guard<std::mutex> hold(lock); output.push_back(line); };
+    engine.OnMessage = [&lock, &messages](const BuildMessagePtr& m) { std::lock_guard<std::mutex> hold(lock); messages.push_back(m); };
+    Services::BuildSummaryPtr s = engine.RunBatch(std::vector<Services::BuildRequestPtr>(1, r));
+    unsetenv("C90");
+    unsetenv("ASM6X");
+    std::string all;
+    for (const std::string& l : output) all += l + "\n";
+    size_t a = all.find("a.c  ->"), b = all.find("b.c  ->"), c = all.find("c.c  ->");
+    XCTAssertTrue(a != std::string::npos && b != std::string::npos && c != std::string::npos && a < b && b < c, @"%s", all.c_str());
+    XCTAssertTrue(all.find("\nsrc/c.c:40:1: error: bad 40\n") != std::string::npos, @"%s", all.c_str());
+    XCTAssertTrue(all.find("bad 41") == std::string::npos, @"%s", all.c_str());
+    XCTAssertTrue(all.find("[c90: 21 more line(s) not shown]") != std::string::npos, @"%s", all.c_str());
+    XCTAssertTrue(s && !s->Ok());
+    if (s) GRAssertEq(s->Errors(), 61);
+    bool noteIsInfo = false;
+    for (const BuildMessagePtr& m : messages)
+        if (m->Text == "a note about itself") noteIsInfo = m->Sev == Severity::Info;
+    XCTAssertTrue(noteIsInfo);
+}
+
 // ---- command templates ---------------------------------------------------------
 
 - (void)testMacroExpander
@@ -196,6 +294,48 @@ static BuildMessagePtr Parse(const std::string& line)
     s = DebugTranscript::ReadStop(DebuggerKind::Cdb, "ntdll!NtTerminateProcess+0x14:\nExit process 0:1a2c, code 3\n");
     XCTAssertTrue(s->Exited);
     GRAssertEq(s->Status, 3);
+}
+
+// cdb's "?? x": the value after the type, a quoted text or a braced list whole, true and false values too
+- (void)testCdbValues
+{
+    const std::string m = "<<gride>>";
+    GRAssertEq(DebugTranscript::ReadValue(DebuggerKind::Cdb, "int 0n42\n", m), "42");
+    GRAssertEq(DebugTranscript::ReadValue(DebuggerKind::Cdb, "char [12] \"Alice Smith\"\n", m), "\"Alice Smith\"");
+    GRAssertEq(DebugTranscript::ReadType(DebuggerKind::Cdb, "char [12] \"Alice Smith\"\n", m), "char [12]");
+    GRAssertEq(DebugTranscript::ReadValue(DebuggerKind::Cdb, "int [3] {5, 7, 13}\n", m), "{5, 7, 13}");
+    GRAssertEq(DebugTranscript::ReadType(DebuggerKind::Cdb, "int [3] {5, 7, 13}\n", m), "int [3]");
+    GRAssertEq(DebugTranscript::ReadValue(DebuggerKind::Cdb, "bool true\n", m), "true");
+    GRAssertEq(DebugTranscript::ReadType(DebuggerKind::Cdb, "bool false\n", m), "bool");
+    GRAssertEq(DebugTranscript::ReadValue(DebuggerKind::Cdb, "Couldn't resolve error at 'count'\n", m), "");
+}
+
+// a standard header named by its full path is a source cdb stopped in
+- (void)testCdbStopInAStandardHeader
+{
+    DebugStopPtr s = DebugTranscript::ReadStop(DebuggerKind::Cdb, "C:\\VS\\include\\string(120)+0x5\nprog!std::basic_string+0x5:\n");
+    XCTAssertTrue(s->Stopped);
+    GRAssertEq(s->File, "C:\\VS\\include\\string");
+    GRAssertEq(s->Line, 120);
+}
+
+// a watch on a name the stopped function does not have says so plainly; a watch reads its value at the stop
+- (void)testWatchNotInScope
+{
+    GRAssertEq(DebugTranscript::Friendly("Couldn't resolve error at 'count'", "count + 1"), "not in scope here");
+    GRAssertEq(DebugTranscript::Friendly("Couldn't resolve error at 'count'", "*count"), "not in scope here");
+    GRAssertEq(DebugTranscript::Friendly("Couldn't resolve error at 'n'", "count + n"), "Couldn't resolve error at 'n'");
+    GRAssertEq(DebugTranscript::Friendly("Memory access error", "p->x"), "Memory access error");
+
+    std::string dir = GRTempDir();
+    GRWrite(dir + "/m.c", "int main(void)\n{\n    int x = 1;\n    return x;\n}\n");
+    PlaceholderDebugger d;
+    d.AddWatch("x");
+    GRAssertEq(d.Watches()[0].Value, "not running");
+    d.Start(dir + "/m", Core::Target::MacOS, dir + "/m.c", 1);
+    XCTAssertTrue(d.State() == DebugState::Break);
+    XCTAssertTrue(d.Watches()[0].Value != "not running");
+    d.Stop();
 }
 
 - (void)testLocals

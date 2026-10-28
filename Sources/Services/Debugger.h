@@ -106,6 +106,9 @@ namespace GRIDEm { namespace Services {
 
         // program = linked output, entryFile/entryLine = where main() starts
         virtual bool Start(const std::string& program, Core::Target target, const std::string& entryFile, int entryLine) = 0;
+        // Step Over / Step Into started the session: Start stops at main's first line (Continue runs on to a
+        // breakpoint or the end)
+        bool StopAtEntry;
         virtual void Stop() = 0;
         virtual void Continue() = 0;
         virtual void BreakAll() = 0;
@@ -135,6 +138,15 @@ namespace GRIDEm { namespace Services {
         virtual void BreakpointsChanged() {}
         virtual std::string WhyNoLocals() { return std::string(); }
         virtual std::string WhyNoStackWalk() { return std::string(); }
+        // the program's own input: whether a line typed for it reaches it, and the line handed over (the
+        // program's console echoes it, so it comes back among the program's lines)
+        virtual bool TakesInput() const { return false; }
+        virtual bool SendInput(const std::string& line) { (void)line; return false; }
+
+        // a program line that goes on with the line before it, told unfinished ("Enter n: " at a stop, then
+        // "5" once typed): the rest, after the engine's mark; false for a line of its own
+        static const char* const ContinuedMark;
+        static bool Continues(const std::string& line, std::string& rest);
 
         void SetBreakpoints(const BreakpointMapPtr& bps) { if (bps) breakpoints = bps; }
         void SetSourceFiles(const std::vector<std::string>& files) { sources = files; }

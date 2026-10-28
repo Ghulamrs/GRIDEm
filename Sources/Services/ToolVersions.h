@@ -21,7 +21,7 @@ namespace GRIDEm { namespace Services {
     class ToolVersions
     {
     public:
-        static const char* IdeVersion;    // "1.0"
+        static const char* IdeVersion;    // "1.5.0", as Info.plist
         static const char* Author;        // "(c)2026 G. R. Akhtar" with the copyright sign
 
         static std::vector<std::string> Names();

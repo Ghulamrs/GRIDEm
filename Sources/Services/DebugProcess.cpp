@@ -181,13 +181,14 @@ namespace GRIDEm { namespace Services {
     bool DebugProcess::Say(const std::string& line)
     {
         if (!running || !proc) return false;
+        std::lock_guard<std::mutex> one(sayGate);
         if (!proc->Write(line + (onConsole ? "\r" : "\n"))) return false;
         std::lock_guard<std::mutex> hold(lock);
         transcript += "> " + line + "\n";
         return true;
     }
 
-    std::string DebugProcess::ReadUntil(const std::string& marker, int timeoutMs, bool& found)
+    std::string DebugProcess::ReadUntil(const std::string& marker, int timeoutMs, bool& found, bool wholeLines)
     {
         found = false;
         if (marker.empty()) return std::string();
@@ -217,8 +218,10 @@ namespace GRIDEm { namespace Services {
             if (left <= 0) break;
             gotData.wait_for(hold, std::chrono::milliseconds(left < 250 ? left : 250));
         }
-        std::string rest = pending;
-        pending.clear();
+        size_t ended = wholeLines ? pending.rfind('\n') : std::string::npos;
+        ended = !wholeLines ? pending.size() : ended == std::string::npos ? 0 : ended + 1;
+        std::string rest = pending.substr(0, ended);
+        pending.erase(0, ended);
         return rest;
     }
 

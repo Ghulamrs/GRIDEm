@@ -5,6 +5,7 @@
 #include "../Core/TextFile.h"
 #include "../Platform/Paths.h"
 #include <cstdio>
+#include <cstring>
 #include <regex>
 
 namespace GRIDEm { namespace Services {
@@ -17,8 +18,18 @@ namespace GRIDEm { namespace Services {
     //  DebugEngine
     // =========================================================================
     DebugEngine::DebugEngine()
-        : state(DebugState::Idle), breakpoints(std::make_shared<BreakpointMap>()),
+        : StopAtEntry(false), state(DebugState::Idle), breakpoints(std::make_shared<BreakpointMap>()),
           currentFrame(0), exitStatus(0), exited(false) {}
+
+    const char* const DebugEngine::ContinuedMark = "<<more>>";
+
+    bool DebugEngine::Continues(const std::string& line, std::string& rest)
+    {
+        rest = line;
+        if (!StringUtil::StartsWith(line, ContinuedMark)) return false;
+        rest = line.substr(std::strlen(ContinuedMark));
+        return true;
+    }
 
     bool DebugEngine::SetVariable(const std::string& name, const std::string& value, std::string& said)
     {
@@ -91,6 +102,7 @@ namespace GRIDEm { namespace Services {
         location = std::make_shared<StopInfo>(file, line, reason, function);
         currentFrame = 0;
         state = DebugState::Break;
+        ReadWatches();      // read stopped, so the Watch pane shows values, not "not running"
         if (OnStateChanged) OnStateChanged(state);
         if (OnStopped) OnStopped(location);
     }

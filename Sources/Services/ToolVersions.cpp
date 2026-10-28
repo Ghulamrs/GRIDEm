@@ -14,7 +14,7 @@ namespace GRIDEm { namespace Services {
     using Core::StringUtil;
     using Platform::Paths;
 
-    const char* ToolVersions::IdeVersion = "1.0";
+    const char* ToolVersions::IdeVersion = "1.5.0";
     const char* ToolVersions::Author = "\xC2\xA9" "2026 G. R. Akhtar";
 
     std::vector<std::string> ToolVersions::Names()

@@ -17,6 +17,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <regex>
 #include <string>
 #include <vector>
@@ -39,6 +40,8 @@ namespace GRIDEm { namespace Services {
 
         // "kalman.c(4): error E10: text"
         std::string ToString() const;
+        // the last part of a name read from a tool's output, after '/' or '\\'
+        static std::string Leaf(const std::string& name);
         static std::string SeverityName(Severity s);     // "Error", "Warning", "Info"
     };
 
@@ -83,7 +86,7 @@ namespace GRIDEm { namespace Services {
                                              const std::string& workDir);
         // a line naming a place with no severity word: "file:line[:col]:" or "file(line[,col]):"
         static BuildMessagePtr TryParseLocation(const std::string& line, const std::string& workDir);
-        // a compiler announcing itself, or saying it is done: output, never a message
+        // a compiler announcing itself, naming the other files it compiled, or saying it is done: output, never a message
         static bool IsBanner(const std::string& line);
         // a toolchain's custom error pattern; nullptr when empty or not a valid regex
         static MessagePatternPtr Compile(const std::string& pattern);
@@ -95,8 +98,8 @@ namespace GRIDEm { namespace Services {
     // Reads one tool's output line by line, as RIDE's parseDiagnostic reads a build's output:
     // the toolchain's own pattern first, then the built-in shapes, shalimar's "Error: line N:"
     // (filed under the source being compiled), and c90's two-line preprocessor diagnostic. First
-    // keeps the first error. A line the tool writes about itself ("c90.exe: ...") is an error
-    // without a place.
+    // keeps the first error. A line the tool writes about itself ("c90.exe: ...") is held until
+    // the tool exits; TakeItself answers those lines: errors when it failed, else messages.
     class DiagnosticReader
     {
     public:
@@ -106,6 +109,7 @@ namespace GRIDEm { namespace Services {
         BuildMessagePtr First;
         const std::string& Source() const { return source; }
         BuildMessagePtr Feed(const std::string& line);
+        std::vector<BuildMessagePtr> TakeItself(bool failed);
 
     private:
         BuildMessagePtr OwnLine(const std::string& line);
@@ -116,5 +120,7 @@ namespace GRIDEm { namespace Services {
         std::string toolName;
         std::string previous;
         bool hasPrevious;
+        std::mutex itselfLock;
+        std::vector<BuildMessagePtr> itself;
     };
 }}
