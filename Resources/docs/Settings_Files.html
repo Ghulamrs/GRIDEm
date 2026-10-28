@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>GRIDE Settings Files</title>
+<style>
+  body { font-family: "Segoe UI", sans-serif; margin: 0; background: #F6F6F4; color: #1E1F22; line-height: 1.5; }
+  header { background: #1F2226; color: #F2F2F2; padding: 22px 36px; }
+  header h1 { margin: 0; font-size: 28px; } header p { margin: 4px 0 0; color: #C9CED6; }
+  main { max-width: 1040px; margin: 0 auto; padding: 16px 36px 48px; }
+  h2 { border-bottom: 2px solid #E0A23B; padding-bottom: 3px; margin-top: 30px; font-size: 20px; }
+  h3 { margin-top: 22px; font-size: 16px; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; background: #fff; }
+  th, td { border: 1px solid #D5D8DD; padding: 5px 9px; text-align: left; vertical-align: top; }
+  th { background: #ECEDEF; } td:first-child { white-space: nowrap; width: 1%; }
+  code, kbd { font-family: Consolas, monospace; background: #ECEDEF; padding: 1px 4px; border-radius: 3px; }
+  a { color: #8A5A00; }
+</style>
+</head>
+<body>
+<header>
+  <h1>GRIDE Settings Files</h1>
+  <p>What each file holds and where it is; the files themselves hold settings only</p>
+</header>
+<main>
+<p><a href="GRIDE_Help.html">GRIDE Help</a> &middot; this page explains <code>toolchain.json</code> entry by entry. The file carries no explanations of its own, so its settings are what one sees on opening it; a tool, an operation and a library keep a one-line <code>description</code>, which the Options pages show.</p>
+<h2 id="files">1. The files</h2>
+<table>
+  <tr><th>File</th><th>Where</th><th>Read by</th><th>What it holds</th></tr>
+  <tr><td><code>toolchain.json</code></td><td>beside <code>GRIDE.exe</code></td><td>Black, Grey</td><td>Every tool, its arguments, the libraries and where things are looked for. One file, the same for both outlooks.</td></tr>
+  <tr><td><code>toolchain.json</code> (yours)</td><td><code>%APPDATA%\GRIDE\toolchain.json</code>, or <code>toolchain.user.json</code> beside a portable <code>GRIDE.exe</code></td><td>Black, Grey</td><td>Your changes only: a field named here wins, every other field keeps the shipped value. Tools &gt; Options writes it; a field GRIDE does not know is kept. Either file may carry <code>//</code> line comments.</td></tr>
+  <tr><td><code>settings.json</code></td><td><code>%APPDATA%\GRIDE\settings.json</code></td><td>Black, Grey, White</td><td>Your settings - the editor, the build, the paths, the recent projects. One file for whichever outlook is installed.</td></tr>
+  <tr><td><code>*.pro</code></td><td>the project's folder</td><td>Black, Grey, White</td><td>A project: its groups of files, what the build makes, its include and library paths, its target. One format for the three outlooks.</td></tr>
+</table>
+<p>A C++ project's three files side by side, and where they are for a GRIDE started from Visual Studio: <a href="#sample">section 4</a>.</p>
+<p>The format itself - each field's type, what is required, how the two copies are merged and checked - is in <a href="TOOLCHAIN-FORMAT.md">TOOLCHAIN-FORMAT.md</a>.</p>
+<h2 id="toolchain">2. toolchain.json, entry by entry</h2>
+<p>Each section in the order the file has them; an entry is named by its path - <code>tools.cpp11.operations.compileAndLink</code> is the <code>compileAndLink</code> operation of the <code>cpp11</code> tool.</p>
+<p><a href="#tc-the-document">(the document)</a> &middot; <a href="#tc-installation">installation</a> &middot; <a href="#tc-ccs">ccs</a> &middot; <a href="#tc-compilerOptions">compilerOptions</a> &middot; <a href="#tc-visualStudio">visualStudio</a> &middot; <a href="#tc-placeholders">placeholders</a> &middot; <a href="#tc-targets">targets</a> &middot; <a href="#tc-tools">tools</a> &middot; <a href="#tc-libraries">libraries</a> &middot; <a href="#tc-linkerCommandFiles">linkerCommandFiles</a></p>
+<h3 id="tc-the-document">The file as a whole</h3>
+<table>
+  <tr><th>Entry</th><th>What it is</th></tr>
+  <tr><td><code>the file</code></td><td>The toolchain GRIDE drives (it was RIDE 5.17&#x27;s): c90, cpp11 and shalimar compile to assembly for four targets; masm and link (or clang and Microsoft&#x27;s link.exe for a Debug build) make the Windows program, asm6x and lnk6x the TMS320C6747 program against RTS6x; sim6747 runs it, vm6747 emulates the assembly and debugs; cdb, gdb and lldb debug the host programs; c2s converts between C and Shalimar.</td></tr>
+</table>
+<h3 id="tc-installation">installation - where the toolchain is installed</h3>
+<table>
+  <tr><th>Entry</th><th>What it is</th></tr>
+  <tr><td><code>installation</code></td><td>Where the toolchain is installed. A tool whose lookup says installDir is looked for under &lt;root&gt;\&lt;binDir&gt;; the root is Tools &gt; Options &gt; Projects &gt; &#x27;Installation root or bin&#x27; when set, else each defaultRoots entry (environment variables expanded) that holds one of the markers in its binDir, else the folder of GRIDE.exe itself. includeDir and libDir are the installation&#x27;s header directories the compilers are given (see each tool&#x27;s installIncludeDirs).</td></tr>
+</table>
+<h3 id="tc-ccs">ccs - reading Code Composer Studio projects</h3>
+<table>
+  <tr><th>Entry</th><th>What it is</th></tr>
+  <tr><td><code>ccs</code></td><td>Reading Code Composer Studio 7.4 / 5.5 projects for the C6747, as White reads them: definitionsDir holds TI&#x27;s own option definitions (one TSV per compiler major version, keyed by it; CCS stores in .cproject only what differs from the definition&#x27;s default, so an unstored option&#x27;s meaning and an enumerated value&#x27;s spelling come from here); the directory is looked for beside GRIDE.exe, above it, and under the installation. deviceFamily / deviceVariant / siliconVersion say which projects the toolchain builds (others are read, with a note saying why GRIDE would refuse them); compilerDirs name the compiler directory under &lt;CCS root&gt;/tools/compiler per major version; tiRuntime maps TI&#x27;s library index to the runtime a linker reads.</td></tr>
+  <tr><td><code>ccs.tiCompiler</code></td><td>TI&#x27;s C6000 compiler directory (the one with bin\lnk6x), named under Tools &gt; Options &gt; Projects &gt; GRIDE Paths, else the newest one found as CCS&#x27;s installer leaves them: under each of roots (environment variables expanded), at each of the layouts in under (a trailing * names any folder starting so; an empty entry is the root itself), a folder named as compilerDirs says; bin holds the linker, lib the runtime. A named directory makes a tms6747 build link against TI&#x27;s runtime instead of RTS6x, as in White.</td></tr>
+</table>
+<h3 id="tc-compilerOptions">compilerOptions - the Compiler Options table</h3>
+<table>
+  <tr><th>Entry</th><th>What it is</th></tr>
+  <tr><td><code>compilerOptions</code></td><td>The Compiler Options (White&#x27;s options.cpp): the table Tools &gt; Options &gt; Projects &gt; Compiler Options and Project &gt; Properties draw, one entry per option in the order each tab shows them, keyed by id (&lt;tool word&gt;.&lt;option&gt;; general.* serve several compilers). tab, label and hint are the dialog&#x27;s. control is check (the value is 1 or 0), choice (one of choices; the first is the compiler&#x27;s own default and is never written) or text (&#x27;;&#x27; between the entries). default is one value, or one per configuration as { Debug, Release }. What an option becomes: flagOn / flagOff for a check (written when the value is 1 / 0), flag for a choice ($(Value) filled in; silent names the choice that writes nothing - the first when absent), flagEach for a text list ($(Item) filled in once per entry, an entry holding a space quoted), environment names a variable the compiler is given instead of a flag (its value 1, or empty). needs says when the option means something: lineTable (the compiler writes a line table for the target), emulated (the emulated target only), notEmulated - with unavailable the sentence said otherwise ($(Arch) filled in); an option that does not apply writes nothing. Each compiler&#x27;s options field lists the ids it takes, in the order the flags are written; a compiler without one takes its configFlags.</td></tr>
+</table>
+<h3 id="tc-visualStudio">visualStudio - Microsoft&#x27;s tools and libraries</h3>
+<table>
+  <tr><th>Entry</th><th>What it is</th></tr>
+  <tr><td><code>visualStudio</code></td><td>Where Visual Studio&#x27;s tools are (cl, ml64, Microsoft&#x27;s link.exe, clang) and the directories their environment needs, found without cmd.exe: vswhere names the newest installation (any edition, prerelease and Build Tools included), else the defaultRoots are tried; under the installation, msvcTools holds one folder per compiler version with hostBin, lib and include below it - the newest is taken, or the one msvcVersion names (&quot;14.44&quot; takes the newest 14.44.*, Visual Studio 2022&#x27;s v143; a whole folder name takes that one; empty, or a version not there, the newest) for cl, link.exe, INCLUDE and LIB alike; llvmBin holds clang; the Windows SDK (windowsKits: the registry value, else the roots; the newest version folder) gives the libDirs and includeDirs, $(Version) filled in. environment names the variables set for a tool run: each entry&#x27;s value is the list of directories joined with &#x27;;&#x27;, followed by the variable&#x27;s old value.</td></tr>
+</table>
+<h3 id="tc-placeholders">placeholders - the $(...) words of a command line</h3>
+<table>
+  <tr><th>Entry</th><th>What it is</th></tr>
+  <tr><td><code>placeholders</code></td><td>The names an argument template may use; GRIDE fills them in when a tool runs. A path placeholder is written without quotes, so a template quotes it where the tool wants quotes.</td></tr>
+</table>
+<h3 id="tc-targets">targets - the platforms built for</h3>
+<table>
+  <tr><th>Entry</th><th>What it is</th></tr>
+  <tr><td><code>targets</code></td><td>The four targets, keyed by the arch word c90, cpp11 and shalimar take. ideTarget names the IDE&#x27;s target; host says the programs run on this machine; emulated says the program runs on the emulator or simulator; debugInfo is what a Debug build carries (codeview, dwarf, dwpsn, or empty for none); roles names, per role, the tool id that plays it for this target (nativeAssembler / nativeLinker are the vendor&#x27;s tools offered when the project&#x27;s own fail); runtime names the libraries entry linked as the C runtime; run and debug say how a program is started here: program (the program itself), simulator (the simulator&#x27;s simulate / debug operations), debugger (the debugger&#x27;s debug operation), none (the target only reaches assembly on this machine).</td></tr>
+  <tr><td><code>targets.x86_64-windows</code></td><td>Windows on x86-64: the programs are native and run here; a Debug build carries CodeView through clang and link.exe /DEBUG, a Release build goes through masm and link.</td></tr>
+  <tr><td><code>targets.x86_64-linux</code></td><td>Linux on x86-64: the compilers reach assembly here; assembling, linking and running need a Linux machine (as, cc, gdb).</td></tr>
+  <tr><td><code>targets.arm64-darwin</code></td><td>macOS on Apple silicon: the compilers reach assembly here; assembling, linking and running need a Mac (as, cc, lldb).</td></tr>
+  <tr><td><code>targets.tms6747</code></td><td>The TMS320C6747 DSP: the compilers write C6000 assembly, asm6x and lnk6x make the .out against RTS6x, sim6747 runs it, vm6747 runs the assembly straight and is the debugger (through sim6747 --run --debug).</td></tr>
+</table>
+<h3 id="tc-tools">tools - every program GRIDE runs</h3>
+<table>
+  <tr><th>Entry</th><th>What it is</th></tr>
+  <tr><td><code>tools</code></td><td>Every program, keyed by a stable id the code uses. name is what GRIDE prints; role classifies it (cCompiler, cppCompiler, shalimarCompiler, hostCompiler, hostCxx, assembler, linker, debugAssembler, debugLinker, simulator, emulator, debugger, converter); languages (C, C++, Shalimar) and targets (arch words) say what it serves; exe is the program&#x27;s file name and aliases the other names tried in order; words are what a project file may call it; lookup says where it is looked for, in order: the environment variable env when set, Tools &gt; Options&#x27; tool folder, beside GRIDE.exe, the installation&#x27;s installDir, then PATH when path is true (vcvars true: Visual Studio&#x27;s, reached through vcvars64.bat); version is the query that prints its version; outputEncoding is how its output is read (utf-8, or oem for the console&#x27;s code page); diagnostics names the shape of its error lines (gnu, msvc, shalimar, masm, ti, none); environment lists the variables the tool itself reads; archFlag spells the target ($(Arch) filled in; empty for a tool that builds for the machine it is on); includeFlag / defineFlag are its -I / -D spellings (empty: the tool takes none); installIncludeDirs names the installation directories it is given as includes (include, lib); languageFlags the switch per language; configFlags the flags per configuration, configFlagsByTarget the exceptions per arch - both stand in where the tool lists no options; options names the compilerOptions entries the tool takes, in the order their flags are written (the Compiler Options then make its configuration flags); session, for a tool that debugs, says how it is driven on its standard input: dialect (gdb, lldb, cdb - the shapes its answers are read in), preamble (the commands sent at start), marker and markerCommand (what is asked for after every command, and the text that then ends the answer), commands (the spelling of each thing the IDE asks: break, clearBreakpoints, run, continue, stepOver, stepInto, stepOut, runToLine, args, locals, evaluate, address, type, set, frames, frame, registers, memory, afterMove, where, quit - with $(File), $(Line), $(Expr), $(Name), $(Value), $(N), $(Count), $(Address) filled in); like names a tool whose session this one starts from, its own fields over it; asmSyntaxFlags.codeview is added to a Debug build whose target carries CodeView, asmSyntaxFlags.assemblerNamed when an assembler is named for a host build; operations hold the argument templates, one per thing the tool does, each with the meaning of every argument.</td></tr>
+  <tr><td><code>tools.c90</code></td><td>GRIDE&#x27;s ISO C 90 compiler. Compiles C to assembly for every target (-S); without -S it assembles and links itself through C90_AS and C90_LD (Visual Studio&#x27;s ml64 and link.exe on Windows, or the masm and link beside it).</td></tr>
+  <tr><td><code>tools.c90.lookup</code></td><td>$C90 names it outright; else the tool folder, beside GRIDE.exe, the installation&#x27;s bin, PATH</td></tr>
+  <tr><td><code>tools.c90.version</code></td><td>prints the banner line with the version</td></tr>
+  <tr><td><code>tools.c90.operations.compileToAssembly</code></td><td>C to assembly, the step every GRIDE build runs</td></tr>
+  <tr><td><code>tools.c90.operations.compileToObject</code></td><td>C to an object through the compiler&#x27;s own assembler (a project of several compilers)</td></tr>
+  <tr><td><code>tools.c90.operations.compileAndLink</code></td><td>C to a program: the compiler assembles and links itself (C90_AS, C90_LD)</td></tr>
+  <tr><td><code>tools.cpp11</code></td><td>GRIDE&#x27;s C++ compiler (C++03 with C++11 extensions). Compiles C++ to assembly for every target; without -S it assembles and links itself through CPP11_AS and CPP11_LD.</td></tr>
+  <tr><td><code>tools.cpp11.lookup</code></td><td>$CPP11 names it outright; else the tool folder, beside GRIDE.exe, the installation&#x27;s bin, PATH</td></tr>
+  <tr><td><code>tools.cpp11.version</code></td><td>prints the banner, the version and the build date</td></tr>
+  <tr><td><code>tools.cpp11.operations.compileToAssembly</code></td><td>C++ to assembly</td></tr>
+  <tr><td><code>tools.cpp11.operations.compileToObject</code></td><td>C++ to an object through the compiler&#x27;s own assembler</td></tr>
+  <tr><td><code>tools.cpp11.operations.compileAndLink</code></td><td>C++ to a program: the compiler assembles and links itself (CPP11_AS, CPP11_LD)</td></tr>
+  <tr><td><code>tools.shalimar</code></td><td>The Shalimar 1.3 compiler. Compiles Shalimar to assembly for every target (--target=); takes no -I and no -D; a host program links its runtime with --with=.</td></tr>
+  <tr><td><code>tools.shalimar.lookup</code></td><td>$SHALIMAR names it outright; else the tool folder, beside GRIDE.exe, the installation&#x27;s bin, PATH</td></tr>
+  <tr><td><code>tools.shalimar.version</code></td><td>prints the banner line with the version</td></tr>
+  <tr><td><code>tools.shalimar.session</code></td><td>the Shalimar session, White&#x27;s shalimar::Session: a Debug build stops itself. The compiler calls shm_line before every statement, and the debugging runtime (--debug on a host; shmrt6xd.lib on tms6747), started with SHM_DEBUG=1, talks on its standard error while the program prints on its standard output: a protocol line for every source (file &lt;unit&gt; &lt;leaf&gt;), one when it is ready, one at every stop (stop &lt;unit&gt; &lt;line&gt; &lt;depth&gt;), one to a where (at &lt;unit&gt; &lt;line&gt; &lt;depth&gt;) and one at the end (exit &lt;status&gt;). The commands are a letter each: b and d take a unit and a line, c / n / s / o move, w asks where, q quits. afterReady names the command sent first: the shipped runtime reads and discards the first line after its ready line, and a where costs nothing either way. On tms6747 the .out runs under the simulator&#x27;s session operation where no emulator debugs it.</td></tr>
+  <tr><td><code>tools.shalimar.operations.compileToAssembly</code></td><td>Shalimar to assembly: a program is one compilation - the file with main() and the files it calls into, which shalimar compiles as one - so every file of the build goes in one command ($(Sources)) and one assembly file comes out, named after the program</td></tr>
+  <tr><td><code>tools.shalimar.operations.compileAndLink</code></td><td>Shalimar to a host program with its runtime</td></tr>
+  <tr><td><code>tools.cl</code></td><td>Microsoft&#x27;s C/C++ compiler, the machine&#x27;s own: builds for the machine it is on whatever the target says, found in Visual Studio&#x27;s folders (the visualStudio section) with INCLUDE / LIB / PATH from there, or through vcvars64.bat (Tools &gt; Options &gt; Toolchains &gt; Setup script). It writes the object itself; Microsoft&#x27;s link.exe (the debugLinker / nativeLinker) links cl&#x27;s objects. A project read from Visual Studio gives it its own ClCompile settings through projectSettings.</td></tr>
+  <tr><td><code>tools.cl.lookup</code></td><td>Visual Studio&#x27;s VC\Tools\MSVC\&lt;version&gt;\bin\Hostx64\x64, or PATH after vcvars64.bat</td></tr>
+  <tr><td><code>tools.cl.version</code></td><td>cl prints its version with no arguments</td></tr>
+  <tr><td><code>tools.cl.projectSettings</code></td><td>A Visual Studio project&#x27;s own ClCompile settings (MSBuild&#x27;s names and values, as its .vcxproj writes them) and the switch cl takes for each. Given to cl, in this order, for a project read from Visual Studio, after the configuration&#x27;s flags ($(CompileFlags)); a value mapped to &quot;&quot; is read and given nothing; &quot;*&quot; stands for any other value ($(Value) filled in); a setting not named here is said in the Output pane and given nothing.</td></tr>
+  <tr><td><code>tools.cl.operations.compileToAssembly</code></td><td>C or C++ to an object and an assembly listing</td></tr>
+  <tr><td><code>tools.cl.operations.compileAndLink</code></td><td>C or C++ to a program, linked by cl itself</td></tr>
+  <tr><td><code>tools.hostCxx</code></td><td>The machine&#x27;s own C++ compiler on Linux and macOS (clang++ or g++): builds for the machine it is on. Not used on Windows, where the host compiler is cl.</td></tr>
+  <tr><td><code>tools.hostCxx.lookup</code></td><td>$CXX, else PATH</td></tr>
+  <tr><td><code>tools.hostCxx.version</code></td><td></td></tr>
+  <tr><td><code>tools.hostCxx.operations.compileToAssembly</code></td><td>to assembly</td></tr>
+  <tr><td><code>tools.hostCxx.operations.compileAndLink</code></td><td>to a program</td></tr>
+  <tr><td><code>tools.masm</code></td><td>GRIDE&#x27;s x86-64 assembler (MASM spelling): the assembly of a Release build to a COFF object. Also takes ml64&#x27;s spelling (/c /nologo /Fo).</td></tr>
+  <tr><td><code>tools.masm.lookup</code></td><td>the tool folder, beside GRIDE.exe, the installation&#x27;s bin, PATH</td></tr>
+  <tr><td><code>tools.masm.version</code></td><td>no version switch: with no arguments it prints its usage</td></tr>
+  <tr><td><code>tools.masm.operations.assemble</code></td><td>one assembly file to one object</td></tr>
+  <tr><td><code>tools.link</code></td><td>GRIDE&#x27;s Windows linker: objects and the C runtime to a console program, and with /DEBUG its PDB. The CRT libraries come from the hostCrt entry of the Windows C runtime in force (Tools &gt; Options &gt; Projects &gt; GRIDE Paths): GRIDE&#x27;s grt.lib and kernel32.lib by their paths, from lib beside GRIDE - no LIB, no Visual Studio; Microsoft&#x27;s through LIB, as vcvars64.bat sets it. link /LIB is its librarian: an archive of objects, an import library from a .def (/DEF:), a library&#x27;s members (/LIST).</td></tr>
+  <tr><td><code>tools.link.lookup</code></td><td>the tool folder, beside GRIDE.exe, the installation&#x27;s bin - not PATH, where Microsoft&#x27;s link.exe would be taken for it</td></tr>
+  <tr><td><code>tools.link.version</code></td><td>no version switch</td></tr>
+  <tr><td><code>tools.link.operations.link</code></td><td>objects to a console program</td></tr>
+  <tr><td><code>tools.ml64</code></td><td>Microsoft&#x27;s x86-64 assembler, offered in place of the project&#x27;s masm when that fails and the output names no fault in the source (the native-tools question). Reached through Visual Studio.</td></tr>
+  <tr><td><code>tools.ml64.lookup</code></td><td>Visual Studio&#x27;s VC\Tools\MSVC\&lt;version&gt;\bin\Hostx64\x64, or PATH after vcvars64.bat</td></tr>
+  <tr><td><code>tools.ml64.version</code></td><td>ml64 prints its version with no arguments</td></tr>
+  <tr><td><code>tools.ml64.operations.assemble</code></td><td>one MASM-spelled assembly file to one object</td></tr>
+  <tr><td><code>tools.clang</code></td><td>clang as the Debug build&#x27;s assembler on Windows: the GNU spelling of the compilers&#x27; assembly (-masm=gnu) to a COFF object with CodeView, which a native debugger reads.</td></tr>
+  <tr><td><code>tools.clang.lookup</code></td><td>PATH (Visual Studio&#x27;s LLVM after vcvars64.bat, or LLVM&#x27;s own installer)</td></tr>
+  <tr><td><code>tools.clang.version</code></td><td></td></tr>
+  <tr><td><code>tools.clang.operations.assemble</code></td><td>one GNU-spelled assembly file to one object with CodeView</td></tr>
+  <tr><td><code>tools.mslink</code></td><td>Microsoft&#x27;s linker, the Debug build&#x27;s: writes the PDB cdb reads. Also the linker of cl&#x27;s objects in every configuration (they are Microsoft&#x27;s, with its CRT). Found in Visual Studio&#x27;s folders or through vcvars64.bat; C90_LD names it for c90&#x27;s own link.</td></tr>
+  <tr><td><code>tools.mslink.lookup</code></td><td>$C90_LD, else PATH after vcvars64.bat</td></tr>
+  <tr><td><code>tools.mslink.version</code></td><td>link.exe prints its version with no arguments</td></tr>
+  <tr><td><code>tools.mslink.operations.link</code></td><td>objects to a console program with a PDB</td></tr>
+  <tr><td><code>tools.as</code></td><td>The GNU assembler of a Linux or macOS machine; not on this one, where those targets only reach assembly.</td></tr>
+  <tr><td><code>tools.as.lookup</code></td><td>PATH</td></tr>
+  <tr><td><code>tools.as.version</code></td><td></td></tr>
+  <tr><td><code>tools.as.operations.assemble</code></td><td>one assembly file to one object</td></tr>
+  <tr><td><code>tools.cc</code></td><td>The C compiler driver of a Linux or macOS machine, as the linker (it adds the runtime and -lm).</td></tr>
+  <tr><td><code>tools.cc.lookup</code></td><td>PATH</td></tr>
+  <tr><td><code>tools.cc.version</code></td><td></td></tr>
+  <tr><td><code>tools.cc.operations.link</code></td><td>objects to a program</td></tr>
+  <tr><td><code>tools.asm6x</code></td><td>GRIDE&#x27;s TMS320C6000 assembler, writing TI ELF objects: the compilers&#x27; C6000 assembly to objects for lnk6x.</td></tr>
+  <tr><td><code>tools.asm6x.lookup</code></td><td>$ASM6X, the tool folder, beside GRIDE.exe, the installation&#x27;s bin, PATH</td></tr>
+  <tr><td><code>tools.asm6x.version</code></td><td>prints the banner line with the version</td></tr>
+  <tr><td><code>tools.asm6x.operations.assemble</code></td><td>one assembly file to one TI ELF object (several files at once write one object beside each)</td></tr>
+  <tr><td><code>tools.lnk6x</code></td><td>GRIDE&#x27;s TMS320C6000 linker: TI ELF objects, a linker command file and the runtime libraries to a .out for sim6747. TI&#x27;s own lnk6x may be named instead (Tools &gt; Options).</td></tr>
+  <tr><td><code>tools.lnk6x.lookup</code></td><td>the tool folder, beside GRIDE.exe, the installation&#x27;s bin - not PATH, where TI&#x27;s lnk6x would be taken for it</td></tr>
+  <tr><td><code>tools.lnk6x.version</code></td><td>prints the banner line with the version</td></tr>
+  <tr><td><code>tools.lnk6x.operations.link</code></td><td>objects to a .out against RTS6x (or TI&#x27;s runtime): the C6747, EABI, the runtime directory, the command file, the objects, the libraries in order (the Shalimar runtime before the C runtime it calls)</td></tr>
+  <tr><td><code>tools.tilnk6x</code></td><td>Texas Instruments&#x27; C6000 linker from a CCS or ti-cgt-c6000 installation, offered in place of GRIDE&#x27;s lnk6x when that fails and the output names no fault in the program (the native-tools question); Tools &gt; Options names TI&#x27;s compiler directory (the one with bin\lnk6x). Listed after GRIDE&#x27;s lnk6x, which a bare lnk6x.exe therefore names.</td></tr>
+  <tr><td><code>tools.tilnk6x.lookup</code></td><td>TI&#x27;s compiler directory&#x27;s bin (Tools &gt; Options); never PATH, never the installation&#x27;s bin</td></tr>
+  <tr><td><code>tools.tilnk6x.version</code></td><td>TI&#x27;s lnk6x prints its banner with no arguments</td></tr>
+  <tr><td><code>tools.tilnk6x.operations.link</code></td><td>objects to a .out against TI&#x27;s runtime (rts6740_elf_eh.lib where it exists, else rts6740_elf.lib), --rom_model unless the project says otherwise</td></tr>
+  <tr><td><code>tools.sim6747</code></td><td>GRIDE&#x27;s C6747 simulator: runs a linked .out (Run) and is the tms6747 debugging back end (--run --debug, a gdb-shaped session on its pipes). Prints CYCLES count=... on stderr at the end; the program&#x27;s status is its exit code.</td></tr>
+  <tr><td><code>tools.sim6747.lookup</code></td><td>$SIM6747, the tool folder, beside GRIDE.exe, the installation&#x27;s bin, PATH</td></tr>
+  <tr><td><code>tools.sim6747.version</code></td><td>prints the banner line with the version</td></tr>
+  <tr><td><code>tools.sim6747.session</code></td><td>sim6747 --run --debug speaks gdb&#x27;s words and answers in gdb&#x27;s shapes (VM6747 src/Debug.h); run takes no redirection</td></tr>
+  <tr><td><code>tools.sim6747.operations.simulate</code></td><td>run a .out to the end; the simulator takes no command line for the program</td></tr>
+  <tr><td><code>tools.sim6747.operations.debug</code></td><td>run a .out under the debugger protocol</td></tr>
+  <tr><td><code>tools.sim6747.operations.session</code></td><td>run a Debug Shalimar program&#x27;s .out for the program&#x27;s own session (White&#x27;s sessionCommand): the simulator carries SHM_DEBUG=1 to the program through getenv and its standard streams through to the program&#x27;s, so the protocol lines come out on the simulator&#x27;s standard error</td></tr>
+  <tr><td><code>tools.vm6747</code></td><td>GRIDE&#x27;s C6000 emulator: runs the compilers&#x27; assembly straight (Emulate: a .s, or a .vm directory of them, with the Shalimar runtime&#x27;s assembly directory for a Shalimar program), and debugs it (--debug). Takes the program&#x27;s command line after the runtime directory.</td></tr>
+  <tr><td><code>tools.vm6747.lookup</code></td><td>$VM6747, the tool folder, beside GRIDE.exe, the installation&#x27;s bin, PATH</td></tr>
+  <tr><td><code>tools.vm6747.version</code></td><td>prints the banner line with the version</td></tr>
+  <tr><td><code>tools.vm6747.session</code></td><td>vm6747 --debug speaks gdb&#x27;s words and answers in gdb&#x27;s shapes (VM6747 src/Debug.h); run takes no redirection; the registers are the C6000&#x27;s (A0..B15, pc last)</td></tr>
+  <tr><td><code>tools.vm6747.operations.emulate</code></td><td>run the build&#x27;s assembly files (Build &gt; Emulate)</td></tr>
+  <tr><td><code>tools.vm6747.operations.launch</code></td><td>run a .s or .vm program with its arguments: the program, the Shalimar runtime&#x27;s assembly directory when it is a Shalimar program, then the arguments - the order vm6747 reads them in</td></tr>
+  <tr><td><code>tools.vm6747.operations.debug</code></td><td>debug a .s or .vm program (the gdb-shaped session)</td></tr>
+  <tr><td><code>tools.c2s</code></td><td>GRIDE&#x27;s converter between C and Shalimar, either way. Exit 1 means written with BEYOND marks, or refused; the output is moved into place only when written.</td></tr>
+  <tr><td><code>tools.c2s.lookup</code></td><td>$C2S, the tool folder, beside GRIDE.exe, the installation&#x27;s bin, PATH</td></tr>
+  <tr><td><code>tools.c2s.version</code></td><td>prints the banner line with the version</td></tr>
+  <tr><td><code>tools.c2s.operations.convertToShalimar</code></td><td>C to Shalimar</td></tr>
+  <tr><td><code>tools.c2s.operations.convertToC</code></td><td>Shalimar to C</td></tr>
+  <tr><td><code>tools.cdb</code></td><td>Microsoft&#x27;s console debugger (Debugging Tools for Windows / the Windows SDK): debugs the Windows programs through their PDB. GRIDE drives it on a pseudo-console.</td></tr>
+  <tr><td><code>tools.cdb.lookup</code></td><td>$GRIDE_CDB, the Windows SDK&#x27;s Debuggers\x64, PATH</td></tr>
+  <tr><td><code>tools.cdb.version</code></td><td></td></tr>
+  <tr><td><code>tools.cdb.session</code></td><td>cdb on a pseudo-console (console: true - White&#x27;s startOnConsole; cdb flushes its prompt only to a console, and the console&#x27;s escape sequences and echoes are taken out as it is read): source lines with .lines -e, l+t and l+s so a step lands on a statement, n 10 for decimal, Shalimar&#x27;s runtime helpers stepped over; the marker printed in pieces so the echo of the command is not the marker; after every move .lastevent says whether the program ended and ln where it stands</td></tr>
+  <tr><td><code>tools.cdb.operations.debug</code></td><td>start the program under cdb with its symbols beside it</td></tr>
+  <tr><td><code>tools.gdb</code></td><td>The GNU debugger, for the Linux programs (on a Linux machine).</td></tr>
+  <tr><td><code>tools.gdb.session</code></td><td>gdb on a pipe, as White drives it: no confirmations or paging, pending breakpoints allowed; every command is followed by the marker command, and the answer is what came before the marker. The emulator and the simulator share this session (their &#x27;like&#x27;)</td></tr>
+  <tr><td><code>tools.gdb.lookup</code></td><td>the tool folder, PATH</td></tr>
+  <tr><td><code>tools.gdb.version</code></td><td></td></tr>
+  <tr><td><code>tools.gdb.operations.debug</code></td><td>start the program under gdb (the session&#x27;s own commands follow in the debugger revision)</td></tr>
+  <tr><td><code>tools.lldb</code></td><td>LLVM&#x27;s debugger, for the macOS programs (on a Mac).</td></tr>
+  <tr><td><code>tools.lldb.session</code></td><td>lldb on a pipe, as White drives it: synchronous, no confirmations, the program&#x27;s input the null device; the marker printed by a script line so the echo of the command is not the marker</td></tr>
+  <tr><td><code>tools.lldb.lookup</code></td><td>the tool folder, PATH</td></tr>
+  <tr><td><code>tools.lldb.version</code></td><td></td></tr>
+  <tr><td><code>tools.lldb.operations.debug</code></td><td>start the program under lldb; its session drives it</td></tr>
+  <tr><td><code>tools.lldbWindows</code></td><td>LLVM&#x27;s debugger on Windows (Visual Studio&#x27;s &#x27;C++ Clang tools&#x27; ship one, with its own python beside it): reads a Debug build&#x27;s PDB as cdb does, and stands in for cdb when cdb is not installed (role fallbackDebugger). Not White&#x27;s: White debugs a Windows program through cdb alone. Untested here: the lldb.exe of this machine&#x27;s Visual Studio does not start.</td></tr>
+  <tr><td><code>tools.lldbWindows.session</code></td><td>lldb&#x27;s session, with the program&#x27;s input the null device as Windows spells it</td></tr>
+  <tr><td><code>tools.lldbWindows.lookup</code></td><td>$GRIDE_LLDB names it outright; else the tool folder, PATH</td></tr>
+  <tr><td><code>tools.lldbWindows.version</code></td><td></td></tr>
+  <tr><td><code>tools.lldbWindows.operations.debug</code></td><td>start the program under lldb; its session drives it</td></tr>
+</table>
+<h3 id="tc-libraries">libraries - the runtimes a link takes</h3>
+<table>
+  <tr><th>Entry</th><th>What it is</th></tr>
+  <tr><td><code>libraries</code></td><td>The runtime libraries, as named entries: kind says what each is (runtime, printf, shalimarRuntime, hostCrt); target the arch it belongs to; directory the installation-relative directory holding the files (looked for under the tool folder, beside GRIDE.exe and the installation, in that order; directoryEnv names it outright) and marker the file that proves the directory is the right one; files names the library per configuration (a space-separated list where the link takes several); crt says which host C runtime the entry belongs to (grt, msvc; none: either), so a Windows link takes the hostCrt and the Shalimar runtime of the runtime in force; aliases are the names a project file may use for it, each read as the configuration&#x27;s file (&#x27;*&#x27; matches any ending); assemblyDirectories / assemblyDirectoryEnv are where the runtime&#x27;s assembly is, per configuration, for the emulator; when says when the library is linked: always, shalimar (a Shalimar program), printf (a program calling printf), never.</td></tr>
+  <tr><td><code>libraries.rts6x</code></td><td>GRIDE&#x27;s C runtime for the C6747: rts6x.lib built at -O2 for a Release build, rts6xd.lib at -O0 with _DEBUG for a Debug build. A project naming libc.a, rts6740*, rts6747.lib, rts6x.lib or rts6xd.lib gets the configuration&#x27;s one.</td></tr>
+  <tr><td><code>libraries.printf6x</code></td><td>RTS6x&#x27;s printf family in its own library, beside rts6x.lib; linked when a project names it.</td></tr>
+  <tr><td><code>libraries.shmrt6x</code></td><td>The Shalimar runtime for the C6747: as a library beside RTS6x (shmrt6x.lib, shmrt6xd.lib for a Debug build) linked before the C runtime it calls into, and as assembly directories the emulator takes (lib\shmrt-tms6747, -debug for Debug).</td></tr>
+  <tr><td><code>libraries.shmrtWindows</code></td><td>The Shalimar runtime for x86_64-windows, which GRIDE&#x27;s shalimar links itself and GRIDE links with the objects: shmrt-x86_64-windows.lib, and shmrt-x86_64-windows-debug.lib for a Debug build - the runtime with the session in it (SHM_DEBUG=1). Linked first, before the C runtime it calls into. Built by cl over Microsoft&#x27;s CRT (crt msvc).</td></tr>
+  <tr><td><code>libraries.shmrtWindowsGrt</code></td><td>The same Shalimar runtime built by GRIDE&#x27;s own cpp11, masm and link over GRIDE&#x27;s runtime (crt grt): shmrt-x86_64-windows-grt.lib, and -grt-debug.lib for a Debug build.</td></tr>
+  <tr><td><code>libraries.hostCrt</code></td><td>Microsoft&#x27;s C runtime (crt msvc), which the Windows link names since the compilers&#x27; objects carry no /DEFAULTLIB: the static CRT of the configuration, kernel32 and the legacy stdio definitions. link finds them through LIB (vcvars64.bat). cl&#x27;s objects do name theirs (/MT, /MTd, /MD ...): a link of cl&#x27;s objects alone adds none.</td></tr>
+  <tr><td><code>libraries.grt</code></td><td>GRIDE&#x27;s own C and C++ runtime for Windows (crt grt): five layered libraries - grtstart.lib (mainCRTStartup), grtcompat.lib (legacy and Microsoft-compatibility names), grtcxx.lib (the Microsoft C++ ABI&#x27;s support, without exceptions yet), grtc.lib (RTS6x&#x27;s C library and the Windows stream layer), grtwin.lib (the Windows layer) - and the kernel32.lib GRIDE&#x27;s link /LIB /DEF writes, all built by GRIDE&#x27;s own toolchain (toolchain\Windows\RT) and found in lib beside GRIDE ($GRT names the directory outright). A program linked with them needs no Visual Studio and no Windows SDK to build, and kernel32.dll alone to run. Tools &gt; Options &gt; Projects &gt; GRIDE Paths &gt; Windows C runtime decides which runtime a link takes: GRIDE&#x27;s, Microsoft&#x27;s, or automatic - Microsoft&#x27;s only where Visual Studio is found and the build has cl&#x27;s objects, GRIDE&#x27;s otherwise (settings.json windowsRuntime: auto, grt, msvc - Black's under environment, Grey's WindowsRuntime, White's windowsRuntime, which White's Tools menu writes; GRIDE_WINDOWS_RUNTIME in the environment at start wins).</td></tr>
+</table>
+<h3 id="tc-linkerCommandFiles">linkerCommandFiles - the C6747 memory layouts</h3>
+<table>
+  <tr><th>Entry</th><th>What it is</th></tr>
+  <tr><td><code>linkerCommandFiles</code></td><td>Linker command files GRIDE writes into the build directory when the project brings none: name is the file name, lines its text.</td></tr>
+  <tr><td><code>linkerCommandFiles.ti-link</code></td><td>GRIDE&#x27;s own command file for lnk6x: one flat memory for the C6747 with every section the compilers and the runtime write placed in it (--rom_model, a 16 KB stack, a 1 MB heap).</td></tr>
+</table>
+<h2 id="pro">3. The .pro project file, key by key</h2>
+<p>One format for the three outlooks; each writes it the same way, byte for byte, and keeps the keys the other two keep. An object is one key a line; a list of names is one line when it is 90 characters or fewer. <code>//</code> line comments are read, and a save does not keep them.</p>
+<table>
+  <tr><th>Key</th><th>What it is</th></tr>
+  <tr><td><code>name</code></td><td>the project's name</td></tr>
+  <tr><td><code>toolchain</code></td><td>the compiler word for the whole project - <code>auto</code> (each file's language decides: c90, cpp11, shalimar), or one of them</td></tr>
+  <tr><td><code>arch</code></td><td>the platform built for - the Target menu's choice: <code>x86_64-windows</code>, <code>x86_64-linux</code>, <code>arm64-darwin</code>, <code>tms6747</code>. A project without one builds for the target chosen in the IDE (Black: any target); none is written until a target other than Windows is chosen</td></tr>
+  <tr><td><code>groups</code></td><td>the files, in named groups: <code>"Sources": ["main.c", "account.c"]</code>, or <code>{ "files": [...], "toolchain": "c90" }</code> for a group with its own compiler. Paths are relative to the project's folder, with <code>/</code></td></tr>
+  <tr><td><code>include</code></td><td>the header directories the compilers are given (<code>-I</code>)</td></tr>
+  <tr><td><code>libraries</code></td><td>libraries the link takes - for a third-party library, its prebuilt binary for this platform</td></tr>
+  <tr><td><code>build</code></td><td>what the build makes: <code>target</code> is the program (<code>mathx-demo</code>, or <code>mathx-demo.exe</code> on Windows), <code>groups</code> the groups compiled into it, <code>args</code> the program's arguments when it runs. Every Shalimar file has a <code>main()</code>, so for Shalimar the target says which is the program</td></tr>
+  <tr><td><code>emulateOnly</code></td><td>a TMS320C6747 build that only runs on the emulator (vm6747), not linked for the simulator</td></tr>
+  <tr><td><code>options</code></td><td>the Compiler Options this project sets, by option id</td></tr>
+  <tr><td><code>open</code></td><td>the file the editor shows when the project opens. Without it, all three open the first source that defines <code>main</code> (Shalimar's <code>fun &lt;&gt; = main()</code>), else the project's first file</td></tr>
+  <tr><td><code>indent, tabs</code></td><td>the project's own indentation, over the editor's</td></tr>
+  <tr><td><code>configurations, excludeFromBuild, dependsOn, language, template, targets</code></td><td>Black's own: its build configurations, files left out of the build, projects built first, the language, the template it was made from, and several targets</td></tr>
+  <tr><td><code>language, buildConfigurations, activeConfiguration</code></td><td>Grey's own: the language, its Debug / Release configurations and the one in force</td></tr>
+</table>
+<h2 id="sample">4. A C++ project's three files - one example</h2>
+<p>A C++ project needs only its <code>.pro</code> and its sources. <code>toolchain.json</code> comes with GRIDE and <code>settings.json</code> is GRIDE's own memory; neither is copied into a project, and a project builds the same with either of them fresh. The example is <code>examples\projects\showcase\solve3-cpp11</code>.</p>
+<table>
+  <tr><th>File</th><th>GRIDE built and started in Visual Studio</th><th>GRIDE installed by Setup</th></tr>
+  <tr><td><code>toolchain.json</code></td><td><code>GRIDEd\x64\&lt;Config&gt;\toolchain.json</code> - the build copies <code>GRIDEd\GRIDE\toolchain.json</code> there, beside <code>GRIDE.exe</code> and the programs the same build made (c90, cpp11, shalimar, masm, link ...)</td><td>the installation folder, beside <code>GRIDE.exe</code></td></tr>
+  <tr><td><code>toolchain.json</code> (yours)</td><td colspan="2"><code>%APPDATA%\GRIDE\toolchain.json</code> - only once Tools &gt; Options has changed a tool; otherwise there is none</td></tr>
+  <tr><td><code>settings.json</code></td><td colspan="2"><code>%APPDATA%\GRIDE\settings.json</code> - one per Windows user, the same file for a GRIDE started from Visual Studio and an installed one, and for GRIDE, GRIDE 2.0 and GRIDE 1.0. Written when GRIDE closes; a missing one is written afresh</td></tr>
+  <tr><td><code>solve3-cpp11.pro</code></td><td colspan="2">the project's folder</td></tr>
+</table>
+
+<h3 id="sample-pro">The project: solve3-cpp11.pro</h3>
+<pre><code>{
+  "name": "solve3-cpp11",
+  "groups": {
+    "Sources": ["src/main.cpp", "src/check.cpp"],
+    "Headers": ["src/check.h", "src/CMatrix.h", "src/CVector.h"]
+  },
+  "build": {
+    "target": "solve3-cpp11",
+    "groups": ["Sources"]
+  },
+  "toolchain": "auto"
+}</code></pre>
+<p>The folder, and what GRIDE's Build adds to it (Release; Debug the same under <code>Debug</code>):</p>
+<pre><code>solve3-cpp11\
+  solve3-cpp11.pro
+  src\main.cpp  src\check.cpp  src\check.h  src\CMatrix.h  src\CVector.h
+  obj\Release\Win\main.s  main.obj  check.s  check.obj      the compilers' assembly and masm's objects
+  out\Release\Win\solve3-cpp11.exe                         link's program</code></pre>
+<p>Build (<kbd>F7</kbd>) runs each source through cpp11 (<code>"toolchain": "auto"</code>: C++ goes to cpp11), masm and link, and stops; Start Without Debugging (<kbd>Ctrl+F5</kbd>) builds what is out of date and runs the program in the Output pane:</p>
+<pre><code>------ Build started: Project solve3-cpp11, Configuration Release | Windows ------
+$ Sources (cpp11)
+[cpp11]  main.cpp  -&gt;  obj/Release/Win/main.s
+cpp11: compilation completed successfully - 0 errors
+[masm]  main.s  -&gt;  obj/Release/Win/main.obj
+[cpp11]  check.cpp  -&gt;  obj/Release/Win/check.s
+cpp11: compilation completed successfully - 0 errors
+[masm]  check.s  -&gt;  obj/Release/Win/check.obj
+$ linking with link
+[LINK] out/Release/Win/solve3-cpp11.exe
+========== Build: 1 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========</code></pre>
+<p>The assembly is a step on the way: it is written to <code>obj</code> and not opened. A failed build puts the caret on the first error in one of the project's own files, never in a generated <code>.s</code>; a tool that fails on every line shows its first 40 and counts the rest.</p>
+
+<h3 id="sample-settings">settings.json: GRIDE's memory, not the project's</h3>
+<p>What GRIDE keeps there - the editor, the build, the paths, the recent projects, the window. GRIDE 2.0 and GRIDE 1.0 keep their own keys beside GRIDE's in the same file. GRIDE's part of a fresh file:</p>
+<pre><code>{
+  "environment": {
+    "theme": "Dark", "font": "Consolas", "fontSize": 10, "tabSize": 4, "insertSpaces": false,
+    "lineNumbers": true, "reopenLastWorkspace": true, "saveBeforeBuild": true,
+    "jumpToFirstError": true, "askNativeTools": true, "runInIde": true,
+    "defaultProjectLocation": "C:\\Users\\you\\Documents\\GRIDE Projects",
+    "grideRoot": "", "vcvars": "", "defaultCompiler": "auto", "c6747Debugger": "auto",
+    "windowsDebugger": "auto", "windowsRuntime": "auto"
+  },
+  "recent": { "files": [], "workspaces": ["...\\solve3-cpp11\\solve3-cpp11.pro"] },
+  "keySet": "visualstudio",
+  "compilerOptions": {}
+}</code></pre>
+<p>Nothing in it says where this copy of GRIDE is: the programs and <code>toolchain.json</code> are found beside the running <code>GRIDE.exe</code> (before a RIDE installation, then PATH), so one <code>settings.json</code> serves a GRIDE started from Visual Studio and an installed one alike. A help folder is written only when one is named under Tools &gt; Options, and a named folder that no longer exists is passed over. A recent project that is gone is skipped.</p>
+
+<h3 id="sample-toolchain">toolchain.json: the part a C++ build on Windows uses</h3>
+<p>The Windows target names the program for each role; cpp11's entry says how it is called. Shortened - the whole file is described entry by entry in <a href="#toolchain">section 2</a>:</p>
+<pre><code>"targets": {
+  "x86_64-windows": {
+    "debugInfo": "codeview",
+    "assemblyExtension": ".s", "objectExtension": ".obj", "programExtension": ".exe",
+    "roles": { "cCompiler": "c90", "cppCompiler": "cpp11", "shalimarCompiler": "shalimar",
+               "assembler": "masm", "linker": "link", "debugAssembler": "clang", "debugLinker": "mslink", ... }
+  }
+},
+"tools": {
+  "cpp11": {
+    "role": "cppCompiler", "exe": "cpp11.exe",
+    "configFlags": { "Debug": "-g -D_DEBUG=1", "Release": "-O2 -DNDEBUG=1" },
+    "asmSyntaxFlags": { "codeview": "-masm=gnu", "assemblerNamed": "-masm=masm" },
+    "operations": {
+      "compileToAssembly": { "args": "-S \"$(Source)\" -o \"$(AsmFile)\" $(ArchFlag) $(ConfigFlags) $(AsmSyntaxFlag) $(IncludeFlags) ..." }
+    }
+  },
+  ...
+}</code></pre>
+
+<h3 id="sample-vs">From Visual Studio to a running program</h3>
+<ol>
+  <li>Open <code>GRIDEd\GRIDE.sln</code> and Build &gt; Build Solution - every project, so the eleven programs land beside <code>GRIDE.exe</code> in <code>x64\&lt;Config&gt;</code>; a build of the GRIDE project alone leaves them out.</li>
+  <li>Debug &gt; Start Without Debugging: GRIDE starts from <code>x64\&lt;Config&gt;</code>, reads the <code>toolchain.json</code> beside it and <code>%APPDATA%\GRIDE\settings.json</code>.</li>
+  <li>File &gt; Open: <code>solve3-cpp11.pro</code> - <code>main.cpp</code> comes into the editor with it; Build (<kbd>F7</kbd>); Start Without Debugging (<kbd>Ctrl+F5</kbd>) runs it.</li>
+  <li>A C, C++ or Shalimar file open with no project is a program of its own: Build and Start make it in <code>out\&lt;Config&gt;\Win</code> beside the file, and no <code>.pro</code> is written. GRIDE 1.0's Build (<kbd>Ctrl+B</kbd>) does the same for its file in front.</li>
+</ol>
+<p><strong>Debug without clang.</strong> A Debug build needs no clang: c90, cpp11 and shalimar write their source line table and variables as CodeView in the MASM spelling (<code>-g -masm=masm</code>, the compiler's <code>asmSyntaxFlags.ownCodeView</code> - White, which reads no toolchain.json, has the same rule in its code), GRIDE's masm carries it and GRIDE's link, given <code>/DEBUG</code>, writes the PDB that gride-dbg (or cdb) reads - in all three outlooks. Only a compiler without its own CodeView goes through clang (Visual Studio's "C++ Clang tools for Windows" component) and Microsoft's link.exe; without clang such a build is made as Release makes it, and GRIDE says so once.</p>
+</main>
+</body>
+</html>

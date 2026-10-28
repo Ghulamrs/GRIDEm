@@ -37,7 +37,7 @@
 @class GRVariablesView, GRStackView, GRRegistersView, GRMemoryView, GRDisassemblyView;
 
 // what a build was started for (GRIDEd's AfterBuild)
-typedef NS_ENUM(NSInteger, GRAfterBuild) { GRAfterNothing = 0, GRAfterRun, GRAfterDebug, GRAfterEmulate, GRAfterVerify };
+typedef NS_ENUM(NSInteger, GRAfterBuild) { GRAfterNothing = 0, GRAfterRun, GRAfterDebug, GRAfterDebugAtEntry, GRAfterEmulate, GRAfterVerify };
 
 // The GRSessionDelegate methods are spread over the categories (the build's in +Build, the run's
 // and the debugger's in +Debug); the session is handed the controller as its delegate in -init.
@@ -78,6 +78,7 @@ typedef NS_ENUM(NSInteger, GRAfterBuild) { GRAfterNothing = 0, GRAfterRun, GRAft
 
 // ---- state -------------------------------------------------------------------------
 @property (nonatomic, assign) GRAfterBuild afterBuild;
+@property (nonatomic, assign) BOOL programLineLast;       // the Debug output's last line is the program's, which its rest may go on
 @property (nonatomic, assign) BOOL autoHidden;            // Window > Auto Hide All
 @property (nonatomic, assign) BOOL statusBarShown;
 @property (nonatomic, assign) BOOL classViewRescanQueued;
@@ -131,6 +132,7 @@ typedef NS_ENUM(NSInteger, GRAfterBuild) { GRAfterNothing = 0, GRAfterRun, GRAft
 - (BOOL)hasSelectedFile;
 - (BOOL)canBuild;
 - (BOOL)canEmulate;
+- (BOOL)canBatch;
 - (BOOL)isBuildingOrRunning;
 - (BOOL)canStartDebug;
 // the dynamic menus (recent lists, the Window menu's documents, external tools, the Build titles)
@@ -251,6 +253,10 @@ typedef NS_ENUM(NSInteger, GRAfterBuild) { GRAfterNothing = 0, GRAfterRun, GRAft
 - (void)lookAtFrame:(NSInteger)index;
 - (void)variableSet:(NSString*)name value:(NSString*)value;
 - (void)launchDebugger:(NSString*)program;
+- (void)launchDebugger:(NSString*)program atEntry:(BOOL)atEntry;
+- (void)debugStepInto;
+- (void)debugStepOver;
+- (void)debugStartAtEntry;
 - (void)runChosen:(GRAfterBuild)how;
 - (void)refreshDebugPanes;
 - (void)clearExecutionMarkers;

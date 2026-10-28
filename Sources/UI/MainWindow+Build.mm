@@ -209,18 +209,24 @@ using namespace GRIDEm;
         if (!first)
             for (const Services::BuildMessagePtr& m : [self.issuesView messages])
                 if (m->Sev == Services::Severity::Error) { first = m; break; }
-        if (first && Platform::Paths::IsFile(first->File)) [self navigateTo:GRNS(first->File) line:first->Line column:first->Column];
+        // never the assembly a compiler generated (a .s or .asm no project lists): the Error List still names it
+        Model::WorkspacePtr w = self.session.workspace;
+        std::string ext = first ? Core::StringUtil::ToLower(Platform::Paths::Extension(first->File)) : std::string();
+        bool generated = (ext == ".s" || ext == ".asm") && (!w || !w->FindProjectForFile(first->File));
+        if (first && Platform::Paths::IsFile(first->File) && !generated)
+            [self navigateTo:GRNS(first->File) line:first->Line column:first->Column];
     }
 
     GRAfterBuild next = self.afterBuild;
     self.afterBuild = GRAfterNothing;
     if (!s->Ok()) return;
     if (!self.session.workspace || ![self runProject]) return;      // closed during the build
-    if (next == GRAfterDebug)
+    if (next == GRAfterDebug || next == GRAfterDebugAtEntry)
     {
         Model::GrideProjectPtr p = [self runProject];
         [self launchDebugger:GRNS(Services::BuildEngine::ProgramPath(p, p->GetConfiguration(GRStd([self currentConfig]),
-                                                                                             [self currentTarget])))];
+                                                                                             [self currentTarget])))
+                     atEntry:next == GRAfterDebugAtEntry];
     }
     else if (next == GRAfterRun || next == GRAfterEmulate || next == GRAfterVerify) [self runChosen:next];
 }

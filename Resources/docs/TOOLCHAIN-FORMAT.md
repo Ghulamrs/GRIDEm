@@ -11,7 +11,7 @@ the shipped copy down beside `GRIDE.exe`; the source of truth in GRIDEd's tree i
 |---|---|
 | `<folder of GRIDE.exe>\toolchain.json` | the shipped defaults; never written by the IDE |
 | `%APPDATA%\GRIDE\toolchain.json` | the user's overrides (normal install) |
-| `<folder of GRIDE.exe>\toolchain.user.json` | the user's overrides of a portable install (a `gride.settings.json` beside the exe) |
+| `<folder of GRIDE.exe>\toolchain.user.json` | the user's overrides of a portable install (a `settings.json` beside the exe) |
 | `$GRIDE_TOOLCHAIN` | names the shipped file outright (tests, unusual layouts) |
 
 The shipped file is looked for beside the exe, then (a source-tree layout) up to four folders above
@@ -21,8 +21,10 @@ shipped one whole; a field the user's file does not name keeps the shipped value
 not know is kept as it is and written back unchanged. Tools > Options > Toolchains > Definitions
 writes only what differs from the shipped file; "Restore shipped defaults" removes the entry.
 
-The reader accepts `//` line comments (the shipped file uses them for its header); the user's file is
-rewritten by the Options dialog without comments, so every entry also carries a `description`.
+The reader accepts `//` line comments. The shipped file holds settings only (since 2026-10-21): no header, and a
+`description` only where the Options pages show one - on a tool, an operation and a library, one line each. What
+every entry is, in words, is in the Help: `docs\Settings_Files.html`, keyed by each entry's path. Black and Grey
+ship the one file, identical byte for byte.
 
 ## Validation
 
@@ -48,7 +50,6 @@ GRIDE.exe (...), the installation's ..., PATH`).
 ```
 {
   "format": 1,                 // the format version
-  "description": "...",
   "installation": { ... },     // where the toolchain is installed
   "visualStudio": { ... },     // where Visual Studio's tools and the Windows SDK are, found without cmd.exe
   "ccs": { ... },              // reading CCS projects: TI's option definitions, which projects are built, TI's runtime names, TI's compiler directories
@@ -61,7 +62,8 @@ GRIDE.exe (...), the installation's ..., PATH`).
 }
 ```
 
-Every section may carry a `description` key, which is skipped as an entry.
+Any object may carry a `description` key (a string, skipped as an entry); the shipped file has one only on a tool,
+an operation and a library, where the Options pages show it.
 
 ### installation
 
@@ -85,7 +87,7 @@ still wins; a tool whose lookup says `vcvars` is looked for in these folders).
 | `defaultRoots`, `editions` | list | tried when vswhere is not there: `<root>\<edition>` holding `msvcTools` |
 | `vcvars` | string | the batch file under the installation, for a setup script |
 | `msvcTools` | string | the folder of compiler versions (`VC\Tools\MSVC`); the newest version is taken, unless `msvcVersion` names one |
-| `msvcVersion` | string, optional | the compiler version to take under `msvcTools`: `"14.44"` takes the newest `14.44.*` (Visual Studio 2022's v143 where 14.52 is the newest), a whole folder name (`"14.44.35207"`) that folder; empty or absent: the newest. `cl`, Microsoft's `link.exe` and the `INCLUDE` / `LIB` / `PATH` directories all follow it. A version not under `msvcTools` takes the newest, and Visual Studio's description (Tools > Toolchain Check) says so (GRIDEd R13) |
+| `msvcVersion` | string, optional | the compiler version to take under `msvcTools`: `"14.44"` takes the newest `14.44.*` (Visual Studio 2022's v143 where 14.52 is the newest), a whole folder name (`"14.44.35207"`) that folder; empty or absent: the newest. `cl`, Microsoft's `link.exe` and the `INCLUDE` / `LIB` / `PATH` directories all follow it. A version not under `msvcTools` takes the newest, and Visual Studio's description (Tools > Toolchain Check) says so |
 | `hostBin`, `lib`, `include` | string | under the version: the tools (`bin\Hostx64\x64`), the libraries (`lib\x64`), the headers |
 | `llvmBin` | string | clang's folder (`VC\Tools\Llvm\x64\bin`) |
 | `windowsKits.registryKey`, `.registryValue` | string | where the Windows SDK's root is registered (`HKLM`) |
@@ -109,20 +111,20 @@ made from the XML CCS ships).
 | `deviceFamily`, `deviceVariant`, `siliconVersion` | string | the projects the toolchain builds: family `C6000`, a variant containing `C674`, the core `6740`; a project for anything else, a COFF one or a big-endian one is read all the same, with RIDE's refusal as a note (GRIDEd opens it; RIDE would refuse it) |
 | `compilerDirs` | object | major version -> the compiler directory's name prefix under `<CCS root>\tools\compiler` (`ti-cgt-c6000_`, `c6000_`), for `${CG_TOOL_ROOT}` when the version is not installed |
 | `tiRuntime.index` | string | TI's library index (`libc.a`), which lnk6x does not read |
-| `tiRuntime.library`, `.fallback` | string | the runtime it stands for (`rts6740_elf_eh.lib`, else `rts6740_elf.lib`); with RTS6x the build links the configuration's RTS6x library for it (the `rts6x` library's aliases); with TI's compiler directory named (Tools > Options > Projects > RIDE Paths), TI's `library` where it is in the directory's `lib` or the named library directory, else the `fallback` |
+| `tiRuntime.library`, `.fallback` | string | the runtime it stands for (`rts6740_elf_eh.lib`, else `rts6740_elf.lib`); with RTS6x the build links the configuration's RTS6x library for it (the `rts6x` library's aliases); with TI's compiler directory named (the GRIDE Paths page of Tools > Options), TI's `library` where it is in the directory's `lib` or the named library directory, else the `fallback` |
 | `tiCompiler.roots` | list | where TI's compiler directories are looked for when none is named (RIDE's `detectedTi`): `%SystemDrive%\ti` (environment variables expanded) |
 | `tiCompiler.under` | list | the layouts under each root: `""` (the root itself), `ccs*\tools\compiler`, `ccs*\ccs\tools\compiler` (a trailing `*` names any folder starting so); a folder named as `compilerDirs` says and holding the native linker in `bin` counts, the newest version wins (`8.10` is newer than `8.2`) |
 | `tiCompiler.bin`, `.lib` | string | under a compiler directory: the linker's folder, the runtime's |
 
 ### compilerOptions
 
-RIDE's Compiler Options (`options.cpp`): the table Tools > Options > Projects > Compiler Options and
+RIDE's Compiler Options (`options.cpp`): the table the Compiler Options page of Tools > Options and
 Project > Compiler Options draw, and what each row becomes on a compiler's command line. A compiler's
 configuration flags (`$(ConfigFlags)`) are made from the options it lists (its `options` field, see
 tools), in that order, from the project's store (`.pro`: `"options": { "debug": {...}, "release":
 {...} }`, only the values that differ from the defaults); a compiler that lists no options takes its
-`configFlags`. The settings' store (`gride.settings.json`: `compilerOptions`) is what a new project
-starts with.
+`configFlags`. The settings' store (GRIDE's one `settings.json`: GRIDEd's `compilerOptions`, GRIDE 2.0's
+`CompilerOptions`, in the same form) is what a new project starts with.
 
 | field | kind | meaning |
 |---|---|---|
@@ -143,7 +145,7 @@ starts with.
 | field | kind | meaning |
 |---|---|---|
 | `ideTarget` | string, required | the IDE's target name: `Windows`, `Linux`, `macOS`, `TMS320C6747` |
-| `name`, `description` | string | shown in the Options pages |
+| `name` | string | shown in the Options pages |
 | `host` | bool | the programs run on this machine |
 | `emulated` | bool | the program runs on the emulator or simulator |
 | `debugInfo` | string | what a Debug build carries: `codeview`, `dwarf`, `dwpsn`, or empty (no line table: `-g` is dropped) |
@@ -162,23 +164,22 @@ starts with.
 | field | kind | meaning |
 |---|---|---|
 | `name` | string | what the IDE prints (`c90`, `cl`, `link.exe`) |
-| `description` | string | what the tool is and does |
+| `description` | string | one line, shown in the Options pages |
 | `role` | string, required | `cCompiler`, `cppCompiler`, `shalimarCompiler`, `hostCompiler`, `hostCxx`, `assembler`, `linker`, `debugAssembler`, `debugLinker`, `nativeAssembler`, `nativeLinker`, `simulator`, `emulator`, `debugger`, `fallbackDebugger` (stands in for the `debugger` when that one is not installed: lldb on Windows), `converter` |
 | `languages` | list | what it compiles: `C`, `C++`, `Shalimar` |
 | `targets` | list | the arch words it serves (empty: all) |
 | `exe` | string, required | the program's file name (RIDE's actual name) |
 | `aliases` | list | the other names tried, in order (the brief's `cc1.exe`, `shc.exe`, `ASM6x.exe` ...) |
 | `words` | list | what a project file may call it (`c90`, `cc1`; `msvc`, `cl`, `c++`, `g++`, `clang++`) |
-| `lookup.env` | string | the environment variable that names it outright (`C90`, `VM6747`, `RIDE_CDB`) |
+| `lookup.env` | string | the environment variable that names it outright (`C90`, `VM6747`, `GRIDE_CDB`) |
 | `lookup.installDir` | string | the installation sub-folder it lives in (`bin`), empty for a tool that is not the installation's |
-| `lookup.dirs` | list | folders of its own, looked in after the ones above and before PATH; `%VAR%` is expanded (`cdb`: the Windows SDK's `Debuggers\x64`) |
+| `lookup.dirs` | list | folders of its own, looked in after the ones above and before PATH; `%VAR%` is expanded (`cdb`: the Windows SDK's `Debuggers\x64`) (GRIDEd reads it; GRIDE 2.0 not yet) |
 | `lookup.path` | bool | also looked for on PATH (false for RIDE's `link` and `lnk6x`, which Microsoft's and TI's would be taken for) |
 | `lookup.vcvars` | bool | Visual Studio's, reached through `vcvars64.bat` |
-| `lookup.description` | string | the search in words |
 | `version.args` | string | the arguments that print its version (`--version`); no `version` object: no query |
 | `outputEncoding` | string | how its output is read: `utf-8` (RIDE's tools) or `oem` (the console's code page: cl, link.exe, cdb) |
 | `diagnostics` | string | the shape of its error lines: `gnu` (`file:line:col: error: msg`), `msvc` (`file(line,col): error Cnnnn: msg`), `shalimar` (`Error: line N: msg`), `masm` (`file: line N: msg`), `ti`, `none` |
-| `environment` | object | the variables the tool itself reads, each described (`C90_AS`, `C90_LD`, `SHM_DEBUG`, `RIDE_DEBUG_SIM6747`) |
+| `environment` | object | the variables the tool itself reads, each described (`C90_AS`, `C90_LD`, `SHM_DEBUG`, `GGRIDE_DEBUG_SIM6747`) |
 | `archFlag` | string | the target as the tool spells it, `$(Arch)` filled in (`-arch $(Arch)`, `--target=$(Arch)`); empty for a tool that builds for the machine it is on |
 | `includeFlag`, `defineFlag` | string | its `-I` / `-D` spellings (`/I`, `/D`); empty: the tool takes none (shalimar) |
 | `installIncludeDirs` | list | the installation directories it is given as includes: `include`, `lib` |
@@ -186,7 +187,7 @@ starts with.
 | `configFlags` | object | the flags per configuration: `Debug`, `Release` - RIDE's flags before the Compiler Options existed; what a tool that lists no `options` takes (cl, the host's C++) |
 | `configFlagsByTarget` | object | arch -> { `Debug`, `Release` }: the exceptions (shalimar on tms6747: `-g` without `--debug`) |
 | `options` | list | the `compilerOptions` ids the tool takes, in the order their flags are written (c90: `c90.opt`, `c90.g`, `c90.defines`, `c90.undefines`, `general.nologo`, `general.jobs`, `general.time`); the project's Compiler Options then make `$(ConfigFlags)` |
-| `projectSettings` | object, optional | a Visual Studio project's own compiler settings and the switch the tool takes for each (GRIDEd R13; `cl` carries it): MSBuild's ClCompile name -> { value -> switch }, e.g. `"WarningLevel": { "Level4": "/W4" }`, `"RuntimeLibrary": { "MultiThreaded": "/MT", "MultiThreadedDebug": "/MTd" }`; `"*"` stands for any other value (`$(Value)` filled in), a switch of `""` reads the setting and gives nothing (`"MultiProcessorCompilation": { "*": "" }`); names and values in any case; a `description` key is allowed. When the tool compiles a project read from Visual Studio, the switches its configuration's settings map to go into `$(CompileFlags)` after the configuration's own flags, in this object's order, followed by the project's `AdditionalOptions`; the Output pane names them once (`[the project's own settings give cl: /W4 /WX /permissive- /EHsc /MT]`) and lists a setting the object does not name (`[not given to cl - ...]`) |
+| `projectSettings` | object, optional | a Visual Studio project's own compiler settings and the switch the tool takes for each (`cl` carries it): MSBuild's ClCompile name -> { value -> switch }, e.g. `"WarningLevel": { "Level4": "/W4" }`, `"RuntimeLibrary": { "MultiThreaded": "/MT", "MultiThreadedDebug": "/MTd" }`; `"*"` stands for any other value (`$(Value)` filled in), a switch of `""` reads the setting and gives nothing (`"MultiProcessorCompilation": { "*": "" }`); names and values in any case; a `description` key is allowed. When the tool compiles a project read from Visual Studio, the switches its configuration's settings map to go into `$(CompileFlags)` after the configuration's own flags, in this object's order, followed by the project's `AdditionalOptions`; the Output pane names them once (`[the project's own settings give cl: /W4 /WX /permissive- /EHsc /MT]`) and lists a setting the object does not name (`[not given to cl - ...]`) |
 | `session` | object, or a tool id | for a tool that debugs, and for `shalimar`, whose Debug build stops itself: how the child is driven on its standard input (below); a tool id names another tool's session to start from |
 
 #### session - how a debugger is driven
@@ -218,7 +219,7 @@ and simulator read a tms6747 build's `.dwpsn` lines, so the session is for a Win
 and a tms6747 without `vm6747`.
 | `asmSyntaxFlags.codeview` | string | added to a Debug build whose target carries CodeView (`-masm=gnu`) |
 | `asmSyntaxFlags.assemblerNamed` | string | added to a host build when an assembler is named (`-masm=masm`) |
-| `operations` | object | operation id -> { `description`, `args` (required), `shown`, `output`, `arguments` } |
+| `operations` | object | operation id -> { `description` (one line, shown), `args` (required), `shown`, `output`, `arguments` } |
 
 The operations and what the IDE uses them for:
 
@@ -254,7 +255,7 @@ A path placeholder is written without quotes; the template quotes it where the t
 
 | field | kind | meaning |
 |---|---|---|
-| `name`, `description` | string | shown in the Options pages |
+| `name`, `description` | string | shown in the Options pages (the description one line) |
 | `kind` | string | `runtime` (the C runtime), `printf`, `shalimarRuntime` (the C6747's `shmrt6x`, linked before the C runtime and taken as assembly by the emulator; the Windows one, `lib\shmrt-x86_64-windows[-debug].lib`, which RIDE's `shalimar` links itself and GRIDE links first in a Shalimar program's host link - the Debug file is the runtime with the session in it), `hostCrt` |
 | `target` | string | the arch it belongs to |
 | `directory` | string | the installation-relative directory holding the files (`lib\rts6x-tms6747`), looked for under the tool folder, beside GRIDE.exe and the installation, in that order |
@@ -271,7 +272,6 @@ A path placeholder is written without quotes; the template quotes it where the t
 | field | kind | meaning |
 |---|---|---|
 | `name` | string | the file name written into the build directory (`ti-link.cmd`) |
-| `description` | string | |
 | `lines` | list | the file's text, one line per entry |
 
 ## GRIDE 2.0
@@ -297,6 +297,7 @@ made from the file through a fixed binding of the IDE's tool ids to the file's r
 | settings entry | from the file |
 |---|---|
 | c90, cpp11, shalimar | the tools of the roles `cCompiler`, `cppCompiler`, `shalimarCompiler`; operation `compileToAssembly` |
+| cl (Windows) | the tool of the role `hostCompiler` of `x86_64-windows`; operation `compileToAssembly`, whose `args` write the object (`$(ObjFile)`), so nothing assembles it |
 | masm, link (Windows) | `targets.x86_64-windows.roles.assembler` / `.linker`; operations `assemble` / `link`; the linker's library switch is the target's `libraryFlag` |
 | clang, link.exe (Windows) | the roles `debugAssembler` / `debugLinker` (a Debug build's CodeView path); operations `assemble` / `link` |
 | ml64 (Windows) | the role `nativeAssembler`; operation `assemble`. The target's `nativeLinker` (mslink) is the `debugLinker` entry |
@@ -306,6 +307,7 @@ made from the file through a fixed binding of the IDE's tool ids to the file's r
 | RTS6x | the library `targets.tms6747.runtime` names: its Release file is the entry's file, its Debug file the alias, `directory` / `directoryEnv` the lookup |
 | vm6747, sim6747 | the roles `emulator` (operation `launch`) and `simulator` (operation `simulate`) |
 | c2s (both ways) | the tool of role `converter`; operations `convertToShalimar` / `convertToC` |
+| cdb, lldb (Windows) | the roles `debugger` / `fallbackDebugger` of `x86_64-windows`; operation `debug` |
 | Linux Runner, macOS Runner | not in the file: the program itself on that machine |
 
 The entry takes the tool's `exe` and `aliases`, the operation's `args` as its argument template (the
@@ -316,11 +318,11 @@ target's `ideTarget`, arch word, extensions, `run`, `runtime` and `linkerCommand
 takes a tool's `configFlags` / `configFlagsByTarget`, the host CRT from the `hostCrt` library, the Debug
 runtime from the runtime library's `files`, and writes the target's linker command file into `obj` when the
 project brings none. The `installation` section gives the default roots, the `bin` folder and the markers
-RIDE's installation is known by. A tool whose `lookup` has no `installDir` (ml64, clang, link.exe, TI's
-lnk6x, as, cc) is not looked for beside `GRIDE.exe` or in the installation, so RIDE's own `link` and
+the installation (a RIDE installation too) is known by. A tool whose `lookup` has no `installDir` (ml64, clang, link.exe, TI's
+lnk6x, as, cc) is not looked for beside `GRIDE.exe` or in the installation, so GRIDE's own `link` and
 `lnk6x` are never taken for Microsoft's or TI's.
 
-The build engine (R04) also takes: a compiler's `asmSyntaxFlags` (`codeview` for a Debug build on a
+The build engine also takes: a compiler's `asmSyntaxFlags` (`codeview` for a Debug build on a
 target whose `debugInfo` is `codeview`, `assemblerNamed` for the host target with an assembler named) as
 `$(AsmSyntaxFlag)`; the compilers' `environment` entries ending in `_AS` / `_LD`, set before a compiler
 runs to the target's assembler and linker (empty for a CodeView build); `installIncludeDirs` with the
@@ -343,10 +345,44 @@ problem the reader found, the file's tools and libraries with the overridden one
 "Discard user overrides"; Tools > Check Toolchain prints the same to the Output pane with where every
 tool was found or looked for, and the problems are printed there at start-up.
 
-Not used yet by GRIDE 2.0 (the revisions after R04 take them up): the rest of `ccs` (R06),
-`compilerOptions` (R07), the debuggers' `session` entries (R09). GRIDEd's R13 fields - a tool's
-`projectSettings` and `visualStudio.msvcVersion` - are kept by GRIDE 2.0's reader as unknown fields and
-not used. GRIDE 2.0's four targets are its own
+The CCS reader (`src\Import\CcsReading.h`, a port of GRIDEd's) takes the `ccs` section whole:
+`definitionsDir` and `definitions` (TI's option definitions per compiler major, `lib\ccs` beside
+`GRIDE.exe` - the project copies them - or up to four folders above it), `deviceFamily`, `deviceVariant`,
+`siliconVersion` (what a project must be built for, else RIDE's refusal as a note), `compilerDirs` and
+`tiCompiler` (TI's compiler directory: `${CG_TOOL_ROOT}`), `tiRuntime` (`libc.a` as the runtime a linker
+reads, which the C6747 target's runtime library then takes as an alias).
+
+Compiler Options (`src\Settings\CompilerOptions.h`, a port of GRIDEd's) take the `compilerOptions`
+section whole: c90, cpp11 and shalimar, which list `options`, take `$(ConfigFlags)` from the project's
+store (`"options"` in the `.pro`, written only when something differs from the defaults, whose flags are
+RIDE's `-g -D_DEBUG=1` / `-O2 -DNDEBUG=1`, `--debug -g` ...), an `environment` row (`CPP11_DECLINES`) set
+for that compiler's runs only; a tool that lists none keeps its `configFlags`, and a CCS configuration's
+own flags win over both. The GRIDE Paths page names what White's `settings.json` names: the installation's
+`include` / `lib` (relative to it or absolute; one named but not there gives nothing), `vcvars` (whose
+folder is taken as Visual Studio's before vswhere's), TI's compiler directory (`ti`: a C6747 build then
+links against TI's runtime, `tiRuntime.library` where it is in its `lib` or the second directory `tilib`,
+else `.fallback`; it does so too when RTS6x is not there and `tiCompiler` finds one, refusing with RIDE's
+sentence when that one holds only the fallback; TI's lnk6x stands in for a missing lnk6x and is given
+`--rom_model` where the project gives no model and no command file), the shared include directories
+(after the project's, on every compile) and libraries (on every host link), the compiler word and
+Compiler Options a new project starts with, the C6747 debugger, whether CCS projects open, and `ccs.root`
+(`${CG_TOOL_ROOT}` found under its `tools\compiler` first, then TI's compiler directory).
+
+GRIDE 2.0's file is GRIDEd's, `cl`'s `projectSettings` and `/Fd` and `visualStudio.msvcVersion`
+included: `msvcVersion` picks the compiler version as above. GRIDE 2.0 has a `cl` entry and uses
+`projectSettings`: a project read from Visual Studio whose compiler word is `cl` (the
+`.pro` that stands for it says so) compiles every
+source with cl, its `languageFlags` and `configFlags`, then the switches its configuration's ClCompile
+settings map to, then its `AdditionalOptions`, without the installation's header directories (they
+would stand in front of Visual Studio's headers), and links cl's objects with the target's `debugLinker`
+(else `nativeLinker`) - Microsoft's `link.exe` - with no `hostCrt` list, since the objects name their C
+runtime. A project read from Visual Studio without that word builds with RIDE's compilers, its
+ClCompile settings shown in its mapping. The debugger (`src\Debug\`, GRIDEd's
+engines ported) takes every tool's `session` (`dialect`, `like`, `marker` / `markerCommand`, `console`,
+`preamble`, `commands`, `environment`, `protocol`, `afterReady`), each target's `debugger` /
+`fallbackDebugger` / `emulator` / `simulator` roles and their `debug` and `session` operations, and the
+`shalimarRuntime` library of the host target (linked first for a Shalimar program, its Debug file carrying the
+program's own session). GRIDE 2.0's four targets are its own
 enumeration: the file's entries for them give the words, extensions and tools; a fifth target in the file
 is read but has no place in the IDE. `$(LinkerCmd)` is the first command file of the build, unquoted (the
 project's, else the written one); `{cmdfiles}` is every one, quoted. `$(Sources)` is every `.shl` of a
@@ -357,7 +393,7 @@ Shalimar program, each quoted, which shalimar compiles as one (the one source of
 The roles, operation ids, placeholder names, the IDE's target names and the language words (`C`,
 `C++`, `Shalimar`) are the format's vocabulary, so the code knows them. The sentences the IDE prints
 are the IDE's (they take the names from the file). The defaults of GRIDEd's first release
-(`grc90.exe`, `C:\GRIDE\bin\...`), which an old `gride.settings.json` may still hold, are kept as
+(`grc90.exe`, `C:\GRIDE\bin\...`), which an old `gride.settings.json` taken in may still hold, are kept as
 migration data so such a file follows the port.
 
 ## Changing the toolchain

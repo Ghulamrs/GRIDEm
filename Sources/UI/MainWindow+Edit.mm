@@ -477,16 +477,16 @@ static bool BuildRegex(const std::string& pattern, bool matchCase, bool wholeWor
     NSString* f = [self findHelpFile:@"ReleaseNotes" extensions:@[ @"txt", @"md" ]];
     NSString* text = f != nil ? [NSString stringWithContentsOfFile:f encoding:NSUTF8StringEncoding error:nil] : nil;
     if (text == nil)
-        text = @"GRIDEm 1.0\n==========\n\n"
+        text = @"GRIDEm 1.5.0 - the Black outlook on the Mac\n"
+                "===========================================\n\n"
                 "* GRIDE native on macOS: AppKit, the Mac's menus, toolbar, Settings window and Dark Mode\n"
-                "* Languages C90, C++11, Shalimar; targets macOS, TMS320C6747, Windows and Linux (to assembly)\n"
-                "* GRIDEd's files: .pro, .grws, gride.settings.json and toolchain.json, read and written the same way\n"
-                "* Read-only Code Composer Studio 7.4 / 5.5 projects and Visual Studio solutions\n"
-                "* RIDE's build engine: compile, assemble, link, with error reading into Issues\n"
-                "* Run in the Output pane with an input line; sim6747 / vm6747 / Verify on the C6747\n"
-                "* Debugging with lldb (macOS) and sim6747 / vm6747 (C6747): Locals, Watch, Call Stack,\n"
-                "  Registers, Memory, Disassembly\n"
-                "* C <-> Shalimar conversion through c2s\n";
+                "* Visual Studio's keys, or White's key set (Settings > Keyboard)\n"
+                "* Workspaces (.grws) of GRIDE projects (.pro), CCS 7.4 / 5.5 projects and Visual Studio solutions\n"
+                "* GRIDE's toolchain inside GRIDEm.app, as toolchain.json defines it: c90, cpp11 1.30, shalimar, c2s,\n"
+                "  asm6x, lnk6x, sim6747, vm6747, with RTS6x and the Shalimar runtimes\n"
+                "* Debugging: lldb on macOS, sim6747 and vm6747 on the C6747, a Shalimar program's own session;\n"
+                "  F10 / F11 build and stop at main, and the program being debugged reads the Output pane's input line\n"
+                "* F1: the Help the three outlooks (Black, Grey, White) share\n";
     GRTextSheet* sheet = [[GRTextSheet alloc] initWithTitle:@"Release Notes" text:text mono:YES];
     [sheet beginOn:self.window completion:^(BOOL ok) { (void)ok; }];
 }

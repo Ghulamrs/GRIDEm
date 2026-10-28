@@ -159,18 +159,15 @@ static const char* const kMainPattern = "^\\s*((int|void)?\\s*|fun\\s*<[^>]*>\\s
     }];
 }
 
-// a workspace just opened shows its program: the startup project's file with main() in the editor
+// a workspace just opened shows its program: the startup project's main file in the editor
 - (void)showStartupSource
 {
     Model::WorkspacePtr w = self.session.workspace;
     if (!w || !w->StartupProject()) return;
     for (GRSourceDocument* d in self.editorArea.documents)
-        if (d.path != nil && w->FindProjectForFile(GRStd(d.path))) return;     // one of its files is on screen already
-    NSString* file = nil;
-    NSInteger line = 0;
-    if ([self findEntryPoint:w->StartupProject() file:&file line:&line] && file != nil
-        && Platform::Paths::IsFile(GRStd(file)))
-        [self openDocument:file line:line];
+        if (d.path != nil && w->FindProjectForFile(GRStd(d.path))) return;
+    std::string path;
+    if (w->StartupProject()->FileToOpen(path)) [self openDocument:GRNS(path) line:0];
 }
 
 - (void)setWorkspaceTo:(const Model::WorkspacePtr&)w

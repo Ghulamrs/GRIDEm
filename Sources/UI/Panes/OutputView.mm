@@ -38,7 +38,11 @@ using namespace GRIDEm;
 - (instancetype)init
 {
     self = [super initWithIdentifier:@"Output" title:@"Output" symbol:@"text.alignleft"];
-    if (self != nil) _lines = [NSMutableDictionary dictionary];
+    if (self != nil)
+    {
+        _lines = [NSMutableDictionary dictionary];
+        _echoInput = YES;
+    }
     return self;
 }
 
@@ -102,16 +106,16 @@ using namespace GRIDEm;
 
 - (BOOL)inputEnabled { return _inputEnabled; }
 
-- (void)setInputEnabled:(BOOL)on
+- (void)setInputEnabled:(BOOL)on { [self showInput:on focus:YES]; }
+
+- (void)showInput:(BOOL)on focus:(BOOL)focus
 {
+    BOOL wasShown = _inputEnabled;
     _inputEnabled = on;
     if (!self.isViewLoaded) return;
+    if (on && !wasShown) _input.stringValue = @"";
     _input.hidden = !on;
-    if (on)
-    {
-        _input.stringValue = @"";
-        [_input.window makeFirstResponder:_input];
-    }
+    if (on && focus) [_input.window makeFirstResponder:_input];
 }
 
 - (NSMutableArray<NSString*>*)get:(NSString*)source
@@ -175,6 +179,20 @@ using namespace GRIDEm;
         if (trimmed) [self redraw];
         else [self appendLine:line];
     }
+}
+
+- (void)continueLine:(NSString*)text source:(NSString*)source
+{
+    if (![NSThread isMainThread])
+    {
+        dispatch_async(dispatch_get_main_queue(), ^{ [self continueLine:text source:source]; });
+        return;
+    }
+    NSMutableArray* l = [self get:source];
+    if (l.count == 0) { [self append:text source:source]; return; }
+    NSString* rest = [GROutputView plainText:text != nil ? text : @""];
+    l[l.count - 1] = [l.lastObject stringByAppendingString:rest];
+    if (self.isViewLoaded && [source isEqualToString:self.currentSource]) [self redraw];
 }
 
 - (void)clear:(NSString*)source
@@ -270,7 +288,7 @@ using namespace GRIDEm;
     if (control != _input || commandSelector != @selector(insertNewline:)) return NO;
     NSString* text = _input.stringValue;
     _input.stringValue = @"";
-    [self append:text source:self.currentSource];
+    if (self.echoInput) [self append:text source:self.currentSource];
     if (self.inputEntered) self.inputEntered(text);
     return YES;
 }

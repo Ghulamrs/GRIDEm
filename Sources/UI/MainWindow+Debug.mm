@@ -196,6 +196,7 @@ using namespace GRIDEm;
         [self setStatus:@"The program could not be started"];
         return;
     }
+    self.outputView.echoInput = YES;
     self.outputView.inputEnabled = YES;
     [self setStatus:[NSString stringWithFormat:@"Running %@ - type its input below the output, Stop ends it",
                                                GRNS(Platform::Paths::FileName(program))]];
@@ -236,7 +237,33 @@ using namespace GRIDEm;
     return objDir;
 }
 
-- (void)launchDebugger:(NSString*)program
+- (void)debugStepInto
+{
+    if (self.session.isInBreak) self.session.debugger->StepInto();
+    else [self debugStartAtEntry];
+}
+
+- (void)debugStepOver
+{
+    if (self.session.isInBreak) self.session.debugger->StepOver();
+    else [self debugStartAtEntry];
+}
+
+// F11 or F10 with nothing debugged: the build, then the program started and stopped at main's first line
+- (void)debugStartAtEntry
+{
+    if (self.session.isDebugging) return;
+    if (![self ensureProgram]) return;
+    Model::GrideProjectPtr p = [self runProject];
+    if (!self.session.workspace || !p) return;
+    self.afterBuild = GRAfterDebugAtEntry;
+    if (![self startBuild:Services::BuildAction::Build projects:self.session.workspace->BuildOrderFor(p) singleFile:nil])
+        self.afterBuild = GRAfterNothing;
+}
+
+- (void)launchDebugger:(NSString*)program { [self launchDebugger:program atEntry:NO]; }
+
+- (void)launchDebugger:(NSString*)program atEntry:(BOOL)atEntry
 {
     NSString* file = nil;
     NSInteger line = 1;
@@ -249,6 +276,7 @@ using namespace GRIDEm;
     [self.outputView clear:@"Debug"];
     [self.outputView showSource:@"Debug"];
     [self showPane:@"Output"];
+    self.programLineLast = NO;
     Settings::GrideSettingsPtr s = self.session.settings;
     std::shared_ptr<Services::DebugEngine> engine = std::make_shared<Services::PlaceholderDebugger>();
     if (p)
@@ -281,6 +309,14 @@ using namespace GRIDEm;
     [self showPane:@"Watch"];
     [self showPane:@"CallStack"];
     [self showPane:@"Locals"];
+    // the program's input line below the output when its debugger hands input over; what is typed comes back
+    // as the program's console echoes it
+    if (engine->TakesInput() && !self.session.isRunning)
+    {
+        self.outputView.echoInput = NO;
+        [self.outputView showInput:YES focus:NO];
+    }
+    engine->StopAtEntry = atEntry;
     engine->Start(GRStd(program), [self currentTarget], GRStd(file), (int)line);
     [self updateToolbarForDebugging];
 }
@@ -360,6 +396,11 @@ using namespace GRIDEm;
     }
     if (state == Services::DebugState::Idle || state == Services::DebugState::Terminated)
     {
+        if (!self.outputView.echoInput && !self.session.isRunning)
+        {
+            [self.outputView showInput:NO focus:NO];
+            self.outputView.echoInput = YES;
+        }
         [self clearExecutionMarkers];
         [self.localsView clearView];
         [self.watchView clearView];
@@ -400,8 +441,21 @@ using namespace GRIDEm;
     if (!NSApp.isActive) [NSApp requestUserAttention:NSInformationalRequest];
 }
 
-- (void)sessionDebugOutput:(NSString*)line { [self.outputView append:line source:@"Debug"]; }
-- (void)sessionDebugProgramOutput:(NSString*)line { [self.outputView append:line source:@"Debug"]; }
+- (void)sessionDebugOutput:(NSString*)line
+{
+    [self.outputView append:line source:@"Debug"];
+    self.programLineLast = NO;
+}
+
+// the rest of a line the program had not finished goes on that line while nothing else was written after it
+- (void)sessionDebugProgramOutput:(NSString*)line
+{
+    std::string rest;
+    if (Services::DebugEngine::Continues(GRStd(line), rest) && self.programLineLast)
+        [self.outputView continueLine:GRNS(rest) source:@"Debug"];
+    else [self.outputView append:GRNS(rest) source:@"Debug"];
+    self.programLineLast = YES;
+}
 
 // =============================================================================
 //  the debug panes (GRIDEd's DebugPaneBase::UpdateFrom for each)
@@ -500,6 +554,7 @@ using namespace GRIDEm;
     std::string said;
     if (!self.session.debugger->SetVariable(GRStd(name), GRStd(value), said))
     {
+        self.programLineLast = NO;
         [self.outputView append:[NSString stringWithFormat:@"cannot set %@: %@", name, GRNS(said)] source:@"Debug"];
         [self setStatus:[NSString stringWithFormat:@"cannot set %@ - %@", name, GRNS(said)]];
     }

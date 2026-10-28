@@ -10,6 +10,7 @@
 #include "../../Services/RideToolchain.h"
 #include "../../Settings/ToolchainDefinitions.h"
 #include "../../Settings/ToolchainSettings.h"
+#include <algorithm>
 #include <stdexcept>
 
 using namespace GRIDEm;
@@ -85,6 +86,7 @@ using namespace GRIDEm;
     NSButton* _jumpFirst;
     NSButton* _askNative;
     NSButton* _runInIde;
+    NSTextField* _jobs;
     GRPathField* _location;
     GRPathField* _help;
 }
@@ -101,6 +103,9 @@ using namespace GRIDEm;
     _jumpFirst = [form addCheck:@"Go to the first error when a build fails" on:env->JumpToFirstError];
     _askNative = [form addCheck:@"Offer the vendor's assembler and linker when the project's own fail" on:env->AskNativeTools];
     _runInIde = [form addCheck:@"Run programs in the Output pane, with an input line (off: Terminal)" on:env->RunInIde];
+    _jobs = [form addNumber:@"Files compiled at once" value:std::min(64, std::max(0, env->BuildJobs)) min:0 max:64 decimals:0];
+    [form addNote:[NSString stringWithFormat:@"0: one per processor (%ld here); 1: one file at a time. The Output pane and "
+                   "the Error List keep the project's order.", (long)NSProcessInfo.processInfo.activeProcessorCount]];
     [form addSection:@"Locations"];
     _location = [[GRPathField alloc] initFolder:YES status:YES];
     _location.value = GRNS(env->DefaultProjectLocation);
@@ -125,6 +130,7 @@ using namespace GRIDEm;
     env->JumpToFirstError = _jumpFirst.state == NSControlStateValueOn;
     env->AskNativeTools = _askNative.state == NSControlStateValueOn;
     env->RunInIde = _runInIde.state == NSControlStateValueOn;
+    env->BuildJobs = std::min(64, std::max(0, _jobs.intValue));
     env->DefaultProjectLocation = GRStd(_location.value);
     env->HelpDirectory = GRStd(_help.value);
 }
@@ -258,7 +264,7 @@ using namespace GRIDEm;
 @end
 
 // =============================================================================
-//  RIDE Paths (RIDE's settings.json: root, include / lib, vcvars, ti / tilib,
+//  GRIDE Paths (settings.json: root, include / lib, vcvars, ti / tilib,
 //  includes / libraries, compiler, the C6747 debugger)
 // =============================================================================
 @implementation GRRidePathsPage
@@ -273,22 +279,24 @@ using namespace GRIDEm;
     NSTextView* _libraries;
     NSPopUpButton* _compiler;
     NSPopUpButton* _c6747;
+    NSPopUpButton* _windows;
+    NSPopUpButton* _runtime;
 }
 
 - (NSView*)makeContent
 {
     Settings::EnvironmentSettingsPtr env = self.work->Env;
     GRForm* form = [[GRForm alloc] init];
-    [form addSection:@"RIDE's installation"];
+    [form addSection:@"The toolchain's installation"];
     _ride = [[GRPathField alloc] initFolder:YES status:YES];
     _ride.value = GRNS(env->RideRoot);
-    [form addRow:@"RIDE root or bin" view:_ride];
+    [form addRow:@"Installation root or bin" view:_ride];
     [form addNote:@"Where c90, cpp11, shalimar, masm, link, asm6x, lnk6x, vm6747, sim6747 and lib/rts6x-tms6747 are "
-                   "looked for when a toolchain names a tool without a folder. Empty: inside GRIDEm.app, then PATH."];
+                   "looked for when a toolchain names a tool without a folder. Empty: a RIDE installation inside GRIDEm.app, then PATH."];
 
     std::string root = Services::RideToolchain::InstallRoot(Settings::ToolchainSettings::RideRoot);
     NSString* rootText = root.empty() ? @" (none found)" : [NSString stringWithFormat:@" (%@)", GRNS(root)];
-    [form addSection:@"RIDE's headers (settings.json include / lib)"];
+    [form addSection:@"The installation's headers (settings.json include / lib)"];
     _include = [[GRPathField alloc] initFolder:YES status:YES];
     _include.baseDir = GRNS(root);
     _include.value = GRNS(env->RideIncludeDir);
@@ -298,7 +306,7 @@ using namespace GRIDEm;
     _lib.value = GRNS(env->RideLibDir);
     [form addRow:@"c90's headers (lib)" view:_lib];
     [form addNote:[NSString stringWithFormat:@"Every cpp11 compile is given the include directory and every c90 compile the "
-                   "lib directory, after the project's own. Relative to RIDE's installation%@; empty: the directory of "
+                   "lib directory, after the project's own. Relative to the toolchain's installation%@; empty: the directory of "
                    "that name there.", rootText]];
 
     [form addSection:@"Visual Studio (settings.json vcvars)"];
@@ -334,8 +342,19 @@ using namespace GRIDEm;
     for (Services::RideTool t : Services::RideToolchain::Compilers()) [words addObject:GRNS(Services::RideToolchain::Word(t))];
     _compiler = [form addPopup:@"Compiler a new project starts with" items:words selected:GRNS(env->DefaultCompiler)];
     _c6747 = [form addPopup:@"TMS320C6747 debugger" items:@[@"auto", @"sim6747", @"vm6747"] selected:GRNS(env->C6747Debugger)];
-    [form addNote:@"auto: sim6747 on this build's .out when it has a line table, else vm6747 on the assembly (RIDE). "
-                   "RIDE_DEBUG_SIM6747=1 / RIDE_DEBUG_VM6747=1 in the environment at start win."];
+    [form addNote:@"auto: sim6747 on this build's .out when it has a line table, else vm6747 on the assembly (White's rule). "
+                   "GRIDE_DEBUG_SIM6747=1 / GRIDE_DEBUG_VM6747=1 in the environment at start win."];
+    _windows = [form addPopup:@"Windows debugger" items:@[@"auto", @"gride-dbg", @"cdb"]
+                     selected:GRNS(env->EffectiveWindowsDebugger())];
+    [form addNote:@"Windows only, kept for GRIDEd: auto takes gride-dbg, GRIDE's own debugger, when it is beside GRIDE, "
+                   "else cdb, else lldb. Not used on the Mac."];
+    std::string rt = env->EffectiveWindowsRuntime();
+    NSArray<NSString*>* runtimes = @[@"automatic", @"GRIDE's runtime", @"Microsoft's CRT"];
+    _runtime = [form addPopup:@"Windows C runtime" items:runtimes
+                     selected:runtimes[rt == "grt" ? 1 : rt == "msvc" ? 2 : 0]];
+    [form addNote:@"Windows only, kept for GRIDEd: GRIDE's runtime links with no Visual Studio and no Windows SDK; "
+                   "Microsoft's CRT takes Visual Studio's libcmt and the SDK's UCRT. GRIDE_WINDOWS_RUNTIME=grt / msvc "
+                   "in the environment at start wins. Not used on the Mac."];
     return form.view;
 }
 
@@ -353,6 +372,9 @@ using namespace GRIDEm;
     env->SharedLibraries = GRSplitLines(_libraries.string);
     env->DefaultCompiler = GRStd(_compiler.titleOfSelectedItem);
     env->C6747Debugger = GRStd(_c6747.titleOfSelectedItem);
+    env->WindowsDebugger = GRStd(_windows.titleOfSelectedItem);
+    NSInteger r = _runtime.indexOfSelectedItem;
+    env->WindowsRuntime = r == 1 ? "grt" : r == 2 ? "msvc" : "auto";
 }
 @end
 
@@ -414,8 +436,8 @@ using namespace GRIDEm;
     _root = [[GRPathField alloc] initFolder:YES status:YES];
     _root.value = GRNS(env->CcsRoot);
     [form addRow:@"CCS installation" view:_root];
-    [form addNote:@"RIDE's ccs.root (for example /Applications/ti/ccsv7): ${CG_TOOL_ROOT} is the project's compiler "
-                   "version under its tools/compiler. Empty: TI's compiler directory (RIDE Paths), else the directory below."];
+    [form addNote:@"White's ccs.root (for example /Applications/ti/ccsv7): ${CG_TOOL_ROOT} is the project's compiler "
+                   "version under its tools/compiler. Empty: TI's compiler directory (GRIDE Paths), else the directory below."];
     _cg = [[GRPathField alloc] initFolder:YES status:YES];
     _cg.value = GRNS(env->CcsToolRoot);
     [form addRow:@"${CG_TOOL_ROOT}" view:_cg];
@@ -515,7 +537,7 @@ using namespace GRIDEm;
 - (NSView*)makeContent
 {
     NSTextField* note = [NSTextField wrappingLabelWithString:
-        @"RIDE's Compiler Options as the installation sets them: what a new project starts with. A project's own are "
+        @"The Compiler Options as the installation sets them: what a new project starts with. A project's own are "
          "under Project > Compiler Options; a build takes the project's."];
     note.textColor = [NSColor secondaryLabelColor];
     note.preferredMaxLayoutWidth = 720;
@@ -572,7 +594,7 @@ static GRSettingsWindow* shownSettings = nil;
     [pages addObject:[[GRKeyboardPage alloc] initWithId:@"Keyboard" title:@"Keyboard" symbol:@"keyboard" settings:work]];
     [pages addObject:[[GRToolchainsPage alloc] initWithId:@"Toolchains" title:@"Toolchains" symbol:@"hammer" settings:work]];
     [pages addObject:[[GRDefinitionsPage alloc] initWithId:@"TCDEF" title:@"Definitions" symbol:@"doc.badge.gearshape" settings:work]];
-    [pages addObject:[[GRRidePathsPage alloc] initWithId:@"RidePaths" title:@"RIDE Paths" symbol:@"folder" settings:work]];
+    [pages addObject:[[GRRidePathsPage alloc] initWithId:@"RidePaths" title:@"GRIDE Paths" symbol:@"folder" settings:work]];
     [pages addObject:[[GRConvertersPage alloc] initWithId:@"Converters" title:@"Converters" symbol:@"arrow.left.arrow.right" settings:work]];
     [pages addObject:[[GRCcsPage alloc] initWithId:@"CCS" title:@"CCS" symbol:@"cpu" settings:work]];
     [pages addObject:[[GRLanguagesPage alloc] initWithId:@"Languages" title:@"Languages" symbol:@"character.book.closed" settings:work]];

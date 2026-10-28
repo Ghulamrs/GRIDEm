@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>GRIDE Help</title>
+<style>
+  body { font-family: "Segoe UI", sans-serif; margin: 0; background: #F6F6F4; color: #1E1F22; line-height: 1.5; }
+  header { background: #1F2226; color: #F2F2F2; padding: 22px 36px; }
+  header h1 { margin: 0; font-size: 28px; } header p { margin: 4px 0 0; color: #C9CED6; }
+  main { max-width: 940px; margin: 0 auto; padding: 16px 36px 48px; }
+  h2 { border-bottom: 2px solid #E0A23B; padding-bottom: 3px; margin-top: 30px; font-size: 20px; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; background: #fff; }
+  th, td { border: 1px solid #D5D8DD; padding: 5px 9px; text-align: left; vertical-align: top; }
+  th { background: #ECEDEF; }
+  code, kbd { font-family: Consolas, monospace; background: #ECEDEF; padding: 1px 4px; border-radius: 3px; }
+  a { color: #8A5A00; }
+</style>
+</head>
+<body>
+<header>
+  <h1>GRIDE Help</h1>
+  <p>One toolchain in three outlooks - C90, C++11 and Shalimar for Windows and the TMS320C6747</p>
+</header>
+<main>
+
+<h2 id="outlooks">1. The three outlooks</h2>
+<table>
+  <tr><th>Outlook</th><th>Version</th><th>What it is</th></tr>
+  <tr><td>Black</td><td>GRIDE 1.5.0</td><td>Visual Studio's way: a workspace of several projects, Visual Studio's keys (White's on request)</td></tr>
+  <tr><td>Grey</td><td>GRIDE 2.0.0</td><td>Visual Studio's look with White's run and debug keys; one project at a time</td></tr>
+  <tr><td>White</td><td>GRIDE 1.0</td><td>The simple one: RIDE's own window and its <code>.pro</code> projects</td></tr>
+</table>
+<p>All three drive the same eleven programs, which sit beside <code>GRIDE.exe</code>: <code>c90</code>, <code>cpp11</code>, <code>shalimar</code> and <code>c2s</code>; <code>masm</code> and <code>link</code> for Windows; <code>asm6x</code>, <code>lnk6x</code>, <code>sim6747</code> and <code>vm6747</code> for the C6747, with RTS6x. All three read Code Composer Studio 7.4 / 5.5 projects without changing them. Black and Grey also read Visual Studio solutions. GRIDE's Setup installs one outlook at a time.</p>
+
+<h2 id="start">2. First steps: the example</h2>
+<p>The example is <b>cppparse</b>, a C++ program in <code>examples\projects\cppparse</code> beside <code>GRIDE.exe</code>. GRIDE builds it with its own <code>cpp11</code>, <code>masm</code> and <code>link</code>, and links it with GRIDE's own C runtime for Windows (<code>lib\grtc.lib</code> and its layers, and GRIDE's <code>kernel32.lib</code>), so neither Visual Studio nor the Windows SDK is needed. Where Visual Studio is installed, Tools &gt; Options &gt; Projects &gt; GRIDE Paths &gt; Windows C runtime can choose Microsoft's CRT instead. Run it with <code>--health .</code>, and it reports on its own sources. Its <code>cppparse.sln</code> opens in Visual Studio as well.</p>
+<p>The rest of <code>examples\projects</code> are projects in C, C++ and Shalimar, one with a third-party library, and the CCS samples; <code>showcase</code> holds three projects of several files - three equations solved in Shalimar and in C++, an average in C - that check their own answers, and <code>shalimar-classic</code> eleven single-file Shalimar programs, each with the lines it prints at its end. <code>examples\programs</code> holds single files, and <code>examples\toolchain-demo\demo.ps1</code> runs all eleven programs from PowerShell. One examples folder serves the three outlooks. White copies both into <code>Documents\GRIDE</code> the first time it starts. All three outlooks read and write one <code>.pro</code> format, White's: a project saved in one opens in the other two.</p>
+<table>
+  <tr><th></th><th>Open</th><th>Build</th><th>Run</th></tr>
+  <tr><td>Black</td><td>File &gt; Open &gt; Project / Workspace: <code>cppparse.pro</code></td><td><kbd>F7</kbd></td><td><kbd>Ctrl+F5</kbd></td></tr>
+  <tr><td>Grey</td><td>File &gt; Open Project: <code>cppparse.pro</code></td><td><kbd>Ctrl+Shift+B</kbd></td><td><kbd>F5</kbd> builds and runs</td></tr>
+  <tr><td>White</td><td>Project &gt; Open: <code>cppparse.pro</code></td><td><kbd>F4</kbd></td><td>Build &gt; Run project</td></tr>
+</table>
+<p>The program runs in the Output pane (Black and Grey) or the Console (White), with a line to type its input into. Errors go to the error list, and a double-click on one opens its line. Choose Debug or Release, and the target (Windows or TMS6747), on the toolbar; in White use <kbd>Ctrl+D</kbd> and <kbd>Ctrl+T</kbd>.</p>
+
+<h2 id="keys">3. Keys</h2>
+<table>
+  <tr><th>Command</th><th>Black</th><th>Grey</th><th>White</th></tr>
+  <tr><td>Help (this page)</td><td><kbd>F1</kbd></td><td><kbd>F1</kbd></td><td><kbd>F1</kbd></td></tr>
+  <tr><td>New file / open file</td><td><kbd>Ctrl+N</kbd> / <kbd>Ctrl+O</kbd></td><td><kbd>Ctrl+N</kbd> / <kbd>Ctrl+O</kbd></td><td><kbd>Ctrl+N</kbd> / File &gt; Open</td></tr>
+  <tr><td>Save / save all / close</td><td><kbd>Ctrl+S</kbd> / <kbd>Ctrl+Shift+S</kbd> / <kbd>Ctrl+F4</kbd></td><td><kbd>Ctrl+S</kbd> / <kbd>Ctrl+Shift+S</kbd> / <kbd>Ctrl+F4</kbd></td><td><kbd>Ctrl+S</kbd> / - / <kbd>Ctrl+W</kbd></td></tr>
+  <tr><td>Find / replace / in files</td><td colspan="3"><kbd>Ctrl+F</kbd> / <kbd>Ctrl+H</kbd> / <kbd>Ctrl+Shift+F</kbd> in all three; <kbd>F3</kbd> finds again in Grey and White</td></tr>
+  <tr><td>Go to line</td><td><kbd>Ctrl+G</kbd></td><td><kbd>Ctrl+G</kbd></td><td>-</td></tr>
+  <tr><td>Compile this file</td><td><kbd>Ctrl+F7</kbd></td><td><kbd>Ctrl+F7</kbd></td><td>-</td></tr>
+  <tr><td>Build the file in front into its program (no project)</td><td><kbd>F7</kbd></td><td>-</td><td><kbd>Ctrl+B</kbd></td></tr>
+  <tr><td>Build</td><td><kbd>F7</kbd> workspace, <kbd>Ctrl+B</kbd> project</td><td><kbd>Ctrl+Shift+B</kbd></td><td><kbd>F4</kbd></td></tr>
+  <tr><td>Run</td><td><kbd>Ctrl+F5</kbd></td><td><kbd>F5</kbd> build and run, <kbd>Ctrl+F5</kbd> run</td><td><kbd>F5</kbd> this file</td></tr>
+  <tr><td>Debug, or carry on</td><td><kbd>F5</kbd></td><td><kbd>F8</kbd></td><td><kbd>F8</kbd></td></tr>
+  <tr><td>Step over / into / out</td><td><kbd>F10</kbd> / <kbd>F11</kbd> / <kbd>Shift+F11</kbd></td><td><kbd>F7</kbd> / <kbd>F6</kbd> / -</td><td><kbd>F7</kbd> / <kbd>F6</kbd> / Debug menu</td></tr>
+  <tr><td>Breakpoint</td><td><kbd>F9</kbd></td><td><kbd>F9</kbd></td><td><kbd>F9</kbd></td></tr>
+  <tr><td>Up / down the stack</td><td>Debug menu</td><td><kbd>Ctrl+Up</kbd> / <kbd>Ctrl+Down</kbd></td><td><kbd>Ctrl+Up</kbd> / <kbd>Ctrl+Down</kbd></td></tr>
+  <tr><td>Stop</td><td><kbd>Shift+F5</kbd></td><td><kbd>Shift+F5</kbd></td><td><kbd>Ctrl+Break</kbd></td></tr>
+</table>
+<p>Black switches to White's keys under Tools &gt; Options &gt; Environment &gt; Keyboard, where <kbd>F8</kbd>, <kbd>F7</kbd> and <kbd>F6</kbd> debug and step, <kbd>F4</kbd> builds, <kbd>F5</kbd> runs and <kbd>Ctrl+B</kbd> builds the file in front. In all three a step over or into with nothing debugged (Black's <kbd>F10</kbd> / <kbd>F11</kbd>, Grey's and White's <kbd>F7</kbd> / <kbd>F6</kbd>) builds, starts the program and stops at main's first line, as Visual Studio does; debug, or carry on, runs to a breakpoint or the end. Every outlook lists its own keys: Help &gt; Keyboard Shortcuts in Black and Grey, Help &gt; Keys in White.</p>
+
+<h2 id="versions">4. Versions</h2>
+<table>
+  <tr><th>Component</th><th>Version</th><th>Component</th><th>Version</th></tr>
+  <tr><td>GRIDE Setup</td><td>1.5.0</td><td><code>cpp11</code> (C++03 with C++11 extensions)</td><td>1.30</td></tr>
+  <tr><td><code>c90</code> (ISO C 90)</td><td>1.3</td><td><code>shalimar</code></td><td>1.3</td></tr>
+  <tr><td><code>c2s</code> (C &#8644; Shalimar)</td><td>1.2</td><td><code>asm6x</code> / <code>lnk6x</code></td><td>1.4 / 1.2</td></tr>
+  <tr><td><code>sim6747</code> / <code>vm6747</code></td><td>1.3 / 1.1</td><td><code>masm</code>, <code>link</code>, RTS6x</td><td>RIDE 5.17's</td></tr>
+</table>
+<p>Each program prints its version with <code>--version</code>; <code>c90</code> prints its version when run with no arguments. Help &gt; About shows the outlook's own version.</p>
+
+<h2 id="where">5. Where things are</h2>
+<ul>
+  <li><b>Installed:</b> <code>%LOCALAPPDATA%\Programs\GRIDE\&lt;outlook&gt;</code> for one user, or <code>C:\Program Files\GRIDE\&lt;outlook&gt;</code> for everyone. The folder holds <code>GRIDE.exe</code>, the programs, <code>include\</code> (cpp11's headers), <code>lib\</code> (c90's headers, the runtimes and TI's option tables), <code>docs\</code> (these pages) and <code>examples\</code>. Settings &gt; Apps &gt; GRIDE removes it.</li>
+  <li><b>Your settings:</b> one file, <code>%APPDATA%\GRIDE\settings.json</code>, whichever outlook is installed; each keeps its own keys in it and leaves the others'. A file from before - Black's <code>gride.settings.json</code> beside it, White's <code>%USERPROFILE%\GRIDE 1.0\settings.json</code> - is taken in the first time and then removed. White's <code>settings.json</code> beside <code>GRIDE.exe</code> holds the installation's defaults, under yours. In a portable copy, Black and Grey keep the file beside <code>GRIDE.exe</code> when it is there.</li>
+  <li><b>The toolchain:</b> Black and Grey read one <code>toolchain.json</code> beside <code>GRIDE.exe</code>, with your changes in <code>%APPDATA%\GRIDE\toolchain.json</code>. The file holds settings only; <a href="Settings_Files.html">Settings Files</a> says what each entry is, and <a href="TOOLCHAIN-FORMAT.md">its format</a> what each field may hold. White finds each program beside itself.</li>
+  <li><b>From source:</b> each outlook's <code>GRIDE.sln</code> (Visual Studio 2022's format, v143) builds GRIDE.exe and the eleven programs into <code>x64\&lt;Config&gt;</code>. If Visual Studio 2026 offers to retarget to v145, answer <b>Ignore all</b>.</li>
+</ul>
+
+<h2 id="references">6. References</h2>
+<p>The Help menu's <b>Language Reference</b> opens <a href="C90_Reference.html">C90</a>, <a href="Cpp11_Reference.html">C++11</a> and <a href="Shalimar_Reference.html">Shalimar</a>. <b>Toolchain Reference</b> opens <a href="MASM_LINK_Reference.html">MASM / LINK</a>, <a href="ASM6x_LNK6x_Reference.html">ASM6x / LNK6x</a>, <a href="RTS6747_Reference.html">RTS6747</a> and <a href="VM6747_Reference.html">VM6747 / SIM6747</a>. These pages point into <a href="RIDE_Manual.html">RIDE 5.17's complete manual</a>, which describes the compilers, the languages and the targets in full. <a href="Settings_Files.html">Settings Files</a> explains <code>toolchain.json</code>, <code>settings.json</code> and the <code>.pro</code> project file. <a href="GRIDE_Design_and_Development.html">GRIDE Design and Development</a> (2.0) is the project's report: GRIDE and its toolchain - the platforms, the languages, the GUI, the compilers, their optimisation, how they were developed and checked, and what is still open.</p>
+
+</main>
+</body>
+</html>

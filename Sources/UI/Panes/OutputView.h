@@ -20,8 +20,14 @@
 @property (nonatomic, readonly) NSString* currentSource;           // "Build", "Debug", "Tools"
 // shown while a program runs; it takes the focus when shown
 @property (nonatomic, assign) BOOL inputEnabled;
+// shown for a program under the debugger without the focus, so F10 and F11 go on working in the editor
+- (void)showInput:(BOOL)on focus:(BOOL)focus;
+// a line typed is shown as typed; off for a program on the debugger's console, which echoes it
+@property (nonatomic, assign) BOOL echoInput;
 
 - (void)append:(NSString*)text source:(NSString*)source;           // one line, any thread
+// text added to the source's last line: the rest of a line the program had not finished
+- (void)continueLine:(NSString*)text source:(NSString*)source;
 - (void)clear:(NSString*)source;
 - (void)showSource:(NSString*)source;
 // the lines of a source, for Copy / a report

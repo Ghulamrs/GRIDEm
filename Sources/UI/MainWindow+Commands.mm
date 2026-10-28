@@ -79,6 +79,13 @@ static const NSInteger kGRDocListTag = 9200;
 // Emulate and Verify: vm6747 and sim6747 are for the TMS320C6747 target alone
 - (BOOL)canEmulate { return [self canBuild] && Services::RideToolchain::IsEmulated([self currentTarget]); }
 - (BOOL)isBuildingOrRunning { return self.session.isBuilding || self.session.isRunning; }
+// a one-file program made from the editor's file has no batch
+- (BOOL)canBatch
+{
+    Model::WorkspacePtr w = self.session.workspace;
+    if (!w || ![self canBuild]) return NO;
+    return !(w->Projects.size() == 1 && w->Projects[0]->IsReadOnly && !Platform::Paths::IsFile(w->Projects[0]->FilePath));
+}
 - (BOOL)canStartDebug { return self.session.isInBreak || [self canBuild]; }
 
 // =============================================================================
@@ -187,7 +194,7 @@ static const NSInteger kGRDocListTag = 9200;
     [r bind:@"Build.Compile" handler:^{ ME; [me compileFile]; } when:TEST([me canBuild])];
     [r bind:@"Build.AssembleOnly" handler:^{ ME; [me buildProject:Services::BuildAction::AssembleOnly]; } when:TEST([me canBuild])];
     [r bind:@"Build.LinkOnly" handler:^{ ME; [me buildProject:Services::BuildAction::LinkOnly]; } when:TEST([me canBuild])];
-    [r bind:@"Build.Batch" handler:^{ ME; [me batchBuild]; } when:TEST([me canBuild] && [me hasWorkspace])];
+    [r bind:@"Build.Batch" handler:^{ ME; [me batchBuild]; } when:TEST([me canBatch])];
     [r bind:@"Build.ConfigManager" handler:^{ ME; [me configurationManager]; } when:TEST([me hasWorkspace])];
     [r bind:@"Build.Cancel" handler:^{ ME; [me cancelBuild]; } when:TEST([me isBuildingOrRunning])];
 
@@ -200,8 +207,8 @@ static const NSInteger kGRDocListTag = 9200;
     [r bind:@"Debug.Stop" handler:^{ ME; [me debugStop]; } when:TEST(me.session.isDebugging)];
     [r bind:@"Debug.Restart" handler:^{ ME; [me debugRestart]; } when:TEST(me.session.isDebugging)];
     [r bind:@"Debug.BreakAll" handler:^{ ME; me.session.debugger->BreakAll(); } when:TEST(me.session.isDebugging)];
-    [r bind:@"Debug.StepInto" handler:^{ ME; me.session.debugger->StepInto(); } when:TEST(me.session.isInBreak)];
-    [r bind:@"Debug.StepOver" handler:^{ ME; me.session.debugger->StepOver(); } when:TEST(me.session.isInBreak)];
+    [r bind:@"Debug.StepInto" handler:^{ ME; [me debugStepInto]; } when:TEST([me canStartDebug])];
+    [r bind:@"Debug.StepOver" handler:^{ ME; [me debugStepOver]; } when:TEST([me canStartDebug])];
     [r bind:@"Debug.StepOut" handler:^{ ME; me.session.debugger->StepOut(); } when:TEST(me.session.isInBreak)];
     [r bind:@"Debug.RunToCursor" handler:^{ ME; [me debugRunToCursor]; } when:TEST(me.session.isInBreak)];
     [r bind:@"Debug.UpStack" handler:^{ ME; [me lookAtFrame:me.session.debugger->CurrentFrame() + 1]; } when:TEST(me.session.isInBreak)];
@@ -262,8 +269,7 @@ static const NSInteger kGRDocListTag = 9200;
     [r bind:@"Window.Windows" handler:^{ ME; [me windowList]; } when:TEST([me hasDocument])];
 
     // ------------------------------------------------------------- Help
-    [r bind:@"Help.ViewHelp" handler:^{ ME; [me openHelpFile:@"GRIDE_User_Guide"]; }];
-    [r bind:@"Help.UserGuide" handler:^{ ME; [me openHelpFile:@"GRIDE_User_Guide"]; }];
+    [r bind:@"Help.ViewHelp" handler:^{ ME; [me openHelpFile:@"GRIDE_Help"]; }];
     NSDictionary<NSString*, NSString*>* references = @{
         @"Help.RefC90" : @"C90_Reference", @"Help.RefCpp11" : @"Cpp11_Reference", @"Help.RefShalimar" : @"Shalimar_Reference",
         @"Help.RefMasm" : @"MASM_LINK_Reference", @"Help.RefAsm6x" : @"ASM6x_LNK6x_Reference",

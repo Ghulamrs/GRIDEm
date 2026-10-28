@@ -24,7 +24,8 @@ void GRShowAboutPanel(NSString* settingsPath)
             NSAttributedString* credits = [[NSAttributedString alloc] initWithString:GRNS(text) attributes:attrs];
             [NSApp orderFrontStandardAboutPanelWithOptions:@{
                 NSAboutPanelOptionApplicationName: @"GRIDEm",
-                NSAboutPanelOptionApplicationVersion: GRNS(Services::ToolVersions::IdeVersion),
+                NSAboutPanelOptionApplicationVersion: GROr([NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"],
+                                                           GRNS(Services::ToolVersions::IdeVersion)),
                 NSAboutPanelOptionCredits: credits,
             }];
         });

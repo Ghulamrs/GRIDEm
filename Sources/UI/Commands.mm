@@ -15,7 +15,7 @@ const NSInteger kGRExternalToolsTag = 9104;
 //    id, title, category, SF Symbol,
 //    mac  - the Mac's key ("" none)
 //    vs   - Visual Studio's (GRIDEd's own default); nullptr: as mac
-//    ride - RIDE's (GRIDEd's KeySets::For("ride")); nullptr: as vs
+//    gride - White's (GRIDEd's KeySets::For("gride")); nullptr: as vs
 //    responder - a selector sent down the responder chain instead of a handler
 //    tag  - the tag that selector reads (NSTextFinder actions)
 // -----------------------------------------------------------------------------
@@ -196,7 +196,6 @@ namespace {
 
         // ------------------------------------------------------------- Help
         { "Help.ViewHelp",      "GRIDEm Help",                "Help", "help",       "Cmd+?",       "F1", nullptr, nullptr, 0 },
-        { "Help.UserGuide",     "GRIDE User Guide",           "Help", nullptr,      "",            nullptr, nullptr, nullptr, 0 },
         { "Help.RefC90",        "C90",                        "Help", nullptr,      "",            nullptr, nullptr, nullptr, 0 },
         { "Help.RefCpp11",      "C++11",                      "Help", nullptr,      "",            nullptr, nullptr, nullptr, 0 },
         { "Help.RefShalimar",   "Shalimar",                   "Help", nullptr,      "",            nullptr, nullptr, nullptr, 0 },
@@ -222,9 +221,9 @@ namespace {
     NSString* KeyOf(const CommandRow& r, NSString* keySet)
     {
         const char* k = r.mac;
-        if ([keySet isEqualToString:@"visualstudio"] || [keySet isEqualToString:@"ride"])
+        if ([keySet isEqualToString:@"visualstudio"] || [keySet isEqualToString:@"gride"])
             if (r.vs != nullptr) k = r.vs;
-        if ([keySet isEqualToString:@"ride"] && r.ride != nullptr) k = r.ride;
+        if ([keySet isEqualToString:@"gride"] && r.ride != nullptr) k = r.ride;
         return Str(k);
     }
 
@@ -279,7 +278,7 @@ namespace {
         "Window.CloseAll", "Window.CloseAllButThis", "-", "Window.ResetLayout", "Window.SaveLayout", "-", "Window.Windows", "-",
         "@front",
         "#Help",
-        "Help.ViewHelp", "Help.UserGuide",
+        "Help.ViewHelp",
         ">Language Reference", "Help.RefC90", "Help.RefCpp11", "Help.RefShalimar", "<",
         ">Toolchain Reference", "Help.RefMasm", "Help.RefAsm6x", "Help.RefRts", "Help.RefVm", "<",
         "Help.Shortcuts", "-", "Help.ReleaseNotes",
@@ -444,12 +443,12 @@ namespace {
 }
 
 // ---- key sets ----------------------------------------------------------------
-+ (NSArray<NSString*>*)keySetNames { return @[ @"macos", @"visualstudio", @"ride" ]; }
++ (NSArray<NSString*>*)keySetNames { return @[ @"macos", @"visualstudio", @"gride" ]; }
 
 + (NSString*)describeKeySet:(NSString*)keySet
 {
-    if ([keySet isEqualToString:@"ride"])
-        return @"RIDE (F8 debugs or carries on, F7 / F6 step over / into, F9 breakpoint, Ctrl+Up / Ctrl+Down the stack, "
+    if ([keySet isEqualToString:@"gride"])
+        return @"White's (F8 debugs or carries on, F7 / F6 step over / into, F9 breakpoint, Ctrl+Up / Ctrl+Down the stack, "
                @"F4 builds, F5 runs, Ctrl+B compiles)";
     if ([keySet isEqualToString:@"visualstudio"])
         return @"Visual Studio (F5 debugs, F10 / F11 step over / into, Shift+F11 steps out, F9 breakpoint, F7 builds, "
@@ -484,7 +483,7 @@ namespace {
         if (r != nullptr) c.shortcutText = GROr(KeyOf(*r, set), @"");
     }
     // RIDE's keys over Visual Studio's take theirs from the others
-    if ([set isEqualToString:@"ride"])
+    if ([set isEqualToString:@"gride"])
         for (GRCommand* c in ordered)
         {
             const CommandRow* r = RowFor(c.commandId);

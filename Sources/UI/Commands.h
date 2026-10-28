@@ -17,7 +17,7 @@
 //  Key sets (Settings > Keyboard, GrideSettings::KeySet):
 //    "macos"         the Mac's own (the default for GRIDEm)
 //    "visualstudio"  GRIDEd's defaults for building, debugging and the F-keys
-//    "ride"          RIDE's keys over Visual Studio's (GRIDEd's KeySets::For)
+//    "gride"         RIDE's keys over Visual Studio's (GRIDEd's KeySets::For)
 // =============================================================================
 #pragma once
 #import <AppKit/AppKit.h>
@@ -54,7 +54,7 @@ typedef BOOL (^GRCommandTest)(void);
 + (GRCommandRegistry*)shared;
 
 @property (nonatomic, readonly) NSArray<GRCommand*>* all;  // in registration order
-@property (nonatomic, readonly) NSString* keySet;           // "macos", "visualstudio", "ride"
+@property (nonatomic, readonly) NSString* keySet;           // "macos", "visualstudio", "gride"
 
 - (GRCommand*)command:(NSString*)commandId;                 // nil when unknown
 // adds a command that is not in the table (View.Toolbar*, external tools ...)

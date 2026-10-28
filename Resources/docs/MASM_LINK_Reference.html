@@ -3,18 +3,103 @@
 <head>
 <meta charset="utf-8">
 <title>MASM / LINK reference - GRIDE</title>
-<meta http-equiv="refresh" content="0; url=RIDE_Manual.html#22-the-two-windows-spellings-and-how-a-windows-program-is-debugged">
 <style>
-  body { font-family: "Segoe UI", sans-serif; margin: 40px; background: #F6F6F4; color: #1E1F22; }
+  body { font-family: "Segoe UI", sans-serif; margin: 0; background: #F6F6F4; color: #1E1F22; line-height: 1.5; }
+  header { background: #1F2226; color: #F2F2F2; padding: 22px 40px; }
+  header h1 { margin: 0; font-size: 26px; } header p { margin: 4px 0 0; color: #C9CED6; }
+  main { max-width: 980px; margin: 0 auto; padding: 20px 40px 50px; }
+  h2 { border-bottom: 2px solid #E0A23B; padding-bottom: 4px; margin-top: 30px; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; background: #fff; }
+  th, td { border: 1px solid #D5D8DD; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #ECEDEF; }
+  code, kbd { font-family: Consolas, monospace; background: #ECEDEF; padding: 1px 5px; border-radius: 3px; }
+  pre { font-family: Consolas, monospace; background: #fff; border: 1px solid #D5D8DD; padding: 10px 14px; overflow-x: auto; }
   a { color: #8A5A00; }
 </style>
 </head>
 <body>
-<h1>MASM / LINK reference</h1>
-<p>This reference is RIDE 5.17's Complete Manual, which ships with GRIDE as <a href="RIDE_Manual.html">RIDE_Manual.html</a>.
-Opening its chapter&hellip;</p>
+<header>
+  <h1>MASM / LINK</h1>
+  <p>GRIDE's own Windows assembler and linker, and the debug information they carry</p>
+</header>
+<main>
+
+<p>A Windows build goes <code>source &rarr; compile (-masm=masm) &rarr; .asm &rarr; masm &rarr; .obj &rarr; link (+ the CRT) &rarr; .exe</code>. <b>masm</b> reads Microsoft's MASM syntax and writes the COFF object <code>ml64</code> would; <b>link</b> takes <code>link.exe</code>'s command line and writes the PE32+ image. Both are built with GRIDE, beside <code>GRIDE.exe</code>.</p>
+
+<h2>masm and CodeView</h2>
+<p>A native Windows debugger (cdb, WinDbg, Visual Studio) finds its way through a program by <b>CodeView</b>: the line tables and procedure records an object carries in <code>.debug$S</code>, which a linker's <code>/DEBUG</code> gathers into a <code>.pdb</code>. masm writes them, as <code>ml64 /Zi</code> and <code>cl</code> lay them out:</p>
+<table>
+  <tr><th>Asked by</th><th>What the object gets</th></tr>
+  <tr><td><code>/Zi</code> or <code>/Zd</code> (ml64's spelling), <code>-g</code></td><td>a line record for each line of the <code>.asm</code> that makes code - the debugger steps through the assembly itself, as with <code>ml64 /Zi</code></td></tr>
+  <tr><td>a <code>.FILE</code> and <code>.LINE</code> in the source (no option needed)</td><td>line records for the <b>source lines those directives name</b> - the C, C++ or Shalimar a compiler made the assembly from - and none for the <code>.asm</code>'s own lines</td></tr>
+</table>
+<p>Either way the object's <code>.debug$S</code> holds <code>S_OBJNAME</code> and <code>S_COMPILE3</code>, and for each <code>PROC</code> an <code>S_GPROC32</code> (<code>S_LPROC32</code> for a private one) with its size and where its prologue ends, an <code>S_FRAMEPROC</code> made from its unwind directives (<code>.ALLOCSTACK</code>, <code>.PUSHREG</code>, <code>.SETFRAME</code>), and <code>S_END</code>; a line table per <code>PROC</code> (and per run of code outside every <code>PROC</code>); the file table and the string table. A <code>PROC</code> in a COMDAT section has its records in a <code>.debug$S</code> of its own, associative to that section, so the linker keeps them with the copy it keeps. Without <code>/Zi</code> and without <code>.FILE</code>, an object has no <code>.debug$S</code>, as before.</p>
+
+<h2>The source-line directives</h2>
+<p><code>ml64</code> has no words for "this instruction came from line 12 of <code>main.c</code>"; these two are masm's own. A compiler writes them under <code>-g</code> with <code>-masm=masm</code>.</p>
+<table>
+  <tr><th>Directive</th><th>Meaning</th></tr>
+  <tr><td><code>.FILE n, "path"</code></td><td>source file <i>n</i> (1 to 65535) is <i>path</i>. Write the path absolute - a debugger matches a breakpoint's file by it; a relative one is taken from the directory masm runs in. A MASM string: backslashes as they are, a quote doubled. Naming the same number again with the same path is allowed, with another path an error.</td></tr>
+  <tr><td><code>.LINE line [, n]</code></td><td>the instructions that follow come from <i>line</i> (1 to 16777215) of file <i>n</i>. Without <i>n</i>: the file of the <code>.LINE</code> before it in the <code>PROC</code>, else file 1. File <i>n</i> must have been named by a <code>.FILE</code> above.</td></tr>
+</table>
 <ul>
-  <li><a href="RIDE_Manual.html#22-the-two-windows-spellings-and-how-a-windows-program-is-debugged">22. The two Windows spellings, and how a Windows program is debugged</a></li>
+  <li>A <code>.LINE</code> holds until the next one or the <code>ENDP</code> of its <code>PROC</code>. The first instruction after it starts the line's record; a <code>.LINE</code> no instruction follows records nothing, and a second <code>.LINE</code> naming the line already in force starts a second record of that line at the next instruction - how a compiler marks where a one-line function's body starts, after its prologue, so a debugger stops there with the parameters stored.</li>
+  <li>A file with any <code>.LINE</code> is described by its <code>.LINE</code>s alone. Code they do not cover - a <code>PROC</code> without one - gets no line, though <code>/Zi</code> was given.</li>
+  <li>The language recorded (<code>S_COMPILE3</code>, which decides how a debugger evaluates an expression) is taken from file 1's extension: C++ for <code>.cpp</code>, <code>.cxx</code>, <code>.cc</code>, C for <code>.c</code> and every other source; MASM for a file with no <code>.FILE</code>.</li>
+  <li>The directives are not <code>ml64</code>'s: assembly carrying them is for masm. Without <code>-g</code> the compilers write none, and their output stays what <code>ml64</code> assembles.</li>
 </ul>
+<h2>A compiler's own CodeView</h2>
+<p>The line tables are masm's; what a debugger shows of variables - parameters, locals and blocks (<code>S_REGREL32</code>, <code>S_BLOCK32</code>), statics and globals (<code>S_LDATA32</code>, <code>S_GDATA32</code>), and their types - only the compiler knows. Under <code>-g -masm=masm</code>, c90 and shalimar write those records themselves, as data in two segments masm carries into the object as they are:</p>
+<table>
+  <tr><th>In the source</th><th>In the object</th></tr>
+  <tr><td><code>.debug$S SEGMENT</code> ... <code>.debug$S ENDS</code></td><td>the <code>.debug$S</code> section (discardable): the compiler's symbol records, then masm's line tables, file table and string table after them. With a <code>.debug$S</code> of the source's, masm writes no procedure records of its own.</td></tr>
+  <tr><td><code>.debug$T SEGMENT</code> ... <code>.debug$T ENDS</code></td><td>the <code>.debug$T</code> section: the types, numbered from 0x1000</td></tr>
+  <tr><td><code>DD SECTIONREL label</code></td><td>the label's offset in its section (ml64's operator)</td></tr>
+  <tr><td><code>DW SECTION label</code></td><td>the number of the label's section - masm's own operator: with <code>SECTIONREL</code> it is how CodeView names an address</td></tr>
+</table>
+<p>The two segments are 4-aligned, so <code>ALIGN 4</code> pads a record; a label difference (<code>DW end - start</code>) gives a record its length.</p>
+
+<pre>EXTRN ExitProcess:PROC
+    .FILE 1, "D:\work\twice.c"
+.CODE
+twice PROC
+    .LINE 3
+    mov eax, ecx
+    .LINE 4
+    add eax, eax
+    .LINE 5
+    ret
+twice ENDP
+END</pre>
+
+<h2>link and /DEBUG</h2>
+<p><code>/DEBUG</code> writes a <b>program database</b> beside the image - <code>prog.pdb</code> for <code>prog.exe</code>, or the file <code>/PDB:file</code> names - and gives the image a CODEVIEW debug-directory entry (an RSDS record) naming the <code>.pdb</code> by its full path, with the GUID and age they share. A debugger opens the <code>.pdb</code> whose GUID and age match; the GUID is a hash of the image, so the same link makes the same pair. As with <code>link.exe</code>, <code>/DEBUG</code> implies <code>/OPT:NOREF</code> and <code>/OPT:NOICF</code>, and <code>/DEBUG:NONE</code> turns it off. Without <code>/DEBUG</code> the image is what it was before.</p>
+<table>
+  <tr><th>In the .pdb</th><th>Made of</th></tr>
+  <tr><td>a module per object and archive member</td><td>its <code>.debug$S</code>, relocated: the symbols (procedures, blocks, frames, data), the line tables and the file table - each <code>.debug$S</code> that goes with a COMDAT the link dropped is dropped with it</td></tr>
+  <tr><td>the globals</td><td><code>S_PROCREF</code> per procedure, and the file-scope data and UDTs</td></tr>
+  <tr><td>the publics</td><td><code>S_PUB32</code> per external the image holds, and their address map</td></tr>
+  <tr><td>DBI</td><td>the section contributions, the section map, each module's source files, and the image's section headers</td></tr>
+  <tr><td>/names</td><td>the source file names the line tables point at</td></tr>
+  <tr><td>TPI, IPI</td><td>every object's <code>.debug$T</code> merged - types into TPI, ids (<code>LF_FUNC_ID</code> and the rest) into IPI - each record once, every index in the records and the symbols rewritten to the merged numbering, with the hash streams a debugger finds a type by name through (how a pointer's forward-declared <code>struct</code> is resolved). An object whose types are in a type server (<code>LF_TYPESERVER2</code>, as much of the C runtime's) or a precompiled header keeps its symbols with no types.</td></tr>
+</table>
+<p>The layout is the MSF one LLVM documents and <code>lld-link</code> writes; it reads back through dbghelp (cdb, WinDbg), DIA (Visual Studio) and <code>llvm-pdbutil</code>. So a Debug build needs neither clang nor Microsoft's <code>link.exe</code>: <code>c90 -g -masm=masm</code> (or <code>shalimar -g -masm=masm</code>), masm, and <code>link /DEBUG</code> make a program a debugger stops in at <code>file.c:line</code>, steps line by line, shows the parameters, locals and globals of with their types, and walks the stack of, the C runtime's frames included.</p>
+
+<h2>link /LIB: libraries</h2>
+<p><code>link /LIB</code> is the librarian, as <code>link.exe /LIB</code> is <code>lib.exe</code>. What it writes is the archive <code>link.exe</code> and <code>lib.exe</code> read: both linker members (the second sorted, for a binary search), the longnames member when a name passes fifteen characters, the members on even offsets, every header dated -1 so the same inputs make the same file. <code>@file</code> on either command line reads its words from the file, which is how a library of a few hundred objects is named under Windows' 32,767 characters.</p>
+<table>
+  <tr><th>Command</th><th>What it does</th></tr>
+  <tr><td><code>link /LIB /OUT:x.lib a.obj b.obj ...</code></td><td>an archive of the objects, indexing every external each defines (a weak external is not indexed); a name two members define is said, unless both define it in a COMDAT - an inline function each translation unit emits</td></tr>
+  <tr><td><code>link /LIB /DEF:x.def [/NAME:dll] /OUT:x.lib</code></td><td>an import library for the DLL the .def's <code>LIBRARY</code> names: its import descriptor, the null descriptor and null thunk, and one short import member per export (<code>DATA</code> ones without the jump thunk, <code>PRIVATE</code> ones left out) - the SDK's import libraries' layout, so link builds the import table from it as from theirs</td></tr>
+  <tr><td><code>link /LIB /LIST x.lib</code></td><td>each member, and the externals it defines</td></tr>
+</table>
+<p>GRIDE's runtime for Windows is made this way: five layered libraries - <code>grtstart.lib</code>, <code>grtcompat.lib</code>, <code>grtcxx.lib</code>, <code>grtc.lib</code>, <code>grtwin.lib</code> - from the objects c90, cpp11 and masm make of it, and <code>kernel32.lib</code> from <code>toolchain\Windows\RT\kernel32.def</code> - no SDK library is read. A program linked with them needs no Visual Studio and no Windows SDK, and imports <code>KERNEL32.dll</code> alone (docs\Runtime_Design.md).</p>
+
+<h2>In RIDE's manual</h2>
+<p>RIDE 5.17's Complete Manual (<a href="RIDE_Manual.html">RIDE_Manual.html</a>) explains the two Windows spellings:</p>
+<ul>
+  <li><a href="RIDE_Manual.html#22-the-two-windows-spellings-and-how-a-windows-program-is-debugged">22. The two Windows spellings, and how a Windows program is debugged</a> - the MASM and GNU spellings, and the Debug build through clang and <code>link.exe</code>. It describes masm and link as RIDE 5.17 shipped them, with no line table and no <code>.pdb</code>; masm has since been given the CodeView above, and link the program database.</li>
+</ul>
+</main>
 </body>
 </html>

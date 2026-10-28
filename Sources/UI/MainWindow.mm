@@ -209,7 +209,13 @@ static NSArray<NSString*>* StepItems()
     _outputView.navigate = ^(NSString* file, NSInteger line, NSInteger column) { [weakSelf navigateTo:file line:line column:column]; };
     _outputView.inputEntered = ^(NSString* line) {
         GRMainWindowController* me = weakSelf;
-        if (![me.session writeToProgram:line]) [me setStatus:@"No program is running to read that"];
+        std::shared_ptr<Services::DebugEngine> debugger = me.session.isDebugging ? me.session.debugger : nullptr;
+        if (debugger && debugger->TakesInput())
+        {
+            me.programLineLast = NO;
+            if (!debugger->SendInput(GRStd(line))) [me setStatus:@"The program being debugged could not be given that line"];
+        }
+        else if (![me.session writeToProgram:line]) [me setStatus:@"No program is running to read that"];
     };
     _issuesView = [[GRIssuesView alloc] init];
     _issuesView.navigate = ^(NSString* file, NSInteger line, NSInteger column) { [weakSelf navigateTo:file line:line column:column]; };
